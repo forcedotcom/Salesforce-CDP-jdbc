@@ -10,7 +10,7 @@ Load the Driver into your Java classPath
 
 Create Connection
 ```
-   Class.forName("com.queryService.jdbc.QueryServiceDriver");
+   Class.forName("com.salesforce.cdp.queryservice.QueryServiceDriver");
    Properties properties = new Properties();
    properties.put("coreToken", <Core oAuth token>);
    properties.put("refreshToken", <Refresh Token>);
