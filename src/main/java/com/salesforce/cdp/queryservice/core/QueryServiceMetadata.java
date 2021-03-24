@@ -20,6 +20,7 @@ import com.salesforce.cdp.queryservice.model.MetadataResponse;
 import com.salesforce.cdp.queryservice.model.TableMetadata;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
+import static com.salesforce.cdp.queryservice.util.Messages.METADATA_EXCEPTION;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 import org.apache.commons.collections4.CollectionUtils;
@@ -654,10 +655,10 @@ public class QueryServiceMetadata implements DatabaseMetaData {
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
             }
             MetadataResponse metadataResponse = HttpHelper.handleSuccessResponse(response, MetadataResponse.class, true);
-            return createTableResultSet(metadataResponse);
+            return createTableResultSet(metadataResponse, tableNamePattern);
         } catch (IOException e) {
             log.info("Exception while getting metadata from query service", e);
-            throw new SQLException(e.getMessage());
+            throw new SQLException(METADATA_EXCEPTION);
         } finally {
             queryServiceConnection.close();
         }
@@ -692,8 +693,8 @@ public class QueryServiceMetadata implements DatabaseMetaData {
             MetadataResponse metadataResponse = HttpHelper.handleSuccessResponse(response, MetadataResponse.class, true);
             return createColumnResultSet(metadataResponse, tableNamePattern);
         } catch (IOException e) {
-            log.info("Exception while getting metadata from query service", e);
-            throw new SQLException(e.getMessage());
+            log.error("Exception while getting metadata from query service", e);
+            throw new SQLException(METADATA_EXCEPTION);
         } finally {
             queryServiceConnection.close();
         }
@@ -964,8 +965,9 @@ public class QueryServiceMetadata implements DatabaseMetaData {
         return false;
     }
 
-    private ResultSet createTableResultSet(MetadataResponse metadataResponse) {
+    private ResultSet createTableResultSet(MetadataResponse metadataResponse, String tableNamePattern) {
         ResultSet resultSet;
+        boolean needAllTables = tableNamePattern == null || tableNamePattern.isEmpty();
         QueryServiceDbMetadata dbMetadata = GET_TABLES;
         if (CollectionUtils.isEmpty(metadataResponse.getMetadata())) {
             log.info("No metadata for this org");
@@ -973,22 +975,33 @@ public class QueryServiceMetadata implements DatabaseMetaData {
         } else {
             List<Map<String, Object>> data = new ArrayList<>();
             for (TableMetadata metadata : metadataResponse.getMetadata()) {
-                Map<String, Object> row = new LinkedHashMap<>();
-                row.put("TABLE_CAT", "QueryService");
-                row.put("TABLE_SCHEM", null);
-                row.put("TABLE_NAME", metadata.getName());
-                row.put("TABLE_TYPE", "TABLE");
-                row.put("REMARKS", StringUtils.EMPTY);
-                row.put("TYPE_CAT", StringUtils.EMPTY);
-                row.put("TYPE_SCHEM", StringUtils.EMPTY);
-                row.put("TYPE_NAME", StringUtils.EMPTY);
-                row.put("SELF_REFERENCING_COL_NAME", StringUtils.EMPTY);
-                row.put("REF_GENERATION", StringUtils.EMPTY);
-                data.add(row);
+                if (needAllTables) {
+                    data.add(createRow(metadata));
+                } else {
+                    if (metadata.getName().equals(tableNamePattern)) {
+                        data.add(createRow(metadata));
+                        break;
+                    }
+                }
             }
             resultSet = new QueryServiceResultSet(data, new QueryServiceResultSetMetaData(dbMetadata));
         }
         return resultSet;
+    }
+
+    private Map<String, Object> createRow(TableMetadata metadata) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("TABLE_CAT", "QueryService");
+        row.put("TABLE_SCHEM", null);
+        row.put("TABLE_NAME", metadata.getName());
+        row.put("TABLE_TYPE", "TABLE");
+        row.put("REMARKS", StringUtils.EMPTY);
+        row.put("TYPE_CAT", StringUtils.EMPTY);
+        row.put("TYPE_SCHEM", StringUtils.EMPTY);
+        row.put("TYPE_NAME", StringUtils.EMPTY);
+        row.put("SELF_REFERENCING_COL_NAME", StringUtils.EMPTY);
+        row.put("REF_GENERATION", StringUtils.EMPTY);
+        return row;
     }
 
     private ResultSet createColumnResultSet(MetadataResponse metadataResponse, String tableNamePattern) {

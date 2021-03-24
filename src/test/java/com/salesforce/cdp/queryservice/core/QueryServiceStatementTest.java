@@ -17,6 +17,7 @@
 package com.salesforce.cdp.queryservice.core;
 
 import com.salesforce.cdp.queryservice.util.Constants;
+import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
 import com.salesforce.cdp.queryservice.ResponseEnum;
 import okhttp3.*;
@@ -110,7 +111,7 @@ public class QueryServiceStatementTest {
     public void testExceuteQueryWithIOException() throws IOException, SQLException {
         doThrow(new IOException("IO Exception")).when(queryExecutor).executeQuery(anyString(), any(Optional.class), any(Optional.class), any(Optional.class));
         exceptionRule.expect(SQLException.class);
-        exceptionRule.expectMessage("IO Exception");
+        exceptionRule.expectMessage(QUERY_EXCEPTION);
         queryServiceStatement.executeQuery("select FirstName__c from Individual__dlm limit 10");
     }
 
