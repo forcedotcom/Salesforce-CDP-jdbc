@@ -20,6 +20,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.salesforce.cdp.queryservice.model.CoreTokenRenewResponse;
 import com.salesforce.cdp.queryservice.model.Token;
+import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_EXCHANGE_FAILURE;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -89,7 +90,7 @@ public class TokenHelper {
             return getTokenWithUrl(token);
         } catch (Exception e) {
             log.error("Caught exception while retrieving the token", e);
-            throw new SQLException(e.getMessage());
+            throw new SQLException(TOKEN_EXCHANGE_FAILURE);
         }
     }
 
@@ -133,7 +134,7 @@ public class TokenHelper {
             return token;
         } catch (IOException e) {
             log.error("Caught exception while getting the offcore token", e);
-            throw new SQLException(e.getMessage());
+            throw new SQLException(TOKEN_EXCHANGE_FAILURE);
         }
     }
 

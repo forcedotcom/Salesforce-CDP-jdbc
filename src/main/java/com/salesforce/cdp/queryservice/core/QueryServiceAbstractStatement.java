@@ -19,6 +19,7 @@ package com.salesforce.cdp.queryservice.core;
 import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
 import com.salesforce.cdp.queryservice.model.Type;
 import com.salesforce.cdp.queryservice.util.Constants;
+import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +66,8 @@ public abstract class QueryServiceAbstractStatement {
             QueryServiceResponse queryServiceResponse = HttpHelper.handleSuccessResponse(response, QueryServiceResponse.class, false);
             return createResultSetFromResponse(queryServiceResponse);
         } catch (IOException e) {
-            throw new SQLException(e.getLocalizedMessage());
+            log.error("Exception while running the query", e);
+            throw new SQLException(QUERY_EXCEPTION);
         }
     }
 

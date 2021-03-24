@@ -17,6 +17,7 @@
 package com.salesforce.cdp.queryservice.core;
 
 import com.salesforce.cdp.queryservice.util.Constants;
+import static com.salesforce.cdp.queryservice.util.Messages.METADATA_EXCEPTION;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
 import okhttp3.*;
 import org.apache.http.HttpStatus;
@@ -97,7 +98,7 @@ public class QueryServiceMetadataTest {
                 body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
         doReturn(response).when(queryExecutor).getMetadata();
         exceptionRule.expect(SQLException.class);
-        exceptionRule.expectMessage("Not Found");
+        exceptionRule.expectMessage(METADATA_EXCEPTION);
         queryServiceMetadata.getColumns("", "", "", "");
     }
 
