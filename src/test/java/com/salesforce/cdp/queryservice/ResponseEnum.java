@@ -180,7 +180,33 @@ public enum ResponseEnum {
                     "            \"type\": \"DECIMAL\"\n" +
                     "        }\n" +
                     "} \n" +
-            "}");
+            "}"),
+    HTML_ERROR_RESPONSE("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n" +
+            "<html>\n" +
+            "\n" +
+            "<head>\n" +
+            "\t<meta HTTP-EQUIV=\"PRAGMA\" CONTENT=\"NO-CACHE\">\n" +
+            "\n" +
+            "\n" +
+            "\n" +
+            "\n" +
+            "\n" +
+            "\t<script>\n" +
+            "\t\tfunction redirectOnLoad() {\n" +
+            "if (this.SfdcApp && this.SfdcApp.projectOneNavigator) { SfdcApp.projectOneNavigator.handleRedirect('https://login.stmpb.stm.salesforce.com/?ec=302&startURL=%2Fservices%2Fa360%2Ftoken'); }  else \n" +
+            "if (window.location.replace){ \n" +
+            "window.location.replace('https://login.stmpb.stm.salesforce.com/?ec=302&startURL=%2Fservices%2Fa360%2Ftoken');\n" +
+            "} else {\n" +
+            "window.location.href ='https://login.stmpb.stm.salesforce.com/?ec=302&startURL=%2Fservices%2Fa360%2Ftoken';\n" +
+            "} \n" +
+            "} \n" +
+            "redirectOnLoad();\n" +
+            "\t</script>\n" +
+            "\n" +
+            "</head>\n" +
+            "\n" +
+            "\n" +
+            "</html>");
 
     private String response;
 
