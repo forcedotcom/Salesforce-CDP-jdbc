@@ -26,6 +26,8 @@ import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -42,7 +44,7 @@ public class TokenHelper {
         //NOOP
     }
 
-    public static Map<String, String> getTokenWithTenantUrl(Properties properties, OkHttpClient client) throws SQLException, IOException {
+    public static Map<String, String> getTokenWithTenantUrl(Properties properties, OkHttpClient client) throws SQLException {
         Token token = null;
         if(properties.containsKey(Constants.CORETOKEN)) {
             token = tokenCache.getIfPresent(properties.getProperty(Constants.CORETOKEN));
@@ -74,7 +76,7 @@ public class TokenHelper {
         }
     }
 
-    private static Map<String, String> retrieveTokenWithPasswordGrant(Properties properties, OkHttpClient client) throws IOException, SQLException {
+    private static Map<String, String> retrieveTokenWithPasswordGrant(Properties properties, OkHttpClient client) throws SQLException {
         String token_url = properties.getProperty(Constants.LOGIN_URL) + Constants.CORE_TOKEN_URL;
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(Constants.GRANT_TYPE_NAME, Constants.TOKEN_GRANT_TYPE_PD);
@@ -82,14 +84,16 @@ public class TokenHelper {
         requestBody.put(Constants.CLIENT_SECRET_NAME, properties.getProperty(Constants.CLIENT_SECRET));
         requestBody.put(Constants.CLIENT_USER_NAME, properties.getProperty(Constants.USER_NAME));
         requestBody.put(Constants.CLIENT_PD, properties.getProperty(Constants.PD));
+        CoreTokenRenewResponse coreTokenRenewResponse = null;
         try {
             Response response = login(requestBody, token_url, client);
-            CoreTokenRenewResponse coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class, false);
+            coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class, false);
             Token token = exchangeToken(properties.getProperty(Constants.LOGIN_URL), coreTokenRenewResponse.getAccess_token(), client);
             tokenCache.put(properties.getProperty(Constants.USER_NAME), token);
             return getTokenWithUrl(token);
         } catch (Exception e) {
             log.error("Caught exception while retrieving the token", e);
+            invalidateCoreToken(properties.getProperty(Constants.LOGIN_URL), coreTokenRenewResponse == null ? null : coreTokenRenewResponse.getAccess_token(), client);
             throw new SQLException(TOKEN_EXCHANGE_FAILURE);
         }
     }
@@ -101,20 +105,22 @@ public class TokenHelper {
         requestBody.put(Constants.CLIENT_ID_NAME, clientId);
         requestBody.put(Constants.CLIENT_SECRET_NAME, secret);
         requestBody.put(Constants.REFRESH_TOKEN_GRANT_TYPE, refreshToken);
+        CoreTokenRenewResponse coreTokenRenewResponse = null;
         try {
             Response response = login(requestBody, token_url, client);
-            CoreTokenRenewResponse coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class, false);
+            coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class, false);
             log.info("Renewed core token {}", coreTokenRenewResponse);
             Token token = exchangeToken(url, coreTokenRenewResponse.getAccess_token(), client);
             tokenCache.put(coreTokenRenewResponse.getAccess_token(), token);
             return getTokenWithUrl(token);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Caught exception while renewing the core token", e);
+            invalidateCoreToken(url, coreTokenRenewResponse == null ? null : coreTokenRenewResponse.getAccess_token(), client);
             throw new SQLException(e.getMessage());
         }
     }
 
-    private static Token exchangeToken(String url, String coreToken, OkHttpClient client) throws IOException, SQLException {
+    private static Token exchangeToken(String url, String coreToken, OkHttpClient client) throws SQLException {
         String token_url = url + Constants.TOKEN_EXCHANGE_URL;
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(Constants.GRANT_TYPE_NAME, Constants.GRANT_TYPE);
@@ -126,14 +132,16 @@ public class TokenHelper {
             Token token = HttpHelper.handleSuccessResponse(response, Token.class, false);
             if (token.getError_description() != null) {
                 log.error("Token exchange failed with error {}", token.getError_description());
+                invalidateCoreToken(url, coreToken, client);
                 String message = token.getError_description();
                 throw new SQLException(message);
             }
             expire_time.add(Calendar.SECOND, token.getExpires_in());
             token.setExpire_time(expire_time);
             return token;
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Caught exception while getting the offcore token", e);
+            invalidateCoreToken(url, coreToken, client);
             throw new SQLException(TOKEN_EXCHANGE_FAILURE);
         }
     }
@@ -165,5 +173,20 @@ public class TokenHelper {
             HttpHelper.handleErrorResponse(response, Constants.ERROR_DESCRIPTION);
         }
         return response;
+    }
+
+    private static void invalidateCoreToken(String url, String coreToken, OkHttpClient client) {
+        if (coreToken == null) {
+            return;
+        }
+        try {
+            log.info("Invalidating the core token");
+            String tokenRevokeUrl = url + Constants.TOKEN_REVOKE_URL + coreToken;
+            Request request = HttpHelper.buildRequest(Constants.GET, tokenRevokeUrl, null, Collections.EMPTY_MAP);
+            // Response is not needed for this call.
+            client.newCall(request).execute();
+        } catch (Exception e) {
+            log.error("Revoking the core token failed", e);
+        }
     }
 }

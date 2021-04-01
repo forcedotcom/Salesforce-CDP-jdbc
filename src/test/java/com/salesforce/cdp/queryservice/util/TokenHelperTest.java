@@ -27,7 +27,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import static org.mockito.Mockito.*;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -41,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.salesforce.cdp.queryservice.ResponseEnum.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("jdk.internal.reflect.*")
@@ -142,7 +143,7 @@ public class TokenHelperTest {
         when(remoteCall.execute()).thenReturn(response);
         when(client.newCall(any())).thenReturn(remoteCall);
         exceptionRule.expect(SQLException.class);
-        exceptionRule.expectMessage("expired authorization code");
+        exceptionRule.expectMessage(Messages.TOKEN_EXCHANGE_FAILURE);
         TokenHelper.getTokenWithTenantUrl(properties, client);
     }
 
@@ -170,6 +171,29 @@ public class TokenHelperTest {
         Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithTenantUrl(properties, client);
         Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
         Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
+    }
+
+    @Test
+    public void testInvalidateCoreToken() throws Exception {
+        String errorString = HTML_ERROR_RESPONSE.getResponse();
+        Response errorResponse = new Response.Builder().code(HttpStatus.SC_OK).
+                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+                message("Internal Server Error").
+                body(ResponseBody.create(errorString, MediaType.parse("application/json"))).build();
+        when(remoteCall.execute()).thenReturn(errorResponse);
+        when(client.newCall(any())).thenReturn(remoteCall);
+        ArgumentCaptor<Request> eventCaptor =
+                ArgumentCaptor.forClass(Request.class);
+        exceptionRule.expect(SQLException.class);
+        exceptionRule.expectMessage(Messages.TOKEN_EXCHANGE_FAILURE);
+        try {
+            TokenHelper.getTokenWithTenantUrl(properties, client);
+        } finally {
+            verify(client, times(2)).newCall(eventCaptor.capture());
+            Request request = eventCaptor.getValue();
+            String url = request.url().toString();
+            Assert.assertTrue(url.contains(Constants.TOKEN_REVOKE_URL));
+        }
     }
 
     private Request buildRequest() {
