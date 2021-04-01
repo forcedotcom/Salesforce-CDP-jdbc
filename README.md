@@ -17,7 +17,7 @@ Create Connection
    properties.put("clientId", <Client Id of the connected App>);
    properties.put("clientSecret", <Client Secret of the connected App>);
 
-   Connection connection =  DriverManager.getConnection("jdbc:salesforce-cdp-jdbc:<Salesforce Core instance URL>", properties);
+   Connection connection =  DriverManager.getConnection("jdbc:queryService-jdbc:<Salesforce Core instance URL>", properties);
 ```
 Create Statements/ Prepared Statements to execute Query and get ResultSet
 ```

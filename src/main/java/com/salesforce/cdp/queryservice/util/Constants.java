@@ -25,6 +25,7 @@ public class Constants {
     public static final String ANSI_SQL_URL = "/query?";
     public static final String METADATA_URL = "/metadata";
     public static final String TOKEN_EXCHANGE_URL = "/services/a360/token";
+    public static final String TOKEN_REVOKE_URL = "/services/oauth2/revoke?token=";
     public static final String CORE_TOKEN_URL = "/services/oauth2/token";
     public static final String PROTOCOL = "https://";
     public static final String QUERY_SERVICE = "cdp-query-service";
