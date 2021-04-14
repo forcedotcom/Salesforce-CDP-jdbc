@@ -22,6 +22,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.*;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -86,6 +87,8 @@ public class QueryServiceConnection implements Connection {
     @Override
     public void close() throws SQLException {
         closed.set(true);
+        byte [] passwordArray = (byte []) properties.get(Constants.PD);
+        Arrays.fill(passwordArray, (byte) 0);
     }
 
     @Override
