@@ -26,8 +26,6 @@ import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -101,6 +99,8 @@ public class TokenHelper {
             log.error("Caught exception while retrieving the token", e);
             invalidateCoreToken(properties.getProperty(Constants.LOGIN_URL), coreTokenRenewResponse == null ? null : coreTokenRenewResponse.getAccess_token(), client);
             throw new SQLException(TOKEN_EXCHANGE_FAILURE);
+        } finally {
+            Arrays.fill(passwordBytes, (byte)0);
         }
     }
 
