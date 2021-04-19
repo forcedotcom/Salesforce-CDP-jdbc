@@ -30,3 +30,7 @@ ResultSet  resultSet = preparedStatement.executeQuery();
 while (resultSet.next()) {
        log.info("FirstName : {}, BirthDate__c : {}, YearlyIncome__c : {}", resultSet.getString("FirstName__c"), resultSet.getTimestamp("BirthDate__c"), resultSet.getInt("YearlyIncome__c"));
 ```
+
+# Notes:
+    
+    Add order by clause in the query to fetch the paginated results.

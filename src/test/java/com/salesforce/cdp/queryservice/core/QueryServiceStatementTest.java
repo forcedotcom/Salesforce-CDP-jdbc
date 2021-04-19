@@ -23,11 +23,13 @@ import com.salesforce.cdp.queryservice.ResponseEnum;
 import okhttp3.*;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
+import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -176,6 +178,49 @@ public class QueryServiceStatementTest {
         verify(queryServiceStatementSpy, times(1)).executeQuery(eq("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1"));
     }
 
+    @Test
+    public void testExecuteQueryForOrderByQueries() throws IOException, SQLException {
+        String paginationResponseString = ResponseEnum.QUERY_RESPONSE_WITHOUT_DONE_FLAG.getResponse();
+        Response paginationResponse = new Response.Builder().code(HttpStatus.SC_OK).
+                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+                message("Successful").
+                body(ResponseBody.create(paginationResponseString, MediaType.parse("application/json"))).build();
+        doReturn(paginationResponse).when(queryExecutor).executeQuery(anyString(), any(Optional.class), any(Optional.class), any(Optional.class));
+        QueryServiceStatement queryServiceStatementSpy = Mockito.spy(queryServiceStatement);
+        ResultSet resultSet = queryServiceStatementSpy.executeQuery("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1 ORDER BY TelephoneNumber__c");
+        int count = 0;
+        while (resultSet.next()) {
+            count++;
+        }
+        Assert.assertEquals(count, 2);
+        ArgumentCaptor<Optional> captor = ArgumentCaptor.forClass(Optional.class);
+        verify(queryExecutor, times(1)).executeQuery(eq("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1 ORDER BY TelephoneNumber__c"), any(Optional.class), any(Optional.class), captor.capture());
+        Optional<String> value = captor.getValue();
+        Assert.assertFalse(value.isPresent());
+    }
+
+    @Test
+    public void testExecuteQueryForTableauQueries() throws IOException, SQLException {
+        String paginationResponseString = ResponseEnum.QUERY_RESPONSE_WITHOUT_DONE_FLAG.getResponse();
+        Response paginationResponse = new Response.Builder().code(HttpStatus.SC_OK).
+                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+                message("Successful").
+                body(ResponseBody.create(paginationResponseString, MediaType.parse("application/json"))).build();
+        doReturn(paginationResponse).when(queryExecutor).executeQuery(anyString(), any(Optional.class), any(Optional.class), any(Optional.class));
+        doReturn(Constants.TABLEAU_USER_AGENT_VALUE).when(queryServiceConnection).getClientInfo(eq(Constants.USER_AGENT));
+        QueryServiceStatement queryServiceStatementSpy = Mockito.spy(queryServiceStatement);
+        ResultSet resultSet = queryServiceStatementSpy.executeQuery("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1");
+        int count = 0;
+        while (resultSet.next()) {
+            count++;
+        }
+        Assert.assertEquals(count, 2);
+        ArgumentCaptor<Optional> captor = ArgumentCaptor.forClass(Optional.class);
+        verify(queryExecutor, times(1)).executeQuery(eq("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1"), any(Optional.class), any(Optional.class), captor.capture());
+        Optional<String> value = captor.getValue();
+        String val = value.get();
+        Assert.assertEquals(val, "1 ASC");
+    }
 
     private Request buildRequest() {
         return new Request.Builder()

@@ -58,7 +58,8 @@ public abstract class QueryServiceAbstractStatement {
         try {
             this.sql = sql;
             QueryExecutor queryExecutor = connection.getQueryExecutor();
-            Response response = queryExecutor.executeQuery(sql, Optional.of(Constants.MAX_LIMIT), Optional.of(offset), Optional.of("1 ASC"));
+            boolean isTableauQuery = isTableauQuery();
+            Response response = queryExecutor.executeQuery(sql, isTableauQuery ? Optional.of(Constants.MAX_LIMIT) : Optional.empty(), Optional.of(offset), isTableauQuery ? Optional.of("1 ASC") : Optional.empty());
             if (!response.isSuccessful()) {
                 log.error("Request query {} failed with response code {} and trace-Id {}", sql, response.code(), response.headers().get(Constants.TRACE_ID));
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
@@ -69,6 +70,11 @@ public abstract class QueryServiceAbstractStatement {
             log.error("Exception while running the query", e);
             throw new SQLException(QUERY_EXCEPTION);
         }
+    }
+
+    private boolean isTableauQuery() throws SQLException {
+        String userAgent = connection.getClientInfo(Constants.USER_AGENT);
+        return Constants.TABLEAU_USER_AGENT_VALUE.equals(userAgent);
     }
 
     private ResultSet createResultSetFromResponse(QueryServiceResponse queryServiceResponse) throws SQLException {
