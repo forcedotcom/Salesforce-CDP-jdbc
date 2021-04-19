@@ -33,4 +33,4 @@ while (resultSet.next()) {
 
 # Notes:
     
-    Add Order by clause in the query as it is mandatory for the pagination. 
+    Add order by clause in the query to fetch the paginated results.

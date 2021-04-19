@@ -26,8 +26,6 @@ import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -77,13 +75,19 @@ public class TokenHelper {
     }
 
     private static Map<String, String> retrieveTokenWithPasswordGrant(Properties properties, OkHttpClient client) throws SQLException {
+        // Convert password to byte array as per SA
+        if (properties.getProperty(Constants.PD) == null) {
+            throw new SQLException("Password cannot be null");
+        }
+        byte [] passwordBytes = properties.getProperty(Constants.PD).getBytes();
+        properties.put(Constants.PD, passwordBytes);
         String token_url = properties.getProperty(Constants.LOGIN_URL) + Constants.CORE_TOKEN_URL;
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(Constants.GRANT_TYPE_NAME, Constants.TOKEN_GRANT_TYPE_PD);
         requestBody.put(Constants.CLIENT_ID_NAME, properties.getProperty(Constants.CLIENT_ID));
         requestBody.put(Constants.CLIENT_SECRET_NAME, properties.getProperty(Constants.CLIENT_SECRET));
         requestBody.put(Constants.CLIENT_USER_NAME, properties.getProperty(Constants.USER_NAME));
-        requestBody.put(Constants.CLIENT_PD, properties.getProperty(Constants.PD));
+        requestBody.put(Constants.CLIENT_PD, new String(passwordBytes));
         CoreTokenRenewResponse coreTokenRenewResponse = null;
         try {
             Response response = login(requestBody, token_url, client);
@@ -95,6 +99,8 @@ public class TokenHelper {
             log.error("Caught exception while retrieving the token", e);
             invalidateCoreToken(properties.getProperty(Constants.LOGIN_URL), coreTokenRenewResponse == null ? null : coreTokenRenewResponse.getAccess_token(), client);
             throw new SQLException(TOKEN_EXCHANGE_FAILURE);
+        } finally {
+            Arrays.fill(passwordBytes, (byte)0);
         }
     }
 
