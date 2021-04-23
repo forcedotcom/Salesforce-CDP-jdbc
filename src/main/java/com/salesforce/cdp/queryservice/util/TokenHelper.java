@@ -187,8 +187,10 @@ public class TokenHelper {
         }
         try {
             log.info("Invalidating the core token");
-            String tokenRevokeUrl = url + Constants.TOKEN_REVOKE_URL + coreToken;
-            Request request = HttpHelper.buildRequest(Constants.GET, tokenRevokeUrl, null, Collections.EMPTY_MAP);
+            FormBody formBody = new FormBody.Builder().addEncoded("token", coreToken).build();
+            Map<String, String> headers = Collections.singletonMap(Constants.CONTENT_TYPE, Constants.URL_ENCODED_CONTENT);
+            String tokenRevokeUrl = url + Constants.TOKEN_REVOKE_URL;
+            Request request = HttpHelper.buildRequest(Constants.POST, tokenRevokeUrl, formBody, headers);
             // Response is not needed for this call.
             client.newCall(request).execute();
         } catch (Exception e) {
