@@ -22,7 +22,7 @@ Create Connection
 Create Statements/ Prepared Statements to execute Query and get ResultSet
 ```
 PreparedStatement preparedStatement = connection.prepareStatement("select FirstName__c, BirthDate__c, YearlyIncome__c from Individual__dlm where FirstName__c = ? and YearlyIncome__c > ?");
-   preparedStatement.setString(1, "Angella");
+   preparedStatement.setString(0, "Angella");
    preparedStatement.setInt(1, 1000);
 
 ResultSet  resultSet = preparedStatement.executeQuery();
