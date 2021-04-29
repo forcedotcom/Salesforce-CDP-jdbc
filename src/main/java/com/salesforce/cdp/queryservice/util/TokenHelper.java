@@ -201,12 +201,12 @@ public class TokenHelper {
 
     private static String un_pw_login(String grantType, String clientId, byte[] clientSecret, String userName, byte[] passwordBytes, String tokenUrl) throws Exception
     {
-        byte[] grantTypeSegment = ("grant_type=" + grantType).getBytes("utf-8");
-        byte[] clientIdSegment = ("client_id=" + clientId).getBytes("utf-8");
-        byte[] clientSecretSegment = "client_secret=".getBytes("utf-8");
-        byte[] userNameSegment = ("username=" + URLEncoder.encode(userName)).getBytes("utf-8");
-        byte[] passwordSegment = ("password=").getBytes("utf-8");
-        byte[] separator = "&".getBytes("utf-8");
+        byte[] grantTypeSegment = (Constants.GRANT_TYPE_NAME + Constants.TOKEN_ASSIGNMENT + grantType).getBytes("utf-8");
+        byte[] clientIdSegment = (Constants.CLIENT_ID_NAME + Constants.TOKEN_ASSIGNMENT + clientId).getBytes("utf-8");
+        byte[] clientSecretSegment = (Constants.CLIENT_SECRET_NAME + Constants.TOKEN_ASSIGNMENT).getBytes("utf-8");
+        byte[] userNameSegment = (Constants.CLIENT_USER_NAME + Constants.TOKEN_ASSIGNMENT + URLEncoder.encode(userName)).getBytes("utf-8");
+        byte[] passwordSegment = (Constants.CLIENT_PD + Constants.TOKEN_ASSIGNMENT).getBytes("utf-8");
+        byte[] separator = Constants.TOKEN_SEPARATOR.getBytes("utf-8");
 
 
         // Pre-calculate the size of the postdata in bytes we'll be sending for Content-Length.

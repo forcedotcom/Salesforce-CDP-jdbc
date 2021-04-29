@@ -108,12 +108,9 @@ public class Utils {
         {
             return (byte[])property;
         }
-        else
+        else if (property instanceof String)
         {
-            if (property instanceof String)
-            {
-                return ((String) property).getBytes("utf-8");
-            }
+            return ((String) property).getBytes("utf-8");
         }
 
         throw new IllegalArgumentException(property.getClass().getName() + " is not a valid type for asByteArray()");
