@@ -38,7 +38,6 @@ public class Utils {
         return retryStatusCodes;
     }
 
-
     public static byte[] safeByteArrayUrlEncode(byte[] byteArray) {
         int bytesNeedingReEncode = 0;
 
@@ -116,5 +115,26 @@ public class Utils {
         throw new IllegalArgumentException(property.getClass().getName() + " is not a valid type for asByteArray()");
     }
 
-
+    /**
+     * SQL contains % and _ wildCards.
+     * This method converts these wildcards to regex.
+     *
+     * @param tableNamePattern tableNamePattern
+     * @return regex
+     */
+    public static String convertPatternToRegEx(String tableNamePattern) {
+        StringBuilder regEx = new StringBuilder();
+        for (int i = 0; i < tableNamePattern.length(); i++) {
+            if (tableNamePattern.charAt(i) == Constants.MULTIPLE_CHAR_MATCH) {
+                // Match one or more chars
+                regEx.append(".*");
+            } else if (tableNamePattern.charAt(i) == Constants.SINGLE_CHAR_MATCH) {
+                // Match any char
+                regEx.append(".");
+            } else {
+                regEx.append(tableNamePattern.charAt(i));
+            }
+        }
+        return regEx.toString();
+    }
 }

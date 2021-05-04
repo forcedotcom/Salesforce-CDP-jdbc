@@ -88,7 +88,9 @@ public class Constants {
     // Header Constants
     public static final String TRACE_ID = "x-trace-id";
 
-
+    // SQL regex pattern
+    public static final char MULTIPLE_CHAR_MATCH = '%';
+    public static final char SINGLE_CHAR_MATCH = '_';
 }
 
 
