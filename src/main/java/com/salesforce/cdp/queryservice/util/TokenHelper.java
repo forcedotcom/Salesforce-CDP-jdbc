@@ -18,6 +18,7 @@ package com.salesforce.cdp.queryservice.util;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.gson.Gson;
 import com.salesforce.cdp.queryservice.model.CoreTokenRenewResponse;
 import com.salesforce.cdp.queryservice.model.Token;
 import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_EXCHANGE_FAILURE;
@@ -175,7 +176,7 @@ public class TokenHelper {
         Request request = HttpHelper.buildRequest(Constants.POST, url, formBody.build(), headers);
         Response response = client.newCall(request).execute();
         if (!response.isSuccessful()) {
-            log.error("Token exchange failed with status code {}", response.code());
+            log.error("Token exchange failed with status code {} {}", response.code(), response.body().string());
             HttpHelper.handleErrorResponse(response, Constants.ERROR_DESCRIPTION);
         }
         return response;

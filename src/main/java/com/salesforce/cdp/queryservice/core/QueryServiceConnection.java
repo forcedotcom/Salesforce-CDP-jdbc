@@ -38,7 +38,32 @@ public class QueryServiceConnection implements Connection {
         this.properties = properties;
         this.serviceRootUrl = url.substring(Constants.DATASOURCE_TYPE.length());
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
+        setupDefaultClientSecretsIfRequired(serviceRootUrl, this.properties);
         this.queryExecutor = new QueryExecutor(properties);
+    }
+
+    private void setupDefaultClientSecretsIfRequired(String serviceRootUrl, Properties properties) {
+        if(properties.containsKey(Constants.USER) && !properties.containsKey(Constants.USER_NAME)) {
+            properties.put(Constants.USER_NAME, properties.get(Constants.USER));
+        }
+
+        if(properties.containsKey(Constants.USER_NAME)
+                && !properties.containsKey(Constants.CLIENT_ID)
+                && !properties.containsKey(Constants.CLIENT_SECRET)) {
+            String serverUrl = serviceRootUrl.toLowerCase();
+            if(serverUrl.endsWith(Constants.STMPA_SERVER_URL)) {
+                properties.put(Constants.CLIENT_ID, Constants.STMPA_DEFAULT_CLIENT_ID);
+                properties.put(Constants.CLIENT_SECRET, Constants.STMPA_DEFAULT_CLIENT_SECRET);
+            }
+            else if(serverUrl.endsWith(Constants.STMPB_SERVER_URL)) {
+                properties.put(Constants.CLIENT_ID, Constants.STMPB_DEFAULT_CLIENT_ID);
+                properties.put(Constants.CLIENT_SECRET, Constants.STMPB_DEFAULT_CLIENT_SECRET);
+            }
+            else if(serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
+                properties.put(Constants.CLIENT_ID, Constants.PROD_DEFAULT_CLIENT_ID);
+                properties.put(Constants.CLIENT_SECRET, Constants.PROD_DEFAULT_CLIENT_SECRET);
+            }
+        }
     }
 
     @Override
