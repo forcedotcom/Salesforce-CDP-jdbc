@@ -18,7 +18,6 @@ package com.salesforce.cdp.queryservice.util;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.gson.Gson;
 import com.salesforce.cdp.queryservice.model.CoreTokenRenewResponse;
 import com.salesforce.cdp.queryservice.model.Token;
 import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_EXCHANGE_FAILURE;

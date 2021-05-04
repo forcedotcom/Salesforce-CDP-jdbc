@@ -39,7 +39,7 @@ public class Constants {
     public static final String STMPA_DEFAULT_CLIENT_SECRET = "9662F811A0702D3FE62BCF2AF3A51D06F38E1D0FA1573E5D17301C9FA4B216BB";
 
     public static final String STMPB_SERVER_URL = "stmpb.stm.salesforce.com";
-    public static final String STMPB_DEFAULT_CLIENT_ID = "3MVG9VeAQy5y3BQVJqaUbFmV5jd8imcck2K5idmrTTGocSu9qZZ6qkbuEkxECKVYwmzm3WgvxkujqsxZDcBpL";
+    public static final String STMPB_DEFAULT_CLIENT_ID = "3MVG9Iu66FKeHhIPHKRhbohYVNiUUHCt2h_HeUwYwzEdrn4unY9uMKKdfYeGnb19ngLq6T6Q8hwEHVexROWav";
     public static final String STMPB_DEFAULT_CLIENT_SECRET = "B5494AAAF046EF5002CB50662171FCEDEDCE9B04B74C824CDDD8139249CD3E94";
 
     public static final String PROD_SERVER_URL = ".salesforce.com";
