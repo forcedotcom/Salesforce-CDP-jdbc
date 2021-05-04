@@ -33,6 +33,19 @@ public class Constants {
     public static final String DRIVER_NAME = "QueryService-jdbc";
     public static final String DRIVER_VERSION = "1.0";
 
+    // Common client id and secret information
+    public static final String STMPA_SERVER_URL = "stmpa.stm.salesforce.com";
+    public static final String STMPA_DEFAULT_CLIENT_ID = "3MVG9Iu66FKeHhIMTw4_fbTKdbfgYVQXSsSJ6jOMZWGwgJ0RVhaGO3_RXBTxmWUHholNWtSgpa6nmjNeOvdBX";
+    public static final String STMPA_DEFAULT_CLIENT_SECRET = "9662F811A0702D3FE62BCF2AF3A51D06F38E1D0FA1573E5D17301C9FA4B216BB";
+
+    public static final String STMPB_SERVER_URL = "stmpb.stm.salesforce.com";
+    public static final String STMPB_DEFAULT_CLIENT_ID = "3MVG9Iu66FKeHhIPHKRhbohYVNiUUHCt2h_HeUwYwzEdrn4unY9uMKKdfYeGnb19ngLq6T6Q8hwEHVexROWav";
+    public static final String STMPB_DEFAULT_CLIENT_SECRET = "B5494AAAF046EF5002CB50662171FCEDEDCE9B04B74C824CDDD8139249CD3E94";
+
+    public static final String PROD_SERVER_URL = ".salesforce.com";
+    public static final String PROD_DEFAULT_CLIENT_ID = "3MVG9VeAQy5y3BQVJqaUbFmV5jd8imcck2K5idmrTTGocSu9qZZ6qkbuEkxECKVYwmzm3WgvxkujqsxZDcBpL";
+    public static final String PROD_DEFAULT_CLIENT_SECRET = "1007FFFBA2B6B6B1EF21E2B03F4C4F692ADE10AB7DEF19E00D8AAF85EF6F6A12";
+
     // Parameter constants
     public static final String LIMIT = "limit=";
     public static final String OFFSET = "offset=";
@@ -53,6 +66,7 @@ public class Constants {
     public static final String REFRESHTOKEN = "refreshToken";
     public static final String CLIENT_ID = "clientId";
     public static final String CLIENT_SECRET = "clientSecret";
+    public static final String USER = "user";
     public static final String USER_NAME = "userName";
     public static final String PD = "password";
 
