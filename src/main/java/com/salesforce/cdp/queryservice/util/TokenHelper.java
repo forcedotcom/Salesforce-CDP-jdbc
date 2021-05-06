@@ -28,10 +28,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -78,50 +75,23 @@ public class TokenHelper {
     }
 
     private static Map<String, String> retrieveTokenWithPasswordGrant(Properties properties, OkHttpClient client) throws SQLException {
-        // Check for password and client secret.
+        // Convert password to byte array as per SA
         if (properties.getProperty(Constants.PD) == null) {
             throw new SQLException("Password cannot be null");
         }
-
-        if (properties.getProperty(Constants.CLIENT_SECRET) == null) {
-            throw new SQLException("Client Secret cannot be null");
-        }
-
+        byte [] passwordBytes = properties.getProperty(Constants.PD).getBytes();
+        properties.put(Constants.PD, passwordBytes);
         String token_url = properties.getProperty(Constants.LOGIN_URL) + Constants.CORE_TOKEN_URL;
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put(Constants.GRANT_TYPE_NAME, Constants.TOKEN_GRANT_TYPE_PD);
+        requestBody.put(Constants.CLIENT_ID_NAME, properties.getProperty(Constants.CLIENT_ID));
+        requestBody.put(Constants.CLIENT_SECRET_NAME, properties.getProperty(Constants.CLIENT_SECRET));
+        requestBody.put(Constants.CLIENT_USER_NAME, properties.getProperty(Constants.USER_NAME));
+        requestBody.put(Constants.CLIENT_PD, new String(passwordBytes));
         CoreTokenRenewResponse coreTokenRenewResponse = null;
-        byte[] passwordBytes = null;
-        byte[] clientSecret = null;
-
-
-        // Convert the password and client secret to byte arrays so we can empty them at will.
         try {
-            passwordBytes = Utils.safeByteArrayUrlEncode(Utils.asByteArray(properties.getProperty(Constants.PD)));
-            clientSecret = Utils.asByteArray(properties.getProperty(Constants.CLIENT_SECRET));
-
-
-            // Remove the properties from the propertybag so that GC can collect them ASAP.
-            properties.remove(Constants.PD);
-            properties.remove(Constants.CLIENT_SECRET);
-
-
-            // And handle the initial login *without* immutables. This ensures that nothing
-            // is allocated in memory that cannot be cleared on demand and thus we aren't
-            // at the garbage collectors mercy.
-            String response = un_pw_login(Constants.TOKEN_GRANT_TYPE_PD,
-                                          properties.getProperty(Constants.CLIENT_ID),
-                                          clientSecret,
-                                          properties.getProperty(Constants.USER_NAME),
-                                          passwordBytes,
-                                          token_url);
-
-
-            // Then get rid of the secrets from memory
-            Arrays.fill(passwordBytes, (byte)0);
-            Arrays.fill(clientSecret, (byte)0);
-
-
-            // And exchange the UN/PW flow authtoken for a scoped bearer token.
-            coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class);
+            Response response = login(requestBody, token_url, client);
+            coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class, false);
             Token token = exchangeToken(properties.getProperty(Constants.LOGIN_URL), coreTokenRenewResponse.getAccess_token(), client);
             tokenCache.put(properties.getProperty(Constants.USER_NAME), token);
             return getTokenWithUrl(token);
@@ -131,7 +101,6 @@ public class TokenHelper {
             throw new SQLException(TOKEN_EXCHANGE_FAILURE);
         } finally {
             Arrays.fill(passwordBytes, (byte)0);
-            Arrays.fill(clientSecret, (byte)0);
         }
     }
 
@@ -198,76 +167,6 @@ public class TokenHelper {
     private static void clearToken(String tokenKey) {
         tokenCache.invalidate(tokenKey);
     }
-
-    private static String un_pw_login(String grantType, String clientId, byte[] clientSecret, String userName, byte[] passwordBytes, String tokenUrl) throws Exception
-    {
-        byte[] grantTypeSegment = (Constants.GRANT_TYPE_NAME + Constants.TOKEN_ASSIGNMENT + grantType).getBytes("utf-8");
-        byte[] clientIdSegment = (Constants.CLIENT_ID_NAME + Constants.TOKEN_ASSIGNMENT + clientId).getBytes("utf-8");
-        byte[] clientSecretSegment = (Constants.CLIENT_SECRET_NAME + Constants.TOKEN_ASSIGNMENT).getBytes("utf-8");
-        byte[] userNameSegment = (Constants.CLIENT_USER_NAME + Constants.TOKEN_ASSIGNMENT + URLEncoder.encode(userName)).getBytes("utf-8");
-        byte[] passwordSegment = (Constants.CLIENT_PD + Constants.TOKEN_ASSIGNMENT).getBytes("utf-8");
-        byte[] separator = Constants.TOKEN_SEPARATOR.getBytes("utf-8");
-
-
-        // Pre-calculate the size of the postdata in bytes we'll be sending for Content-Length.
-        int postDataLength = grantTypeSegment.length +
-                             separator.length +
-                             clientIdSegment.length +
-                             separator.length +
-                             clientSecretSegment.length +
-                             clientSecret.length +
-                             separator.length +
-                             userNameSegment.length +
-                             separator.length +
-                             passwordSegment.length +
-                             passwordBytes.length;
-
-
-        // Setup the connection parameters and write out the POST body
-        HttpURLConnection connection = (HttpURLConnection)(new URL(tokenUrl).openConnection());
-        connection.setDoOutput(true);
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("User-Agent", "cdp/jdbc");
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        connection.setRequestProperty("Content-Length", Integer.toString(postDataLength));
-        connection.setRequestProperty("Connection", "Keep-Alive");
-        connection.setUseCaches(false);
-
-        OutputStream os = connection.getOutputStream();
-        os.write(grantTypeSegment);
-        os.write(separator);
-        os.write(clientIdSegment);
-        os.write(separator);
-        os.write(clientSecretSegment);
-        os.write(clientSecret);
-        os.write(separator);
-        os.write(userNameSegment);
-        os.write(separator);
-        os.write(passwordSegment);
-        os.write(passwordBytes);
-        os.flush();
-
-
-        // Read back the response body.
-        BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
-        StringBuilder sb = new StringBuilder();
-        String output;
-        while ((output = br.readLine()) != null) {
-            sb.append(output);
-        }
-
-        String message = sb.toString();
-
-        // And return the message we got or error it.
-        if (connection.getResponseCode() != 200) {
-            log.error("Token exchange failed with status code {}", connection.getResponseCode());
-            HttpHelper.handleErrorResponse(message, Constants.ERROR_DESCRIPTION);
-        }
-
-
-        return message;
-    }
-
 
     private static Response login(Map<String, String> requestBody, String url, OkHttpClient client) throws IOException, SQLException {
         FormBody.Builder formBody = new FormBody.Builder();
