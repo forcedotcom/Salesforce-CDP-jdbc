@@ -96,8 +96,6 @@ public class Constants {
     public static final String CLIENT_SECRET_NAME = "client_secret";
     public static final String CLIENT_USER_NAME = "username";
     public static final String CLIENT_PD = "password";
-    public static final String TOKEN_SEPARATOR = "&";
-    public static final String TOKEN_ASSIGNMENT = "=";
 
     // Header Constants
     public static final String TRACE_ID = "x-trace-id";
@@ -106,6 +104,3 @@ public class Constants {
     public static final char MULTIPLE_CHAR_MATCH = '%';
     public static final char SINGLE_CHAR_MATCH = '_';
 }
-
-
-
