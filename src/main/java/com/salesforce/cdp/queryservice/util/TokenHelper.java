@@ -175,7 +175,7 @@ public class TokenHelper {
         Request request = HttpHelper.buildRequest(Constants.POST, url, formBody.build(), headers);
         Response response = client.newCall(request).execute();
         if (!response.isSuccessful()) {
-            log.error("Token exchange failed with status code {} {}", response.code(), response.body().string());
+            log.error("Token exchange failed with status code {}", response.code());
             HttpHelper.handleErrorResponse(response, Constants.ERROR_DESCRIPTION);
         }
         return response;
