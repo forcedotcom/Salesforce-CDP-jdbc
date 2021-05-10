@@ -33,7 +33,11 @@ import java.util.Map;
 public class HttpHelper {
 
     public static void handleErrorResponse(Response response, String propertyName) throws IOException, SQLException {
-        ObjectNode node = new ObjectMapper().readValue(response.body().string(), ObjectNode.class);
+        handleErrorResponse(response.body().string(), propertyName);
+    }
+
+    public static void handleErrorResponse(String response, String propertyName) throws IOException, SQLException {
+        ObjectNode node = new ObjectMapper().readValue(response, ObjectNode.class);
         JsonNode jsonNode = node.get(propertyName);
         String message = jsonNode == null ? String.format("Property %s is not defined", propertyName) : node.get(propertyName).asText();
         throw new SQLException(message);
@@ -45,6 +49,10 @@ public class HttpHelper {
             log.info("Caching the response");
             MetadataCacheUtil.cacheMetadata(response.request().url().toString(), responseString);
         }
+        return handleSuccessResponse(responseString, type);
+    }
+
+    public static <T> T handleSuccessResponse(String responseString, Class<T> type) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(responseString, type);
     }
