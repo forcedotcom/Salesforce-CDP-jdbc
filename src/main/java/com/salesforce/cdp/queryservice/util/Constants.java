@@ -103,4 +103,7 @@ public class Constants {
     // SQL regex pattern
     public static final char MULTIPLE_CHAR_MATCH = '%';
     public static final char SINGLE_CHAR_MATCH = '_';
+
+    public static final String TOKEN_SEPARATOR = "&";
+    public static final String TOKEN_ASSIGNMENT = "=";
 }
