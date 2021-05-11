@@ -178,8 +178,7 @@ public class TokenHelper {
 
     private static boolean isAlive(Token token) {
         Calendar now = Calendar.getInstance();
-        //return now.compareTo(token.getExpire_time()) < 1;
-        return false;
+        return now.compareTo(token.getExpire_time()) < 1;
     }
 
     private static Map<String, String> getTokenWithUrl(Token token) {
