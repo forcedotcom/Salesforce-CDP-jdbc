@@ -21,6 +21,7 @@ import com.salesforce.cdp.queryservice.model.TableMetadata;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
 import static com.salesforce.cdp.queryservice.util.Messages.METADATA_EXCEPTION;
+import com.salesforce.cdp.queryservice.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static com.salesforce.cdp.queryservice.core.QueryServiceDbMetadata.*;
 
@@ -966,22 +968,24 @@ public class QueryServiceMetadata implements DatabaseMetaData {
     }
 
     private ResultSet createTableResultSet(MetadataResponse metadataResponse, String tableNamePattern) {
-        ResultSet resultSet;
+        ResultSet resultSet = null;
         boolean needAllTables = tableNamePattern == null || tableNamePattern.isEmpty();
         QueryServiceDbMetadata dbMetadata = GET_TABLES;
         if (CollectionUtils.isEmpty(metadataResponse.getMetadata())) {
             log.info("No metadata for this org");
             resultSet = new QueryServiceResultSet(Collections.EMPTY_LIST, new QueryServiceResultSetMetaData(dbMetadata));
-        } else {
+        } else if (needAllTables) {
             List<Map<String, Object>> data = new ArrayList<>();
             for (TableMetadata metadata : metadataResponse.getMetadata()) {
-                if (needAllTables) {
+                data.add(createRow(metadata));
+                resultSet = new QueryServiceResultSet(data, new QueryServiceResultSetMetaData(dbMetadata));
+            }
+        } else {
+            String tableNameRegex = Utils.convertPatternToRegEx(tableNamePattern);
+            List<Map<String, Object>> data = new ArrayList<>();
+            for (TableMetadata metadata : metadataResponse.getMetadata()) {
+                if (Pattern.matches(tableNameRegex, metadata.getName())) {
                     data.add(createRow(metadata));
-                } else {
-                    if (metadata.getName().equals(tableNamePattern)) {
-                        data.add(createRow(metadata));
-                        break;
-                    }
                 }
             }
             resultSet = new QueryServiceResultSet(data, new QueryServiceResultSetMetaData(dbMetadata));
