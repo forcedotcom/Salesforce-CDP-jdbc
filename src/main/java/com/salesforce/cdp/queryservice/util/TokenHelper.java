@@ -115,7 +115,7 @@ public class TokenHelper {
 
             // And exchange the UN/PW flow authtoken for a scoped bearer token.
             coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class);
-            Token token = exchangeToken(properties.getProperty(Constants.LOGIN_URL), coreTokenRenewResponse.getAccess_token(), client);
+            Token token = exchangeToken(coreTokenRenewResponse.getInstance_url(), coreTokenRenewResponse.getAccess_token(), client);
             tokenCache.put(properties.getProperty(Constants.USER_NAME), token);
             return getTokenWithUrl(token);
         } catch (Exception e) {
