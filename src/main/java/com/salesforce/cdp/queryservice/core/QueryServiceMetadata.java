@@ -21,6 +21,7 @@ import com.salesforce.cdp.queryservice.model.TableMetadata;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
 import static com.salesforce.cdp.queryservice.util.Messages.METADATA_EXCEPTION;
+import com.salesforce.cdp.queryservice.util.QueryExecutor;
 import com.salesforce.cdp.queryservice.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
@@ -39,11 +40,13 @@ public class QueryServiceMetadata implements DatabaseMetaData {
     private String url;
     private Properties properties;
     private QueryServiceConnection queryServiceConnection;
+    private QueryExecutor queryExecutor;
 
     public QueryServiceMetadata(QueryServiceConnection queryServiceConnection, String url, Properties properties) {
         this.url = url;
         this.properties = properties;
         this.queryServiceConnection = queryServiceConnection;
+        this.queryExecutor = createQueryExecutor();
     }
 
     @Override
@@ -651,7 +654,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
     @Override
     public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
         try {
-            Response response = queryServiceConnection.getQueryExecutor().getMetadata();
+            Response response = queryExecutor.getMetadata();
             if (!response.isSuccessful()) {
                 log.error("Metadata request failed with response code {} and trace-Id {}", response.code(), response.headers().get(Constants.TRACE_ID));
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
@@ -687,7 +690,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
     @Override
     public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
         try {
-            Response response = queryServiceConnection.getQueryExecutor().getMetadata();
+            Response response = queryExecutor.getMetadata();
             if (!response.isSuccessful()) {
                 log.error("Metadata request failed with response code {} and trace-Id {}", response.code(), response.headers().get(Constants.TRACE_ID));
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
@@ -1064,5 +1067,9 @@ public class QueryServiceMetadata implements DatabaseMetaData {
             resultSet = new QueryServiceResultSet(data, new QueryServiceResultSetMetaData(dbMetadata));
         }
         return resultSet;
+    }
+
+    protected QueryExecutor createQueryExecutor() {
+        return new QueryExecutor(queryServiceConnection);
     }
 }

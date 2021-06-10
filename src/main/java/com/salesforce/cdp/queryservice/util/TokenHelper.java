@@ -48,12 +48,10 @@ public class TokenHelper {
         //NOOP
     }
 
-    public static Map<String, String> getTokenWithTenantUrl(Properties properties, OkHttpClient client) throws SQLException {
+    public static Token getToken(Properties properties, OkHttpClient client) throws SQLException {
         Token token = null;
         if(properties.containsKey(Constants.CORETOKEN)) {
             token = tokenCache.getIfPresent(properties.getProperty(Constants.CORETOKEN));
-        } else if (properties.containsKey(Constants.USER_NAME)) {
-            token = tokenCache.getIfPresent(properties.getProperty(Constants.USER_NAME));
         }
         if (token == null) {
             if(properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD)) {
@@ -61,26 +59,21 @@ public class TokenHelper {
             }
             Token newToken = exchangeToken(properties.getProperty(Constants.LOGIN_URL), properties.getProperty(Constants.CORETOKEN), client);
             tokenCache.put(properties.getProperty(Constants.CORETOKEN), newToken);
-            return getTokenWithUrl(newToken);
+            return newToken;
         }
         if (token != null && isAlive(token)) {
-            return getTokenWithUrl(token);
+            return token;
         } else {
             log.info("Renewing the token as the off-core token expired");
             if (properties.containsKey(Constants.CORETOKEN)) {
                 clearToken(properties.getProperty(Constants.CORETOKEN));
-            } else if (properties.containsKey(Constants.USER_NAME)) {
-                clearToken(properties.getProperty(Constants.USER_NAME));
-            }
-            if(properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD)) {
-                return retrieveTokenWithPasswordGrant(properties, client);
             }
             return renewToken(properties.getProperty(Constants.LOGIN_URL), properties.getProperty(Constants.REFRESHTOKEN),
                     properties.getProperty(Constants.CLIENT_ID), properties.getProperty(Constants.CLIENT_SECRET), client);
         }
     }
 
-    private static Map<String, String> retrieveTokenWithPasswordGrant(Properties properties, OkHttpClient client) throws SQLException {
+    private static Token retrieveTokenWithPasswordGrant(Properties properties, OkHttpClient client) throws SQLException {
         // Convert password to byte array as per SA
         if (properties.getProperty(Constants.PD) == null) {
             throw new SQLException("Password cannot be null");
@@ -115,9 +108,7 @@ public class TokenHelper {
 
             // And exchange the UN/PW flow authtoken for a scoped bearer token.
             coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class);
-            Token token = exchangeToken(coreTokenRenewResponse.getInstance_url(), coreTokenRenewResponse.getAccess_token(), client);
-            tokenCache.put(properties.getProperty(Constants.USER_NAME), token);
-            return getTokenWithUrl(token);
+            return exchangeToken(coreTokenRenewResponse.getInstance_url(), coreTokenRenewResponse.getAccess_token(), client);
         } catch (Exception e) {
             log.error("Caught exception while retrieving the token", e);
             invalidateCoreToken(properties.getProperty(Constants.LOGIN_URL), coreTokenRenewResponse == null ? null : coreTokenRenewResponse.getAccess_token(), client);
@@ -128,7 +119,7 @@ public class TokenHelper {
         }
     }
 
-    private static Map<String, String> renewToken(String url, String refreshToken, String clientId, String secret, OkHttpClient client) throws SQLException {
+    private static Token renewToken(String url, String refreshToken, String clientId, String secret, OkHttpClient client) throws SQLException {
         String token_url = url + Constants.CORE_TOKEN_URL;
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(Constants.GRANT_TYPE_NAME, Constants.REFRESH_TOKEN_GRANT_TYPE);
@@ -142,7 +133,7 @@ public class TokenHelper {
             log.info("Renewed core token {}", coreTokenRenewResponse);
             Token token = exchangeToken(url, coreTokenRenewResponse.getAccess_token(), client);
             tokenCache.put(coreTokenRenewResponse.getAccess_token(), token);
-            return getTokenWithUrl(token);
+            return token;
         } catch (Exception e) {
             log.error("Caught exception while renewing the core token", e);
             invalidateCoreToken(url, coreTokenRenewResponse == null ? null : coreTokenRenewResponse.getAccess_token(), client);
@@ -176,12 +167,12 @@ public class TokenHelper {
         }
     }
 
-    private static boolean isAlive(Token token) {
+    public static boolean isAlive(Token token) {
         Calendar now = Calendar.getInstance();
         return now.compareTo(token.getExpire_time()) < 1;
     }
 
-    private static Map<String, String> getTokenWithUrl(Token token) {
+    public static Map<String, String> getTokenWithUrl(Token token) {
         Map<String, String> tokenWithUrlMap = new HashMap<>();
         tokenWithUrlMap.put(Constants.ACCESS_TOKEN, token.getToken_type() + StringUtils.SPACE + token.getAccess_token());
         tokenWithUrlMap.put(Constants.TENANT_URL, token.getInstance_url());

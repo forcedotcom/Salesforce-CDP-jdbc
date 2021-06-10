@@ -46,18 +46,20 @@ public abstract class QueryServiceAbstractStatement {
 
     protected boolean paginationRequired;
 
+    private QueryExecutor queryExecutor;
+
     public QueryServiceAbstractStatement(QueryServiceConnection queryServiceConnection,
                                          int resultSetType,
                                          int resultSetConcurrency) {
         this.connection = queryServiceConnection;
         this.resultSetType = resultSetType;
         this.resultSetConcurrency = resultSetConcurrency;
+        this.queryExecutor = createQueryExecutor();
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {
         try {
             this.sql = sql;
-            QueryExecutor queryExecutor = connection.getQueryExecutor();
             boolean isTableauQuery = isTableauQuery();
             Response response = queryExecutor.executeQuery(sql, isTableauQuery ? Optional.of(Constants.MAX_LIMIT) : Optional.empty(), Optional.of(offset), isTableauQuery ? Optional.of("1 ASC") : Optional.empty());
             if (!response.isSuccessful()) {
@@ -119,5 +121,9 @@ public abstract class QueryServiceAbstractStatement {
 
     public ResultSet getNextPage() throws SQLException {
         return this.executeQuery(sql);
+    }
+
+    protected QueryExecutor createQueryExecutor() {
+        return new QueryExecutor(connection);
     }
 }
