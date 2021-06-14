@@ -52,16 +52,20 @@ public class QueryServiceStatementTest {
     @Mock
     private QueryServiceConnection queryServiceConnection;
 
-    @Mock
     private QueryExecutor queryExecutor;
 
     private QueryServiceStatement queryServiceStatement;
 
     @Before
     public void init() {
-        doReturn(queryExecutor).when(queryServiceConnection).getQueryExecutor();
+        queryExecutor = mock(QueryExecutor.class);
         queryServiceStatement = new QueryServiceStatement(queryServiceConnection, ResultSet.TYPE_FORWARD_ONLY,
-                ResultSet.CONCUR_READ_ONLY);
+                ResultSet.CONCUR_READ_ONLY) {
+            @Override
+            protected QueryExecutor createQueryExecutor() {
+                return queryExecutor;
+            }
+        };
     }
 
     @Test

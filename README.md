@@ -1,8 +1,8 @@
-# a360-cdp-jdbc
-Enables a jdbc connection to CDP Query Service
+# Salesforce-CDP-jdbc
+Enables a jdbc connection to Salesforce CDP.
 
 # How to use:
-The JDBC driver can be used with the tools like Tableau or independently with any Java JDBC client to connect to CDP Query service and retreive the data.
+The JDBC driver can be used with the tools like Tableau or independently with any Java JDBC client to connect to Salesforce CDP and retreive the data.
 
 Get the Driver from this repo.
 

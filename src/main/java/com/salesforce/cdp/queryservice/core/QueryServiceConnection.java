@@ -16,8 +16,9 @@
 
 package com.salesforce.cdp.queryservice.core;
 
+import com.salesforce.cdp.queryservice.model.Token;
 import com.salesforce.cdp.queryservice.util.Constants;
-import com.salesforce.cdp.queryservice.util.QueryExecutor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,19 +28,19 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class QueryServiceConnection implements Connection {
 
     private AtomicBoolean closed = new AtomicBoolean(false);
     private Properties properties;
     private String serviceRootUrl;
-    private QueryExecutor queryExecutor;
+    private Token token;
 
     public QueryServiceConnection(String url, Properties properties) {
         this.properties = properties;
         this.serviceRootUrl = url.substring(Constants.DATASOURCE_TYPE.length());
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
         setupDefaultClientSecretsIfRequired(serviceRootUrl, this.properties);
-        this.queryExecutor = new QueryExecutor(properties);
     }
 
     private void setupDefaultClientSecretsIfRequired(String serviceRootUrl, Properties properties) {
@@ -110,6 +111,7 @@ public class QueryServiceConnection implements Connection {
 
     @Override
     public void close() throws SQLException {
+        cleanup();
         closed.set(true);
     }
 
@@ -275,12 +277,14 @@ public class QueryServiceConnection implements Connection {
 
     @Override
     public void setClientInfo(String name, String value) throws SQLClientInfoException {
+        cleanup();
         properties.put(name, value);
     }
 
     @Override
     public void setClientInfo(Properties properties) throws SQLClientInfoException {
-        //NOOP
+        cleanup();
+        this.properties = properties;
     }
 
     @Override
@@ -338,7 +342,18 @@ public class QueryServiceConnection implements Connection {
         return false;
     }
 
-    public QueryExecutor getQueryExecutor() {
-        return queryExecutor;
+    private void cleanup() {
+        token = null;
+    }
+
+    public void setToken(Token token) {
+        // Store token at connection level only for username password flow.
+        if (properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD)) {
+            this.token = token;
+        }
+    }
+
+    public Token getToken() {
+        return token;
     }
 }

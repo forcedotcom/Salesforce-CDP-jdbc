@@ -16,11 +16,15 @@
 
 package com.salesforce.cdp.queryservice.util;
 
+import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
+import com.salesforce.cdp.queryservice.model.Token;
 import okhttp3.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -42,12 +46,17 @@ public class QueryExecutorTest {
 
     private QueryExecutor queryExecutor;
 
+    @Mock
+    private QueryServiceConnection connection;
+
     @Before
-    public void init() throws IOException, SQLException {
+    public void init() throws SQLException {
         Properties properties = new Properties();
         properties.put(Constants.BASE_URL, "https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com");
         properties.put(Constants.CORETOKEN, "Test_Token");
-        queryExecutor = new QueryExecutor(properties) {
+        doReturn(properties).when(connection).getClientInfo();
+        doNothing().when(connection).setToken(any());
+        queryExecutor = new QueryExecutor(connection) {
             @Override
             protected OkHttpClient createClient() {
                 return mock(OkHttpClient.class);
@@ -62,7 +71,8 @@ public class QueryExecutorTest {
         };
         PowerMockito.mockStatic(HttpHelper.class);
         PowerMockito.mockStatic(TokenHelper.class);
-        when(TokenHelper.getTokenWithTenantUrl(any(Properties.class), any(OkHttpClient.class))).thenReturn(getTokenWithUrl());
+        when(TokenHelper.getToken(any(Properties.class), any(OkHttpClient.class))).thenReturn(getToken());
+        when(TokenHelper.getTokenWithUrl(any(Token.class))).thenReturn(getTokenWithUrl());
         when(HttpHelper.buildRequest(anyString(), anyString(), any(RequestBody.class), any(Map.class))).thenReturn(buildRequest());
     }
 
@@ -88,11 +98,18 @@ public class QueryExecutorTest {
                 , any(RequestBody.class), any(Map.class));
     }
 
+    private Token getToken() {
+        Token token = new Token();
+        token.setAccess_token("q1234");
+        token.setInstance_url("mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com");
+        return token;
+    }
+
     private Map<String, String> getTokenWithUrl() {
-        Map<String, String> tokenWithUrlMap = new HashMap<>();
-        tokenWithUrlMap.put(Constants.ACCESS_TOKEN, "q1234");
-        tokenWithUrlMap.put(Constants.TENANT_URL, "mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com");
-        return tokenWithUrlMap;
+        Map<String, String> tokenMap = new HashMap<>();
+        tokenMap.put(Constants.ACCESS_TOKEN, "q1234");
+        tokenMap.put(Constants.TENANT_URL, "mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com");
+        return tokenMap;
     }
 
     private Request buildRequest() {

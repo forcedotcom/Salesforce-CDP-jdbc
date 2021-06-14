@@ -81,7 +81,8 @@ public class TokenHelperTest {
                 body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
         when(remoteCall.execute()).thenReturn(response);
         when(client.newCall(any())).thenReturn(remoteCall);
-        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithTenantUrl(properties, client);
+        Token token = TokenHelper.getToken(properties, client);
+        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithUrl(token);
         Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
         Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
     }
@@ -99,7 +100,8 @@ public class TokenHelperTest {
         Field tokenCacheField = TokenHelper.class.getDeclaredField("tokenCache");
         tokenCacheField.setAccessible(true);
         tokenCacheField.set(null, tokenCache);
-        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithTenantUrl(properties, client);
+        Token cachedToken = TokenHelper.getToken(properties, client);
+        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithUrl(cachedToken);
         Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
         Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
     }
@@ -128,7 +130,8 @@ public class TokenHelperTest {
                 body(ResponseBody.create(TOKEN_EXCHANGE.getResponse(), MediaType.parse("application/json"))).build();
         when(remoteCall.execute()).thenReturn(renewCoreTokenResponse).thenReturn(offCoreResponse);
         when(client.newCall(any())).thenReturn(remoteCall);
-        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithTenantUrl(properties, client);
+        Token cachedToken = TokenHelper.getToken(properties, client);
+        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithUrl(cachedToken);
         Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
         Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
     }
@@ -144,7 +147,7 @@ public class TokenHelperTest {
         when(client.newCall(any())).thenReturn(remoteCall);
         exceptionRule.expect(SQLException.class);
         exceptionRule.expectMessage(Messages.TOKEN_EXCHANGE_FAILURE);
-        TokenHelper.getTokenWithTenantUrl(properties, client);
+        TokenHelper.getToken(properties, client);
     }
 
     @Test
@@ -168,7 +171,8 @@ public class TokenHelperTest {
                 body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
         when(remoteCall.execute()).thenReturn(response);
         when(client.newCall(any())).thenReturn(remoteCall);
-        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithTenantUrl(properties, client);
+        Token cachedToken = TokenHelper.getToken(properties, client);
+        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithUrl(cachedToken);
         Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
         Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
     }
@@ -187,7 +191,7 @@ public class TokenHelperTest {
         exceptionRule.expect(SQLException.class);
         exceptionRule.expectMessage(Messages.TOKEN_EXCHANGE_FAILURE);
         try {
-            TokenHelper.getTokenWithTenantUrl(properties, client);
+            TokenHelper.getToken(properties, client);
         } finally {
             verify(client, times(2)).newCall(eventCaptor.capture());
             Request request = eventCaptor.getValue();
