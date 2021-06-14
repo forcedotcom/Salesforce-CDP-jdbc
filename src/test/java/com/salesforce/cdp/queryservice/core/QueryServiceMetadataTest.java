@@ -58,8 +58,12 @@ public class QueryServiceMetadataTest {
         Properties properties = new Properties();
         properties.put(Constants.BASE_URL, "https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com");
         properties.put(Constants.CORETOKEN, "Test_Token");
-        doReturn(queryExecutor).when(queryServiceConnection).getQueryExecutor();
-        queryServiceMetadata = new QueryServiceMetadata(queryServiceConnection, "https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com", properties);
+        queryServiceMetadata = new QueryServiceMetadata(queryServiceConnection, "https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com", properties){
+            @Override
+            protected QueryExecutor createQueryExecutor() {
+                return queryExecutor;
+            }
+        };
     }
 
     @Test

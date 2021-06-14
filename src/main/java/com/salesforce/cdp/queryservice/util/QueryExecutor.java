@@ -17,9 +17,11 @@
 package com.salesforce.cdp.queryservice.util;
 
 import com.google.gson.Gson;
+import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.interceptors.MetadataCacheInterceptor;
 import com.salesforce.cdp.queryservice.interceptors.RetryInterceptor;
 import com.salesforce.cdp.queryservice.model.AnsiQueryRequest;
+import com.salesforce.cdp.queryservice.model.Token;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
@@ -34,12 +36,12 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class QueryExecutor {
 
-    private Properties properties;
+    private QueryServiceConnection connection;
 
     private OkHttpClient client;
 
-    public QueryExecutor(Properties properties) {
-        this.properties = properties;
+    public QueryExecutor(QueryServiceConnection connection) {
+        this.connection = connection;
         client = createClient();
     }
 
@@ -93,11 +95,8 @@ public class QueryExecutor {
         return response;
     }
 
-    protected Map<String, String> getTokenWithTenantUrl() throws IOException, SQLException {
-        return TokenHelper.getTokenWithTenantUrl(properties, client);
-    }
-
-    private Map<String, String> createHeaders(Map<String, String> tokenWithTenantUrl) {
+    private Map<String, String> createHeaders(Map<String, String> tokenWithTenantUrl) throws SQLException {
+        Properties properties = connection.getClientInfo();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.AUTHORIZATION, tokenWithTenantUrl.get(Constants.ACCESS_TOKEN));
         headers.put(Constants.CONTENT_TYPE, Constants.JSON_CONTENT);
@@ -105,5 +104,15 @@ public class QueryExecutor {
             headers.put(Constants.USER_AGENT, properties.get(Constants.USER_AGENT).toString());
         }
         return headers;
+    }
+
+    protected Map<String, String> getTokenWithTenantUrl() throws SQLException {
+        if (connection.getToken() != null && TokenHelper.isAlive(connection.getToken())) {
+            return TokenHelper.getTokenWithUrl(connection.getToken());
+        }
+        Token token = TokenHelper.getToken(connection.getClientInfo(), client);
+        connection.setToken(token);
+        Map<String, String> tokenMap = TokenHelper.getTokenWithUrl(token);
+        return tokenMap;
     }
 }
