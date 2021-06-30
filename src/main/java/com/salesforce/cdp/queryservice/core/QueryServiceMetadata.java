@@ -611,7 +611,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public boolean supportsTransactions() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
