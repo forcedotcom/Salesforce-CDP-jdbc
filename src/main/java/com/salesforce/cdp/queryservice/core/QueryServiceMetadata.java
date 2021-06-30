@@ -376,72 +376,72 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public boolean supportsSchemasInDataManipulation() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsSchemasInProcedureCalls() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsSchemasInTableDefinitions() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsSchemasInIndexDefinitions() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsSchemasInPrivilegeDefinitions() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsCatalogsInDataManipulation() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsCatalogsInProcedureCalls() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsCatalogsInTableDefinitions() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsCatalogsInIndexDefinitions() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsCatalogsInPrivilegeDefinitions() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsPositionedDelete() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsPositionedUpdate() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsSelectForUpdate() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsStoredProcedures() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
@@ -481,22 +481,22 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public boolean supportsOpenCursorsAcrossCommit() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsOpenCursorsAcrossRollback() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsOpenStatementsAcrossCommit() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsOpenStatementsAcrossRollback() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
@@ -611,32 +611,32 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public boolean supportsTransactions() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsTransactionIsolationLevel(int level) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsDataDefinitionAndDataManipulationTransactions() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsDataManipulationTransactionsOnly() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean dataDefinitionCausesTransactionCommit() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean dataDefinitionIgnoredInTransactions() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
@@ -767,62 +767,62 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public boolean supportsResultSetType(int type) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return ResultSet.TYPE_FORWARD_ONLY == type;
     }
 
     @Override
     public boolean supportsResultSetConcurrency(int type, int concurrency) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+       return ResultSet.TYPE_FORWARD_ONLY == type && ResultSet.CONCUR_READ_ONLY == concurrency;
     }
 
     @Override
     public boolean ownUpdatesAreVisible(int type) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean ownDeletesAreVisible(int type) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean ownInsertsAreVisible(int type) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean othersUpdatesAreVisible(int type) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean othersDeletesAreVisible(int type) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean othersInsertsAreVisible(int type) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean updatesAreDetected(int type) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean deletesAreDetected(int type) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean insertsAreDetected(int type) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean supportsBatchUpdates() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
@@ -837,7 +837,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public boolean supportsSavepoints() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
@@ -872,7 +872,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public boolean supportsResultSetHoldability(int holdability) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
@@ -927,12 +927,12 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public boolean supportsStoredFunctionsUsingCallSyntax() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
     public boolean autoCommitFailureClosesAllResultSets() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return false;
     }
 
     @Override
