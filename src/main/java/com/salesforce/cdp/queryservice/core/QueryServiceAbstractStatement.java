@@ -18,17 +18,28 @@ package com.salesforce.cdp.queryservice.core;
 
 import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
 import com.salesforce.cdp.queryservice.model.Type;
+import com.salesforce.cdp.queryservice.util.ArrowUtil;
 import com.salesforce.cdp.queryservice.util.Constants;
 import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
+import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
+import org.apache.arrow.memory.RootAllocator;
+import org.apache.arrow.vector.FieldVector;
+import org.apache.arrow.vector.IntVector;
+import org.apache.arrow.vector.VarCharVector;
+import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.ipc.ArrowStreamReader;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import org.apache.arrow.vector.types.Types;
+import org.apache.arrow.vector.util.Text;
 
 @Slf4j
 public abstract class QueryServiceAbstractStatement {
@@ -61,7 +72,7 @@ public abstract class QueryServiceAbstractStatement {
         try {
             this.sql = sql;
             boolean isTableauQuery = isTableauQuery();
-            Response response = queryExecutor.executeQuery(sql, isTableauQuery ? Optional.of(Constants.MAX_LIMIT) : Optional.empty(), Optional.of(offset), isTableauQuery ? Optional.of("1 ASC") : Optional.empty());
+            Response response = queryExecutor.executeQuery(sql, this.connection.getEnableArrowStream(), isTableauQuery ? Optional.of(Constants.MAX_LIMIT) : Optional.empty(), Optional.of(offset), isTableauQuery ? Optional.of("1 ASC") : Optional.empty());
             if (!response.isSuccessful()) {
                 log.error("Request query {} failed with response code {} and trace-Id {}", sql, response.code(), response.headers().get(Constants.TRACE_ID));
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
@@ -80,9 +91,16 @@ public abstract class QueryServiceAbstractStatement {
     }
 
     private ResultSet createResultSetFromResponse(QueryServiceResponse queryServiceResponse) throws SQLException {
+        ArrowUtil arrowUtil = new ArrowUtil();
         paginationRequired = !queryServiceResponse.isDone();
         offset += queryServiceResponse.getRowCount();
-        List<Map<String, Object>> data = queryServiceResponse.getData();
+        List<Map<String, Object>> data = null;
+        if(this.connection.getEnableArrowStream() && queryServiceResponse.getArrowStream() != null) {
+            data = arrowUtil.getResultSetDataFromArrowStream(queryServiceResponse);
+        }
+        else {
+            data = queryServiceResponse.getData();
+        }
         QueryServiceResultSetMetaData resultSetMetaData = createColumnNames(queryServiceResponse);
         return new QueryServiceResultSet(data, resultSetMetaData, this);
     }
@@ -126,4 +144,6 @@ public abstract class QueryServiceAbstractStatement {
     protected QueryExecutor createQueryExecutor() {
         return new QueryExecutor(connection);
     }
+
+
 }

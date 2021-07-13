@@ -78,7 +78,7 @@ public class QueryExecutorTest {
 
     @Test
     public void testExecuteQuery() throws IOException, SQLException {
-        queryExecutor.executeQuery("select FirstName__c from Individual__dlm limit 10", Optional.empty(), Optional.empty(), Optional.empty());
+        queryExecutor.executeQuery("select FirstName__c from Individual__dlm limit 10",false, Optional.empty(), Optional.empty(), Optional.empty());
         PowerMockito.verifyStatic();
         HttpHelper.buildRequest(eq(Constants.POST), eq("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL), any(RequestBody.class), any(Map.class));
     }
@@ -92,7 +92,7 @@ public class QueryExecutorTest {
 
     @Test
     public void testExecuteQueryWithOptionalParams() throws IOException, SQLException {
-        queryExecutor.executeQuery("select FirstName__c from Individual__dlm limit 10", Optional.of(10), Optional.of(10), Optional.of("1 ASC"));
+        queryExecutor.executeQuery("select FirstName__c from Individual__dlm limit 10",false, Optional.of(10), Optional.of(10), Optional.of("1 ASC"));
         PowerMockito.verifyStatic();
         HttpHelper.buildRequest(eq(Constants.POST), eq("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL + "limit=10&offset=10&orderby=1 ASC")
                 , any(RequestBody.class), any(Map.class));

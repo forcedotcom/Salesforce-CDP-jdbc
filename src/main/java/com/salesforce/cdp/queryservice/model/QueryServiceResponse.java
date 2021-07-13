@@ -40,4 +40,6 @@ public class QueryServiceResponse {
     private boolean done = true;
 
     private Map<String, Type> metadata;
+
+    private String arrowStream;
 }

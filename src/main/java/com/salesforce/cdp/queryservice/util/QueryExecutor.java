@@ -45,7 +45,7 @@ public class QueryExecutor {
         client = createClient();
     }
 
-    public Response executeQuery(String sql, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
+    public Response executeQuery(String sql, boolean enableArrowStream, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
         log.info("Preparing to execute query {}", sql);
         AnsiQueryRequest ansiQueryRequest = AnsiQueryRequest.builder().sql(sql).build();
         RequestBody body = RequestBody.create(MediaType.parse(Constants.JSON_CONTENT), new Gson().toJson(ansiQueryRequest));
@@ -62,7 +62,7 @@ public class QueryExecutor {
         if (orderby.isPresent()) {
             url.append(Constants.ORDERBY + orderby.get());
         }
-        Request request = HttpHelper.buildRequest(Constants.POST, url.toString(), body, createHeaders(tokenWithTenantUrl));
+        Request request = HttpHelper.buildRequest(Constants.POST, url.toString(), body, createHeaders(tokenWithTenantUrl, enableArrowStream));
         return getResponse(request);
     }
 
@@ -72,7 +72,7 @@ public class QueryExecutor {
         StringBuilder url = new StringBuilder(Constants.PROTOCOL + tokenWithTenantUrl.get(Constants.TENANT_URL)
                 + Constants.CDP_URL
                 + Constants.METADATA_URL);
-        Request request = HttpHelper.buildRequest(Constants.GET, url.toString(), null, createHeaders(tokenWithTenantUrl));
+        Request request = HttpHelper.buildRequest(Constants.GET, url.toString(), null, createHeaders(tokenWithTenantUrl, false));
         return getResponse(request);
     }
 
@@ -95,11 +95,14 @@ public class QueryExecutor {
         return response;
     }
 
-    private Map<String, String> createHeaders(Map<String, String> tokenWithTenantUrl) throws SQLException {
+    private Map<String, String> createHeaders(Map<String, String> tokenWithTenantUrl, boolean enableArrowStream) throws SQLException {
         Properties properties = connection.getClientInfo();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.AUTHORIZATION, tokenWithTenantUrl.get(Constants.ACCESS_TOKEN));
         headers.put(Constants.CONTENT_TYPE, Constants.JSON_CONTENT);
+        if(enableArrowStream) {
+            headers.put(Constants.ENABLE_ARROW_STREAM,"true");
+        }
         if (properties.containsKey(Constants.USER_AGENT)) {
             headers.put(Constants.USER_AGENT, properties.get(Constants.USER_AGENT).toString());
         }
