@@ -220,7 +220,7 @@ public class QueryServiceStatementTest {
         }
         Assert.assertEquals(count, 2);
         ArgumentCaptor<Optional> captor = ArgumentCaptor.forClass(Optional.class);
-        verify(queryExecutor, times(1)).executeQuery(eq("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1"), any(Optional.class), any(Optional.class), captor.capture());
+        verify(queryExecutor, times(1)).executeQuery(eq("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1"),  any(Optional.class), any(Optional.class), captor.capture());
         Optional<String> value = captor.getValue();
         String val = value.get();
         Assert.assertEquals(val, "1 ASC");

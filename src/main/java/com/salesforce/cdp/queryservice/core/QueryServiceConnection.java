@@ -35,12 +35,18 @@ public class QueryServiceConnection implements Connection {
     private Properties properties;
     private String serviceRootUrl;
     private Token token;
+    private boolean enableArrowStream = false;
 
     public QueryServiceConnection(String url, Properties properties) {
         this.properties = properties;
         this.serviceRootUrl = url.substring(Constants.DATASOURCE_TYPE.length());
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
         setupDefaultClientSecretsIfRequired(serviceRootUrl, this.properties);
+        if(this.properties.containsKey(Constants.ENABLE_ARROW_STREAM)) {
+            if(this.properties.get(Constants.ENABLE_ARROW_STREAM).equals("true")) {
+                enableArrowStream = true;
+            }
+        }
     }
 
     private void setupDefaultClientSecretsIfRequired(String serviceRootUrl, Properties properties) {
@@ -65,6 +71,10 @@ public class QueryServiceConnection implements Connection {
                 properties.put(Constants.CLIENT_SECRET, Constants.PROD_DEFAULT_CLIENT_SECRET);
             }
         }
+    }
+
+    public boolean getEnableArrowStream() {
+        return this.enableArrowStream;
     }
 
     @Override
