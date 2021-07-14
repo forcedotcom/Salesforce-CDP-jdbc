@@ -75,7 +75,7 @@ public class QueryServiceStatementTest {
                 request(buildRequest()).protocol(Protocol.HTTP_1_1).
                 message("Unauthorized").
                 body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
-        doReturn(response).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
+        doReturn(response).when(queryExecutor).executeQuery(anyString(), any(Optional.class), any(Optional.class), any(Optional.class));
         exceptionRule.expect(SQLException.class);
         exceptionRule.expectMessage("Authorization header verification failed");
         queryServiceStatement.executeQuery("select FirstName__c from Individual__dlm limit 10");
@@ -88,7 +88,7 @@ public class QueryServiceStatementTest {
                 request(buildRequest()).protocol(Protocol.HTTP_1_1).
                 message("Successful").
                 body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
-        doReturn(response).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
+        doReturn(response).when(queryExecutor).executeQuery(anyString(), any(Optional.class), any(Optional.class), any(Optional.class));
         ResultSet resultSet = queryServiceStatement.executeQuery("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1");
         int count = 0;
         while (resultSet.next()) {
@@ -108,14 +108,14 @@ public class QueryServiceStatementTest {
                 request(buildRequest()).protocol(Protocol.HTTP_1_1).
                 message("Successful").
                 body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
-        doReturn(response).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
+        doReturn(response).when(queryExecutor).executeQuery(anyString(), any(Optional.class), any(Optional.class), any(Optional.class));
         ResultSet resultSet = queryServiceStatement.executeQuery("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1");
         Assert.assertFalse(resultSet.next());
     }
 
     @Test
     public void testExceuteQueryWithIOException() throws IOException, SQLException {
-        doThrow(new IOException("IO Exception")).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
+        doThrow(new IOException("IO Exception")).when(queryExecutor).executeQuery(anyString(), any(Optional.class), any(Optional.class), any(Optional.class));
         exceptionRule.expect(SQLException.class);
         exceptionRule.expectMessage(QUERY_EXCEPTION);
         queryServiceStatement.executeQuery("select FirstName__c from Individual__dlm limit 10");
@@ -133,7 +133,7 @@ public class QueryServiceStatementTest {
                 request(buildRequest()).protocol(Protocol.HTTP_1_1).
                 message("Successful").
                 body(ResponseBody.create(queryResponseString, MediaType.parse("application/json"))).build();
-        doReturn(paginationResponse).doReturn(queryResponse).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
+        doReturn(paginationResponse).doReturn(queryResponse).when(queryExecutor).executeQuery(anyString(), any(Optional.class), any(Optional.class), any(Optional.class));
         QueryServiceStatement queryServiceStatementSpy = Mockito.spy(queryServiceStatement);
         ResultSet resultSet = queryServiceStatementSpy.executeQuery("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1");
         int count = 0;
@@ -151,7 +151,7 @@ public class QueryServiceStatementTest {
                 request(buildRequest()).protocol(Protocol.HTTP_1_1).
                 message("Successful").
                 body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
-        doReturn(response).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
+        doReturn(response).when(queryExecutor).executeQuery(anyString(), any(Optional.class), any(Optional.class), any(Optional.class));
         ResultSet resultSet = queryServiceStatement.executeQuery("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1");
         int count = 0;
         while (resultSet.next()) {
@@ -171,7 +171,7 @@ public class QueryServiceStatementTest {
                 request(buildRequest()).protocol(Protocol.HTTP_1_1).
                 message("Successful").
                 body(ResponseBody.create(paginationResponseString, MediaType.parse("application/json"))).build();
-        doReturn(paginationResponse).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
+        doReturn(paginationResponse).when(queryExecutor).executeQuery(anyString(), any(Optional.class), any(Optional.class), any(Optional.class));
         QueryServiceStatement queryServiceStatementSpy = Mockito.spy(queryServiceStatement);
         ResultSet resultSet = queryServiceStatementSpy.executeQuery("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1");
         int count = 0;
@@ -189,7 +189,7 @@ public class QueryServiceStatementTest {
                 request(buildRequest()).protocol(Protocol.HTTP_1_1).
                 message("Successful").
                 body(ResponseBody.create(paginationResponseString, MediaType.parse("application/json"))).build();
-        doReturn(paginationResponse).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
+        doReturn(paginationResponse).when(queryExecutor).executeQuery(anyString(), any(Optional.class), any(Optional.class), any(Optional.class));
         QueryServiceStatement queryServiceStatementSpy = Mockito.spy(queryServiceStatement);
         ResultSet resultSet = queryServiceStatementSpy.executeQuery("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1 ORDER BY TelephoneNumber__c");
         int count = 0;
@@ -198,7 +198,7 @@ public class QueryServiceStatementTest {
         }
         Assert.assertEquals(count, 2);
         ArgumentCaptor<Optional> captor = ArgumentCaptor.forClass(Optional.class);
-        verify(queryExecutor, times(1)).executeQuery(eq("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1 ORDER BY TelephoneNumber__c"), eq(false), any(Optional.class), any(Optional.class), captor.capture());
+        verify(queryExecutor, times(1)).executeQuery(eq("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1 ORDER BY TelephoneNumber__c"), any(Optional.class), any(Optional.class), captor.capture());
         Optional<String> value = captor.getValue();
         Assert.assertFalse(value.isPresent());
     }
@@ -210,7 +210,7 @@ public class QueryServiceStatementTest {
                 request(buildRequest()).protocol(Protocol.HTTP_1_1).
                 message("Successful").
                 body(ResponseBody.create(paginationResponseString, MediaType.parse("application/json"))).build();
-        doReturn(paginationResponse).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
+        doReturn(paginationResponse).when(queryExecutor).executeQuery(anyString(), any(Optional.class), any(Optional.class), any(Optional.class));
         doReturn(Constants.TABLEAU_USER_AGENT_VALUE).when(queryServiceConnection).getClientInfo(eq(Constants.USER_AGENT));
         QueryServiceStatement queryServiceStatementSpy = Mockito.spy(queryServiceStatement);
         ResultSet resultSet = queryServiceStatementSpy.executeQuery("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1");
@@ -220,7 +220,7 @@ public class QueryServiceStatementTest {
         }
         Assert.assertEquals(count, 2);
         ArgumentCaptor<Optional> captor = ArgumentCaptor.forClass(Optional.class);
-        verify(queryExecutor, times(1)).executeQuery(eq("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1"), eq(false),  any(Optional.class), any(Optional.class), captor.capture());
+        verify(queryExecutor, times(1)).executeQuery(eq("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1"),  any(Optional.class), any(Optional.class), captor.capture());
         Optional<String> value = captor.getValue();
         String val = value.get();
         Assert.assertEquals(val, "1 ASC");

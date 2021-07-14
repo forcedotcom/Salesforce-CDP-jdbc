@@ -45,7 +45,7 @@ public class QueryExecutor {
         client = createClient();
     }
 
-    public Response executeQuery(String sql, boolean enableArrowStream, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
+    public Response executeQuery(String sql, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
         log.info("Preparing to execute query {}", sql);
         AnsiQueryRequest ansiQueryRequest = AnsiQueryRequest.builder().sql(sql).build();
         RequestBody body = RequestBody.create(MediaType.parse(Constants.JSON_CONTENT), new Gson().toJson(ansiQueryRequest));
@@ -62,7 +62,7 @@ public class QueryExecutor {
         if (orderby.isPresent()) {
             url.append(Constants.ORDERBY + orderby.get());
         }
-        Request request = HttpHelper.buildRequest(Constants.POST, url.toString(), body, createHeaders(tokenWithTenantUrl, enableArrowStream));
+        Request request = HttpHelper.buildRequest(Constants.POST, url.toString(), body, createHeaders(tokenWithTenantUrl, this.connection.getEnableArrowStream()));
         return getResponse(request);
     }
 

@@ -40,8 +40,8 @@ public class ArrowUtil {
 		try (ArrowStreamReader arrowStreamReader = new ArrowStreamReader(inputStream, allocator)) {
 
 			VectorSchemaRoot root = arrowStreamReader.getVectorSchemaRoot();
+			fieldVectors = root.getFieldVectors();
 			while (arrowStreamReader.loadNextBatch()) {
-				fieldVectors = root.getFieldVectors();
 				int rowCount = fieldVectors.get(0).getValueCount();
 				for(int i=0;i<rowCount;++i) {
 					Map<String,Object> row = new HashMap<>();

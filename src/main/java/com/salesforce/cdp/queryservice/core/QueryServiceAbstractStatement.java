@@ -72,7 +72,7 @@ public abstract class QueryServiceAbstractStatement {
         try {
             this.sql = sql;
             boolean isTableauQuery = isTableauQuery();
-            Response response = queryExecutor.executeQuery(sql, this.connection.getEnableArrowStream(), isTableauQuery ? Optional.of(Constants.MAX_LIMIT) : Optional.empty(), Optional.of(offset), isTableauQuery ? Optional.of("1 ASC") : Optional.empty());
+            Response response = queryExecutor.executeQuery(sql, isTableauQuery ? Optional.of(Constants.MAX_LIMIT) : Optional.empty(), Optional.of(offset), isTableauQuery ? Optional.of("1 ASC") : Optional.empty());
             if (!response.isSuccessful()) {
                 log.error("Request query {} failed with response code {} and trace-Id {}", sql, response.code(), response.headers().get(Constants.TRACE_ID));
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
