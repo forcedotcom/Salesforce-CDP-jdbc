@@ -14,6 +14,7 @@ import org.apache.arrow.vector.util.Text;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -100,6 +101,6 @@ public class ArrowUtil {
 		else if(type == Types.MinorType.DECIMAL) {
 			return ((DecimalVector)fieldVector).getObject(index);
 		}
-		throw new SQLException("Unknown arrow type {}", type.name());
+		throw new SQLException(MessageFormat.format("Unknown arrow type {0}", type.name()));
 	}
 }
