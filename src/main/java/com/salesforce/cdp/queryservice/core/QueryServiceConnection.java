@@ -51,6 +51,7 @@ public class QueryServiceConnection implements Connection {
 
     private String getServiceRootUrl(String url) {
         String serviceRootUrl = url.substring(Constants.DATASOURCE_TYPE.length());
+        // removes ending slash if present
         return StringUtils.removeEnd(serviceRootUrl, "/");
     }
 
