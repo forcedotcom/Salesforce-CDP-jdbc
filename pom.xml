@@ -6,7 +6,7 @@
 
     <groupId>com.queryService</groupId>
     <artifactId>Salesforce-CDP-jdbc</artifactId>
-    <version>1.6</version>
+    <version>1.7</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -25,6 +25,32 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.12.2</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.arrow/arrow-vector -->
+        <dependency>
+            <groupId>org.apache.arrow</groupId>
+            <artifactId>arrow-vector</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+
+
+        <!-- https://mvnrepository.com/artifact/org.apache.arrow/arrow-memory-netty -->
+        <dependency>
+            <groupId>org.apache.arrow</groupId>
+            <artifactId>arrow-memory-netty</artifactId>
+            <version>4.0.1</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.vavr/vavr -->
+        <dependency>
+            <groupId>io.vavr</groupId>
+            <artifactId>vavr</artifactId>
+            <version>0.10.2</version>
+        </dependency>
+
+
+
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>

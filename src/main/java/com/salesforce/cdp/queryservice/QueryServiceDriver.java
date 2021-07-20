@@ -60,7 +60,7 @@ public class QueryServiceDriver implements Driver {
         }
 
         if (!url.startsWith(Constants.DATASOURCE_TYPE)) {
-            throw new SQLException("Invalid URL");
+            return null;
         }
         return new QueryServiceConnection(url, info);
     }
