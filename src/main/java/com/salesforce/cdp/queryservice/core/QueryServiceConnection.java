@@ -39,7 +39,7 @@ public class QueryServiceConnection implements Connection {
 
     public QueryServiceConnection(String url, Properties properties) {
         this.properties = properties;
-        this.serviceRootUrl = getServiceRootUrl(url);
+        this.serviceRootUrl = url.substring(Constants.DATASOURCE_TYPE.length());
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
         setupDefaultClientSecretsIfRequired(serviceRootUrl, this.properties);
         if(this.properties.containsKey(Constants.ENABLE_ARROW_STREAM)) {
@@ -47,12 +47,6 @@ public class QueryServiceConnection implements Connection {
                 enableArrowStream = true;
             }
         }
-    }
-
-    private String getServiceRootUrl(String url) {
-        String serviceRootUrl = url.substring(Constants.DATASOURCE_TYPE.length());
-        // removes ending slash if present
-        return StringUtils.removeEnd(serviceRootUrl, "/");
     }
 
     private void setupDefaultClientSecretsIfRequired(String serviceRootUrl, Properties properties) {
@@ -75,6 +69,12 @@ public class QueryServiceConnection implements Connection {
             else if(serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
                 properties.put(Constants.CLIENT_ID, Constants.PROD_DEFAULT_CLIENT_ID);
                 properties.put(Constants.CLIENT_SECRET, Constants.PROD_DEFAULT_CLIENT_SECRET);
+            } else if(serverUrl.endsWith(Constants.NA45_SERVER_URL)) {
+                properties.put(Constants.CLIENT_ID, Constants.NA45_DEFAULT_CLIENT_ID);
+                properties.put(Constants.CLIENT_SECRET, Constants.NA45_DEFAULT_CLIENT_SECRET);
+            } else if(serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
+                properties.put(Constants.CLIENT_ID, Constants.NA46_DEFAULT_CLIENT_ID);
+                properties.put(Constants.CLIENT_SECRET, Constants.NA46_DEFAULT_CLIENT_SECRET);
             }
         }
     }
