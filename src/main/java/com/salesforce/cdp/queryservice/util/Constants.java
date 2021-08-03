@@ -51,8 +51,8 @@ public class Constants {
     public static final String NA45_DEFAULT_CLIENT_SECRET = "84642974065EDF90CA6F30FFEE23E2C16BDFA84D3083EF90E0AE905FA46131AD";
 
     public static final String NA46_SERVER_URL = "na46.test1.pc-rnd.salesforce.com";
-    public static final String NA46_DEFAULT_CLIENT_ID = "3MVG9XjhiDAzhaqaC4RR0yon8blsafwWlTnckUT8bEduWr0v9UpiQ2cJkmhNtFI1kVqpY8WpyE9JYkG.ZtgiE";
-    public static final String NA46_DEFAULT_CLIENT_SECRET = "84642974065EDF90CA6F30FFEE23E2C16BDFA84D3083EF90E0AE905FA46131AD";
+    public static final String NA46_DEFAULT_CLIENT_ID = "3MVG9sA57VMGPDfeS67yma6IPflHn83FRhxVpmnuzp7R8uS42JYshQ7gWgWR63CQRgKL9gY5AfitSme.01ib6";
+    public static final String NA46_DEFAULT_CLIENT_SECRET = "BDAF015C3D2418008842CAE91B0C8DD2D672B41707FB11EA3CFC5A5392E31866";
 
     // Parameter constants
     public static final String LIMIT = "limit=";
