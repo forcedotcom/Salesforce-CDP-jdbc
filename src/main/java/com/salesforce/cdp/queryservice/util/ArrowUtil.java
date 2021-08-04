@@ -2,9 +2,15 @@ package com.salesforce.cdp.queryservice.util;
 
 import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
 import org.apache.arrow.memory.RootAllocator;
+import org.apache.arrow.vector.BigIntVector;
+import org.apache.arrow.vector.BitVector;
 import org.apache.arrow.vector.DecimalVector;
 import org.apache.arrow.vector.FieldVector;
+import org.apache.arrow.vector.Float4Vector;
+import org.apache.arrow.vector.Float8Vector;
 import org.apache.arrow.vector.IntVector;
+import org.apache.arrow.vector.SmallIntVector;
+import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.ipc.ArrowStreamReader;
@@ -89,17 +95,26 @@ public class ArrowUtil {
 			return null;
 		}
 
-		if(type == Types.MinorType.VARCHAR) {
-			Text value = ((VarCharVector)fieldVector).getObject(index);
-			if(value != null)
-				return value.toString();
+		if (type == Types.MinorType.VARCHAR) {
+			Text value = ((VarCharVector) fieldVector).getObject(index);
+			if (value != null) return value.toString();
 			return null;
-		}
-		else if(type == Types.MinorType.INT) {
-			return ((IntVector)fieldVector).get(index);
-		}
-		else if(type == Types.MinorType.DECIMAL) {
-			return ((DecimalVector)fieldVector).getObject(index);
+		} else if (type == Types.MinorType.INT) {
+			return ((IntVector) fieldVector).get(index);
+		} else if (type == Types.MinorType.TINYINT) {
+			return ((TinyIntVector) fieldVector).get(index);
+		} else if (type == Types.MinorType.SMALLINT) {
+			return ((SmallIntVector) fieldVector).get(index);
+		} else if (type == Types.MinorType.DECIMAL) {
+			return ((DecimalVector) fieldVector).getObject(index);
+		} else if (type == Types.MinorType.FLOAT4) {
+			return ((Float4Vector) fieldVector).getObject(index);
+		} else if (type == Types.MinorType.FLOAT8) {
+			return ((Float8Vector) fieldVector).getObject(index);
+		} else if (type == Types.MinorType.BIGINT) {
+			return ((BigIntVector) fieldVector).get(index);
+		} else if (type == Types.MinorType.BIT) {
+			return (int) ((BitVector) fieldVector).get(index) == 1 ? true : false;
 		}
 		throw new SQLException(MessageFormat.format("Unknown arrow type {0}", type.name()));
 	}
