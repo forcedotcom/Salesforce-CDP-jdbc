@@ -75,6 +75,12 @@ public class QueryServiceConnection implements Connection {
             else if(serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
                 properties.put(Constants.CLIENT_ID, Constants.PROD_DEFAULT_CLIENT_ID);
                 properties.put(Constants.CLIENT_SECRET, Constants.PROD_DEFAULT_CLIENT_SECRET);
+            } else if(serverUrl.endsWith(Constants.NA45_SERVER_URL)) {
+                properties.put(Constants.CLIENT_ID, Constants.NA45_DEFAULT_CLIENT_ID);
+                properties.put(Constants.CLIENT_SECRET, Constants.NA45_DEFAULT_CLIENT_SECRET);
+            } else if(serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
+                properties.put(Constants.CLIENT_ID, Constants.NA46_DEFAULT_CLIENT_ID);
+                properties.put(Constants.CLIENT_SECRET, Constants.NA46_DEFAULT_CLIENT_SECRET);
             }
         }
     }
