@@ -28,7 +28,9 @@ public class Utils {
     private static Set<Integer> retryStatusCodes = new HashSet<>(Arrays.asList(ExtendedHttpStatusCode.SC_TOO_MANY_REQUESTS,
             ExtendedHttpStatusCode.SC_MOVED_TEMPORARILY,
             ExtendedHttpStatusCode.SC_GATEWAY_TIMEOUT,
-            ExtendedHttpStatusCode.SC_SERVICE_UNAVAILABLE));
+            ExtendedHttpStatusCode.SC_SERVICE_UNAVAILABLE,
+            ExtendedHttpStatusCode.SC_UNPROCESSABLE_ENTITY,
+            ExtendedHttpStatusCode.SC_UNAUTHORIZED));
 
     private Utils() {
         //NOOP

@@ -55,7 +55,7 @@ public class TokenHelper {
         }
         if (token == null) {
             if(properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD)) {
-                return retrieveTokenWithPasswordGrant(properties, client);
+                return retrieveTokenWithPasswordGrantWithRetries(properties, client);
             }
             Token newToken = exchangeToken(properties.getProperty(Constants.LOGIN_URL), properties.getProperty(Constants.CORETOKEN), client);
             tokenCache.put(properties.getProperty(Constants.CORETOKEN), newToken);
@@ -71,6 +71,23 @@ public class TokenHelper {
             return renewToken(properties.getProperty(Constants.LOGIN_URL), properties.getProperty(Constants.REFRESHTOKEN),
                     properties.getProperty(Constants.CLIENT_ID), properties.getProperty(Constants.CLIENT_SECRET), client);
         }
+    }
+
+    private static Token retrieveTokenWithPasswordGrantWithRetries(Properties properties, OkHttpClient client) throws SQLException {
+        int retryCount = 1;
+
+        //TODO: Make it expo backoff if needed.
+        while (retryCount <= 3) {
+            log.info("Number of request retry for token: {}", retryCount);
+            retryCount++;
+            try {
+                return retrieveTokenWithPasswordGrant(properties, client);
+            } catch (SQLException e) {
+                log.info("retrying to retrieveTokenWithPasswordGrant: {}", retryCount);
+            }
+        }
+
+        throw new SQLException(TOKEN_EXCHANGE_FAILURE);
     }
 
     private static Token retrieveTokenWithPasswordGrant(Properties properties, OkHttpClient client) throws SQLException {
