@@ -30,7 +30,8 @@ public class Utils {
             ExtendedHttpStatusCode.SC_GATEWAY_TIMEOUT,
             ExtendedHttpStatusCode.SC_SERVICE_UNAVAILABLE,
             ExtendedHttpStatusCode.SC_UNPROCESSABLE_ENTITY,
-            ExtendedHttpStatusCode.SC_UNAUTHORIZED));
+            ExtendedHttpStatusCode.SC_UNAUTHORIZED,
+            ExtendedHttpStatusCode.SC_INTERNAL_SERVER_ERROR));
 
     private Utils() {
         //NOOP
