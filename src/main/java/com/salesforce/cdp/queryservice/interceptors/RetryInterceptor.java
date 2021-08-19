@@ -61,7 +61,7 @@ public class RetryInterceptor implements Interceptor {
         } catch (IOException e) {
             // catch and log exception but allow retry
             log.error("Exception while running the query ", e);
+            return null;
         }
-        return null;
     }
 }
