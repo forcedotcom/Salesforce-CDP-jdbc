@@ -80,7 +80,7 @@ public class QueryExecutorTest {
     public void testExecuteQuery() throws IOException, SQLException {
         queryExecutor.executeQuery("select FirstName__c from Individual__dlm limit 10", Optional.empty(), Optional.empty(), Optional.empty());
         PowerMockito.verifyStatic();
-        HttpHelper.buildRequest(eq(Constants.POST), eq("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL), any(RequestBody.class), any(Map.class));
+        HttpHelper.buildRequest(eq(Constants.POST), eq("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL + Constants.QUESTION_MARK), any(RequestBody.class), any(Map.class));
     }
 
     @Test
@@ -94,7 +94,7 @@ public class QueryExecutorTest {
     public void testExecuteQueryWithOptionalParams() throws IOException, SQLException {
         queryExecutor.executeQuery("select FirstName__c from Individual__dlm limit 10", Optional.of(10), Optional.of(10), Optional.of("1 ASC"));
         PowerMockito.verifyStatic();
-        HttpHelper.buildRequest(eq(Constants.POST), eq("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL + "limit=10&offset=10&orderby=1 ASC")
+        HttpHelper.buildRequest(eq(Constants.POST), eq("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL + Constants.QUESTION_MARK + "limit=10&offset=10&orderby=1 ASC")
                 , any(RequestBody.class), any(Map.class));
     }
 
@@ -114,7 +114,7 @@ public class QueryExecutorTest {
 
     private Request buildRequest() {
         return new Request.Builder()
-                .url("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL)
+                .url("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL + Constants.QUESTION_MARK)
                 .method(Constants.POST, RequestBody.create("{test: test}", MediaType.parse("application/json")))
                 .build();
     }

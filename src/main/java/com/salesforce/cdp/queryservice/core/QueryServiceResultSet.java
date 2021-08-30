@@ -65,14 +65,22 @@ public class QueryServiceResultSet implements ResultSet {
     @Override
     public boolean next() throws SQLException {
         errorOutIfClosed();
+
         currentRow++;
         if (currentRow < data.size()) {
             return true;
         }
+
         if (isPaginationRequired()) {
-            getMoreData();
+            // Presto paginated way
+            if(isPrestoPaginationRequired()) {
+                statement.getNextPageFromBatchId(statement.nextBatchId);
+            } else {
+                getMoreData();
+            }
             return true;
         }
+
         // Closing as this is move forward only cursor.
         log.info("Resultset {} does not have any more rows. Total {} pages retrieved", this, currentPageNum);
         return false;
@@ -1189,6 +1197,10 @@ public class QueryServiceResultSet implements ResultSet {
 
     private boolean isPaginationRequired() {
         return statement != null && statement.isPaginationRequired();
+    }
+
+    private boolean isPrestoPaginationRequired() {
+        return statement!=null && statement.nextBatchId != null;
     }
 
     private void errorOutIfClosed() throws SQLException {

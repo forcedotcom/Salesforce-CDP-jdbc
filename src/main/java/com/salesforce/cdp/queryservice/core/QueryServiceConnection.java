@@ -36,17 +36,16 @@ public class QueryServiceConnection implements Connection {
     private String serviceRootUrl;
     private Token token;
     private boolean enableArrowStream = false;
+    private boolean isPrestoPaginatedRequest = false;
 
     public QueryServiceConnection(String url, Properties properties) {
         this.properties = properties;
         this.serviceRootUrl = getServiceRootUrl(url);
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
         setupDefaultClientSecretsIfRequired(serviceRootUrl, this.properties);
-        if(this.properties.containsKey(Constants.ENABLE_ARROW_STREAM)) {
-            if(this.properties.get(Constants.ENABLE_ARROW_STREAM).equals("true")) {
-                enableArrowStream = true;
-            }
-        }
+
+        enableArrowStream = Constants.TRUE_STR.equalsIgnoreCase((String) this.properties.get(Constants.ENABLE_ARROW_STREAM));
+        isPrestoPaginatedRequest = Constants.TRUE_STR.equalsIgnoreCase((String) this.properties.get(Constants.PRESTO_PAGINATED_REQUEST));
     }
 
     private String getServiceRootUrl(String url) {
@@ -87,6 +86,10 @@ public class QueryServiceConnection implements Connection {
 
     public boolean getEnableArrowStream() {
         return this.enableArrowStream;
+    }
+
+    public boolean isPrestoPaginatedRequest() {
+        return this.isPrestoPaginatedRequest;
     }
 
     @Override

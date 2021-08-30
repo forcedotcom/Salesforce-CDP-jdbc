@@ -51,8 +51,10 @@ public class QueryExecutor {
         RequestBody body = RequestBody.create(MediaType.parse(Constants.JSON_CONTENT), new Gson().toJson(ansiQueryRequest));
         Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
         StringBuilder url = new StringBuilder(Constants.PROTOCOL + tokenWithTenantUrl.get(Constants.TENANT_URL)
-                + Constants.CDP_URL
-                + Constants.ANSI_SQL_URL);
+                + (this.connection.isPrestoPaginatedRequest() ? Constants.CDP_URL_V2: Constants.CDP_URL)
+                + Constants.ANSI_SQL_URL
+                + Constants.QUESTION_MARK);
+
         if (limit.isPresent()) {
             url.append(Constants.LIMIT + limit.get() + Constants.AND);
         }
@@ -63,6 +65,20 @@ public class QueryExecutor {
             url.append(Constants.ORDERBY + orderby.get());
         }
         Request request = HttpHelper.buildRequest(Constants.POST, url.toString(), body, createHeaders(tokenWithTenantUrl, this.connection.getEnableArrowStream()));
+        return getResponse(request);
+    }
+
+    public Response executeNextBatchQuery(String nextBatchId) throws IOException, SQLException {
+        log.info("Preparing to execute query for nextBatch {}", nextBatchId);
+        Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
+        StringBuilder url = new StringBuilder(Constants.PROTOCOL + tokenWithTenantUrl.get(Constants.TENANT_URL)
+                + Constants.CDP_URL_V2
+                + Constants.ANSI_SQL_URL
+                + Constants.SLASH
+                + nextBatchId
+        );
+
+        Request request = HttpHelper.buildRequest(Constants.GET, url.toString(), null, createHeaders(tokenWithTenantUrl, this.connection.getEnableArrowStream()));
         return getResponse(request);
     }
 
@@ -101,7 +117,7 @@ public class QueryExecutor {
         headers.put(Constants.AUTHORIZATION, tokenWithTenantUrl.get(Constants.ACCESS_TOKEN));
         headers.put(Constants.CONTENT_TYPE, Constants.JSON_CONTENT);
         if(enableArrowStream) {
-            headers.put(Constants.ENABLE_ARROW_STREAM,"true");
+            headers.put(Constants.ENABLE_ARROW_STREAM, Constants.TRUE_STR);
         }
         if (properties.containsKey(Constants.USER_AGENT)) {
             headers.put(Constants.USER_AGENT, properties.get(Constants.USER_AGENT).toString());

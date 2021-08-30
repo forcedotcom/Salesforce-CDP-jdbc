@@ -22,7 +22,8 @@ public class Constants {
     public static final String BASE_URL = "baseUrl";
     public static final String LOGIN_URL = "loginURL";
     public static final String CDP_URL = "/api/v1";
-    public static final String ANSI_SQL_URL = "/query?";
+    public static final String CDP_URL_V2 = "/api/v2";
+    public static final String ANSI_SQL_URL = "/query";
     public static final String METADATA_URL = "/metadata";
     public static final String TOKEN_EXCHANGE_URL = "/services/a360/token";
     public static final String TOKEN_REVOKE_URL = "/services/oauth2/revoke";
@@ -59,6 +60,8 @@ public class Constants {
     public static final String OFFSET = "offset=";
     public static final String ORDERBY = "orderby=";
     public static final String AND = "&";
+    public static final String QUESTION_MARK = "?";
+    public static final String SLASH = "/";
 
     // HTTP Client Constants
     public static final String AUTHORIZATION = "Authorization";
@@ -69,6 +72,7 @@ public class Constants {
     public static final String JSON_CONTENT = "application/json";
     public static final String URL_ENCODED_CONTENT = "application/x-www-form-urlencoded";
     public static final String ENABLE_ARROW_STREAM = "enable-arrow-stream";
+    public static final String PRESTO_PAGINATED_REQUEST = "presto-paginated-request";
 
     // Property Constants
     public static final String CORETOKEN = "coreToken";
@@ -115,4 +119,5 @@ public class Constants {
 
     public static final String TOKEN_SEPARATOR = "&";
     public static final String TOKEN_ASSIGNMENT = "=";
+    public static final String TRUE_STR = "true";
 }

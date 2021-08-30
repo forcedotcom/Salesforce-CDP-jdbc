@@ -42,4 +42,6 @@ public class QueryServiceResponse {
     private Map<String, Type> metadata;
 
     private String arrowStream;
+
+    private String nextBatchId;
 }

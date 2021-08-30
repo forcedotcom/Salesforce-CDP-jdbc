@@ -37,7 +37,7 @@ public class ArrowUtil {
 	 * @return List of data map.
 	 * @throws SQLException
 	 */
-	public List<Map<String,Object>> getResultSetDataFromArrowStream(QueryServiceResponse queryServiceResponse) throws SQLException {
+	public List<Map<String,Object>> getResultSetDataFromArrowStream(QueryServiceResponse queryServiceResponse, boolean isPrestoPaginatedRequest) throws SQLException {
 
 		byte[] bytes = Base64.getDecoder().decode(queryServiceResponse.getArrowStream());
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
@@ -51,6 +51,8 @@ public class ArrowUtil {
 			while (arrowStreamReader.loadNextBatch()) {
 				int rowCount = fieldVectors.get(0).getValueCount();
 				for(int i=0;i<rowCount;++i) {
+
+					// TODO: prestoPagination changes
 					Map<String,Object> row = new HashMap<>();
 					for(FieldVector fieldVector : fieldVectors) {
 						String fieldName = fieldVector.getField().getName();

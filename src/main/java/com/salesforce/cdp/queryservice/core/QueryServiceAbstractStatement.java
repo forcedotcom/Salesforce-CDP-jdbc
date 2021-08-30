@@ -57,6 +57,8 @@ public abstract class QueryServiceAbstractStatement {
 
     protected boolean paginationRequired;
 
+    protected String nextBatchId;
+
     private QueryExecutor queryExecutor;
 
     public QueryServiceAbstractStatement(QueryServiceConnection queryServiceConnection,
@@ -85,6 +87,21 @@ public abstract class QueryServiceAbstractStatement {
         }
     }
 
+    public ResultSet executeNextBatchQuery(String nextBatchId) throws SQLException {
+        try {
+            Response response = queryExecutor.executeNextBatchQuery(nextBatchId);
+            if (!response.isSuccessful()) {
+                log.error("Request query {} failed with response code {} and trace-Id {}", sql, response.code(), response.headers().get(Constants.TRACE_ID));
+                HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
+            }
+            QueryServiceResponse queryServiceResponse = HttpHelper.handleSuccessResponse(response, QueryServiceResponse.class, false);
+            return createResultSetFromResponse(queryServiceResponse);
+        } catch (IOException e) {
+            log.error("Exception while running the query", e);
+            throw new SQLException(QUERY_EXCEPTION);
+        }
+    }
+
     private boolean isTableauQuery() throws SQLException {
         String userAgent = connection.getClientInfo(Constants.USER_AGENT);
         return Constants.TABLEAU_USER_AGENT_VALUE.equals(userAgent);
@@ -96,10 +113,14 @@ public abstract class QueryServiceAbstractStatement {
         offset += queryServiceResponse.getRowCount();
         List<Map<String, Object>> data = null;
         if(this.connection.getEnableArrowStream() && queryServiceResponse.getArrowStream() != null) {
-            data = arrowUtil.getResultSetDataFromArrowStream(queryServiceResponse);
+            data = arrowUtil.getResultSetDataFromArrowStream(queryServiceResponse, this.connection.isPrestoPaginatedRequest());
         }
         else {
             data = queryServiceResponse.getData();
+        }
+
+        if(this.connection.isPrestoPaginatedRequest() && queryServiceResponse.getNextBatchId() != null) {
+            nextBatchId = queryServiceResponse.getNextBatchId();
         }
         QueryServiceResultSetMetaData resultSetMetaData = createColumnNames(queryServiceResponse);
         return new QueryServiceResultSet(data, resultSetMetaData, this);
@@ -139,6 +160,10 @@ public abstract class QueryServiceAbstractStatement {
 
     public ResultSet getNextPage() throws SQLException {
         return this.executeQuery(sql);
+    }
+
+    public ResultSet getNextPageFromBatchId(String nextBatchId) throws SQLException {
+        return this.executeNextBatchQuery(nextBatchId);
     }
 
     protected QueryExecutor createQueryExecutor() {
