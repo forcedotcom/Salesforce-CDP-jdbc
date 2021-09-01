@@ -39,12 +39,14 @@ public class RetryInterceptor implements Interceptor {
         // TODO: Make it expo backoff if needed.
         for(int retryCount = 1; (response == null || Utils.getRetryStatusCodes().contains(response.code())) && retryCount <= this.maxRetryCount; response = this.proceedWithRequest(chain, request)) {
             int code = 500;
+            String msg = "";
             if (response != null) {
                 code = response.code();
+                msg = response.message();
                 response.close();
             }
 
-            log.error("Request failed with response code {}. Number of request retry {}", code, retryCount);
+            log.error("Request failed with response code {}, msg {}. Number of request retry {}", code, msg, retryCount);
             ++retryCount;
         }
 

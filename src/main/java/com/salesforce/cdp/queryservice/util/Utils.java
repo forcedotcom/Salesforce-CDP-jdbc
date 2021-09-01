@@ -32,7 +32,8 @@ public class Utils {
             ExtendedHttpStatusCode.SC_SERVICE_UNAVAILABLE,
             ExtendedHttpStatusCode.SC_UNPROCESSABLE_ENTITY,
             ExtendedHttpStatusCode.SC_UNAUTHORIZED,
-            ExtendedHttpStatusCode.SC_INTERNAL_SERVER_ERROR));
+            ExtendedHttpStatusCode.SC_INTERNAL_SERVER_ERROR,
+            ExtendedHttpStatusCode.SC_BAD_REQUEST));
 
     private Utils() {
         //NOOP
