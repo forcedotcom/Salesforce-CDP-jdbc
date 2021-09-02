@@ -27,7 +27,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class QueryServiceResponse {
 
-    private List<Map<String, Object>> data;
+    private List<Object> data;
 
     private Date startTime;
 

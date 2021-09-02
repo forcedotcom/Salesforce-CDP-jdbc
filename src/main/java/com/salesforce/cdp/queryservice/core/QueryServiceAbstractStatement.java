@@ -23,23 +23,13 @@ import com.salesforce.cdp.queryservice.util.Constants;
 import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
-import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
-import org.apache.arrow.memory.RootAllocator;
-import org.apache.arrow.vector.FieldVector;
-import org.apache.arrow.vector.IntVector;
-import org.apache.arrow.vector.VarCharVector;
-import org.apache.arrow.vector.VectorSchemaRoot;
-import org.apache.arrow.vector.ipc.ArrowStreamReader;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import org.apache.arrow.vector.types.Types;
-import org.apache.arrow.vector.util.Text;
 
 @Slf4j
 public abstract class QueryServiceAbstractStatement {
@@ -74,13 +64,18 @@ public abstract class QueryServiceAbstractStatement {
         try {
             this.sql = sql;
             boolean isTableauQuery = isTableauQuery();
-            Response response = queryExecutor.executeQuery(sql, isTableauQuery ? Optional.of(Constants.MAX_LIMIT) : Optional.empty(), Optional.of(offset), isTableauQuery ? Optional.of("1 ASC") : Optional.empty());
+            Optional<Integer> limit = isTableauQuery ? Optional.of(Constants.MAX_LIMIT) : Optional.empty();
+            Optional<String> orderby = isTableauQuery ? Optional.of("1 ASC") : Optional.empty();
+
+            boolean isPrestoPaginatedRequest = this.connection.isPrestoPaginatedRequest();
+
+            Response response = queryExecutor.executeQuery(sql, isPrestoPaginatedRequest, limit, Optional.of(offset), orderby);
             if (!response.isSuccessful()) {
                 log.error("Request query {} failed with response code {} and trace-Id {}", sql, response.code(), response.headers().get(Constants.TRACE_ID));
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
             }
             QueryServiceResponse queryServiceResponse = HttpHelper.handleSuccessResponse(response, QueryServiceResponse.class, false);
-            return createResultSetFromResponse(queryServiceResponse);
+            return createResultSetFromResponse(queryServiceResponse, isPrestoPaginatedRequest);
         } catch (IOException e) {
             log.error("Exception while running the query", e);
             throw new SQLException(QUERY_EXCEPTION);
@@ -95,7 +90,7 @@ public abstract class QueryServiceAbstractStatement {
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
             }
             QueryServiceResponse queryServiceResponse = HttpHelper.handleSuccessResponse(response, QueryServiceResponse.class, false);
-            return createResultSetFromResponse(queryServiceResponse);
+            return createResultSetFromResponse(queryServiceResponse, true);
         } catch (IOException e) {
             log.error("Exception while running the query", e);
             throw new SQLException(QUERY_EXCEPTION);
@@ -107,23 +102,23 @@ public abstract class QueryServiceAbstractStatement {
         return Constants.TABLEAU_USER_AGENT_VALUE.equals(userAgent);
     }
 
-    private ResultSet createResultSetFromResponse(QueryServiceResponse queryServiceResponse) throws SQLException {
+    private ResultSet createResultSetFromResponse(QueryServiceResponse queryServiceResponse, boolean isPrestoPaginatedRequest) throws SQLException {
         ArrowUtil arrowUtil = new ArrowUtil();
         paginationRequired = !queryServiceResponse.isDone();
         offset += queryServiceResponse.getRowCount();
-        List<Map<String, Object>> data = null;
+        List<Object> data = null;
         if(this.connection.getEnableArrowStream() && queryServiceResponse.getArrowStream() != null) {
-            data = arrowUtil.getResultSetDataFromArrowStream(queryServiceResponse, this.connection.isPrestoPaginatedRequest());
+            data = arrowUtil.getResultSetDataFromArrowStream(queryServiceResponse, isPrestoPaginatedRequest);
         }
         else {
             data = queryServiceResponse.getData();
         }
 
-        if(this.connection.isPrestoPaginatedRequest() && queryServiceResponse.getNextBatchId() != null) {
+        if(isPrestoPaginatedRequest) {
             nextBatchId = queryServiceResponse.getNextBatchId();
         }
         QueryServiceResultSetMetaData resultSetMetaData = createColumnNames(queryServiceResponse);
-        return new QueryServiceResultSet(data, resultSetMetaData, this);
+        return new QueryServiceResultSet(data, resultSetMetaData, this, isPrestoPaginatedRequest);
     }
 
     private QueryServiceResultSetMetaData createColumnNames(QueryServiceResponse queryServiceResponse) throws SQLException {
@@ -131,25 +126,24 @@ public abstract class QueryServiceAbstractStatement {
         List<String> columnNames = new ArrayList<>();
         List<String> columnTypes = new ArrayList<>();
         List<Integer> columnTypeIds = new ArrayList<>();
+        Map<String, Integer> columnNameToPosition = new HashMap<>();
+
         if (queryServiceResponse.getMetadata() == null && queryServiceResponse.getRowCount() > 0) {
-            Map<String, Object> row = queryServiceResponse.getData().get(0);
-            columnNames = new ArrayList<>(row.keySet());
-            columnTypes = Collections.EMPTY_LIST;
-            columnTypeIds = Collections.EMPTY_LIST;
+            throw new SQLException(QUERY_EXCEPTION);
         } else if (queryServiceResponse.getMetadata() != null) {
-            log.info("Metadata is {}", queryServiceResponse.getMetadata());
+            log.debug("Metadata is {}", queryServiceResponse.getMetadata());
             Map<String, Type> metadata = queryServiceResponse.getMetadata();
             for (String columnName : metadata.keySet()) {
+                final Type type = metadata.get(columnName);
                 columnNames.add(columnName);
-                columnTypes.add(metadata.get(columnName).getType());
-                columnTypeIds.add(metadata.get(columnName).getTypeCode());
+                columnTypes.add(type.getType());
+                columnTypeIds.add(type.getTypeCode());
+                // TODO: remove -1, after scone fix for metadata in v2
+                columnNameToPosition.put(columnName, type.getPlaceInOrder()-1);
             }
-        } else {
-            columnNames = Collections.EMPTY_LIST;
-            columnTypes = Collections.EMPTY_LIST;
-            columnTypeIds = Collections.EMPTY_LIST;
         }
-        resultSetMetaData = new QueryServiceResultSetMetaData(columnNames, columnTypes, columnTypeIds);
+
+        resultSetMetaData = new QueryServiceResultSetMetaData(columnNames, columnTypes, columnTypeIds, columnNameToPosition);
         log.trace("Received column names are {}", columnNames);
         return resultSetMetaData;
     }

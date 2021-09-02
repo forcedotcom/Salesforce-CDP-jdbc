@@ -120,4 +120,5 @@ public class Constants {
     public static final String TOKEN_SEPARATOR = "&";
     public static final String TOKEN_ASSIGNMENT = "=";
     public static final String TRUE_STR = "true";
+    public static final String FALSE_STR = "false";
 }

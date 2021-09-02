@@ -36,10 +36,12 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
+
 @Slf4j
 public class QueryServiceResultSet implements ResultSet {
 
-    private List<Map<String, Object>> data;
+    private List<Object> data;
     private int currentRow = -1;
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicBoolean wasNull = new AtomicBoolean();
@@ -48,18 +50,22 @@ public class QueryServiceResultSet implements ResultSet {
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
     private QueryServiceAbstractStatement statement;
     private int currentPageNum = 1;
+    private boolean isPrestoPaginatedRequest;
 
-    public QueryServiceResultSet(List<Map<String, Object>> data,
+    // NOTE: This constructor is used for metadata table, hence only data and resultSetMetadata is set.
+    public QueryServiceResultSet(List<Object> data,
                                  ResultSetMetaData resultSetMetaData) {
-        this(data, resultSetMetaData, null);
+        this(data, resultSetMetaData, null, false);
     }
 
-    public QueryServiceResultSet(List<Map<String, Object>> data,
+    public QueryServiceResultSet(List<Object> data,
                                  ResultSetMetaData resultSetMetaData,
-                                 QueryServiceAbstractStatement statement) {
+                                 QueryServiceAbstractStatement statement,
+                                 boolean isPrestoPaginatedRequest) {
         this.data = data;
         this.resultSetMetaData = resultSetMetaData;
         this.statement = statement;
+        this.isPrestoPaginatedRequest = isPrestoPaginatedRequest;
     }
 
     @Override
@@ -71,19 +77,15 @@ public class QueryServiceResultSet implements ResultSet {
             return true;
         }
 
-        if (isPaginationRequired()) {
-            // Presto paginated way
-            if(isPrestoPaginationRequired()) {
-                statement.getNextPageFromBatchId(statement.nextBatchId);
-            } else {
-                getMoreData();
-            }
-            return true;
+        getMoreData();
+
+        if(data==null || data.size()<1) {
+            // Closing as this is move forward only cursor.
+            log.info("Resultset {} does not have any more rows. Total {} pages retrieved", this, currentPageNum);
+            return false;
         }
 
-        // Closing as this is move forward only cursor.
-        log.info("Resultset {} does not have any more rows. Total {} pages retrieved", this, currentPageNum);
-        return false;
+        return true;
     }
 
     @Override
@@ -368,8 +370,18 @@ public class QueryServiceResultSet implements ResultSet {
     @Override
     public Object getObject(String columnLabel) throws SQLException {
         errorOutIfClosed();
-        Map<String, Object> row = data.get(currentRow);
-        Object value = row.get(columnLabel);
+        Object row = data.get(currentRow);
+        Object value;
+
+        if(isPrestoPaginatedRequest) {
+            Integer placeInOrder = ((QueryServiceResultSetMetaData)resultSetMetaData).getColumnNameToPosition().get(columnLabel);
+            if(placeInOrder==null)
+                throw new SQLException(QUERY_EXCEPTION);
+            value = ((List)row).get(placeInOrder);
+        } else {
+            value = ((Map)row).get(columnLabel);
+        }
+
         wasNull.set(value == null);
         return value;
     }
@@ -1181,11 +1193,18 @@ public class QueryServiceResultSet implements ResultSet {
 
     private void getMoreData() throws SQLException {
         log.trace("Fetching page with number {} for resultset {}", ++currentPageNum, this);
-        ResultSet resultSet = statement.getNextPage();
+        ResultSet resultSet;
+
+        if(isPrestoPaginationRequired()) {
+            resultSet = statement.getNextPageFromBatchId(statement.nextBatchId);
+        } else {
+            resultSet = statement.getNextPage();
+        }
+
         try {
             Field field = QueryServiceResultSet.class.getDeclaredField("data");
             field.setAccessible(true);
-            List<Map<String, Object>> nextPageData =  (List<Map<String, Object>>) field.get(resultSet);
+            List<Object> nextPageData =  (List<Object>) field.get(resultSet);
             field.setAccessible(false);
             this.data = nextPageData;
             this.currentRow = 0;

@@ -45,13 +45,18 @@ public class QueryExecutor {
         client = createClient();
     }
 
+    // if isV2Query not passed, execute defaults to v1 type.
     public Response executeQuery(String sql, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
+        return executeQuery(sql, false, limit, offset, orderby);
+    }
+
+    public Response executeQuery(String sql, boolean isV2Query, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
         log.info("Preparing to execute query {}", sql);
         AnsiQueryRequest ansiQueryRequest = AnsiQueryRequest.builder().sql(sql).build();
         RequestBody body = RequestBody.create(MediaType.parse(Constants.JSON_CONTENT), new Gson().toJson(ansiQueryRequest));
         Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
         StringBuilder url = new StringBuilder(Constants.PROTOCOL + tokenWithTenantUrl.get(Constants.TENANT_URL)
-                + (this.connection.isPrestoPaginatedRequest() ? Constants.CDP_URL_V2: Constants.CDP_URL)
+                + (isV2Query ? Constants.CDP_URL_V2: Constants.CDP_URL)
                 + Constants.ANSI_SQL_URL
                 + Constants.QUESTION_MARK);
 

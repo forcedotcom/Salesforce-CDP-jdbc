@@ -18,6 +18,7 @@ package com.salesforce.cdp.queryservice.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Request;
@@ -32,12 +33,14 @@ import java.util.Map;
 @Slf4j
 public class HttpHelper {
 
+    private static final ObjectReader mapperReader = new ObjectMapper().reader();
+
     public static void handleErrorResponse(Response response, String propertyName) throws IOException, SQLException {
         handleErrorResponse(response.body().string(), propertyName);
     }
 
     public static void handleErrorResponse(String response, String propertyName) throws IOException, SQLException {
-        ObjectNode node = new ObjectMapper().readValue(response, ObjectNode.class);
+        ObjectNode node = mapperReader.readValue(response, ObjectNode.class);
         JsonNode jsonNode = node.get(propertyName);
         String message = jsonNode == null ? String.format("Property %s is not defined", propertyName) : node.get(propertyName).asText();
         throw new SQLException(message);
@@ -53,8 +56,7 @@ public class HttpHelper {
     }
 
     public static <T> T handleSuccessResponse(String responseString, Class<T> type) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(responseString, type);
+        return mapperReader.readValue(responseString, type);
     }
 
     protected static Request buildRequest(String method, String url, RequestBody body, Map<String, String> headers) {

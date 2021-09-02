@@ -37,13 +37,13 @@ public class ArrowUtil {
 	 * @return List of data map.
 	 * @throws SQLException
 	 */
-	public List<Map<String,Object>> getResultSetDataFromArrowStream(QueryServiceResponse queryServiceResponse, boolean isPrestoPaginatedRequest) throws SQLException {
+	public List<Object> getResultSetDataFromArrowStream(QueryServiceResponse queryServiceResponse, boolean isPrestoPaginatedRequest) throws SQLException {
 
 		byte[] bytes = Base64.getDecoder().decode(queryServiceResponse.getArrowStream());
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
 		List<FieldVector> fieldVectors = null;
 		RootAllocator allocator = new RootAllocator(Long.MAX_VALUE);
-		List<Map<String, Object>> data = new ArrayList<>();
+		List<Object> data = new ArrayList<>();
 		try (ArrowStreamReader arrowStreamReader = new ArrowStreamReader(inputStream, allocator)) {
 
 			VectorSchemaRoot root = arrowStreamReader.getVectorSchemaRoot();
@@ -52,14 +52,22 @@ public class ArrowUtil {
 				int rowCount = fieldVectors.get(0).getValueCount();
 				for(int i=0;i<rowCount;++i) {
 
-					// TODO: prestoPagination changes
-					Map<String,Object> row = new HashMap<>();
-					for(FieldVector fieldVector : fieldVectors) {
-						String fieldName = fieldVector.getField().getName();
-						Object fieldValue = this.getFieldValue(fieldVector,i);
-						row.put(fieldName,fieldValue);
+					if(isPrestoPaginatedRequest) {
+						List<Object> row = new ArrayList<>();
+						for(FieldVector fieldVector : fieldVectors) {
+							Object fieldValue = this.getFieldValue(fieldVector,i);
+							row.add(fieldValue);
+						}
+						data.add(row);
+					} else {
+						Map<String,Object> row = new HashMap<>();
+						for(FieldVector fieldVector : fieldVectors) {
+							String fieldName = fieldVector.getField().getName();
+							Object fieldValue = this.getFieldValue(fieldVector,i);
+							row.put(fieldName,fieldValue);
+						}
+						data.add(row);
 					}
-					data.add(row);
 				}
 			}
 		} catch (IOException e) {
@@ -116,7 +124,7 @@ public class ArrowUtil {
 		} else if (type == Types.MinorType.BIGINT) {
 			return ((BigIntVector) fieldVector).get(index);
 		} else if (type == Types.MinorType.BIT) {
-			return (int) ((BitVector) fieldVector).get(index) == 1 ? true : false;
+			return (int) ((BitVector) fieldVector).get(index) == 1;
 		}
 		throw new SQLException(MessageFormat.format("Unknown arrow type {0}", type.name()));
 	}
