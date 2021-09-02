@@ -16,6 +16,7 @@
 
 package com.salesforce.cdp.queryservice.core;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.salesforce.cdp.queryservice.model.Token;
 import com.salesforce.cdp.queryservice.util.Constants;
 import lombok.extern.slf4j.Slf4j;
@@ -33,29 +34,47 @@ public class QueryServiceConnection implements Connection {
 
     private AtomicBoolean closed = new AtomicBoolean(false);
     private Properties properties;
-    private String serviceRootUrl;
+    private final String serviceRootUrl;
     private Token token;
     private boolean enableArrowStream = false;
 
-    public QueryServiceConnection(String url, Properties properties) {
-        this.properties = properties;
+    public QueryServiceConnection(String url, Properties properties) throws SQLException {
+        this.properties = properties; // fixme: do deeepCopy and modify the props
         this.serviceRootUrl = getServiceRootUrl(url);
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
-        setupDefaultClientSecretsIfRequired(serviceRootUrl, this.properties);
-        if(this.properties.containsKey(Constants.ENABLE_ARROW_STREAM)) {
-            if(this.properties.get(Constants.ENABLE_ARROW_STREAM).equals("true")) {
-                enableArrowStream = true;
-            }
-        }
+        addClientSecretsIfRequired(serviceRootUrl, this.properties);
+        this.enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
     }
 
-    private String getServiceRootUrl(String url) {
+    /**
+     * Returns the extracted service url from given jdbc endpoint
+     *
+     * @param url jdbc url which contains service url
+     * @return service url
+     * @throws SQLException when given url doesn't belong with required datasource
+     */
+    @VisibleForTesting
+    static String getServiceRootUrl(String url) throws SQLException {
+        if (url == null) {
+            throw new SQLException("url is null");
+        }
+        if (!url.startsWith(Constants.DATASOURCE_TYPE)) {
+            throw new SQLException("url is specified with invalid datasource");
+        }
         String serviceRootUrl = url.substring(Constants.DATASOURCE_TYPE.length());
         // removes ending slash if present
         return StringUtils.removeEnd(serviceRootUrl, "/");
     }
 
-    private void setupDefaultClientSecretsIfRequired(String serviceRootUrl, Properties properties) {
+    /**
+     * Adds client secrets to properties if not present and service url matches one of the existing envs.
+     *
+     * @param serviceRootUrl service url which is used to infer the environment
+     * @param properties Properties containing the config
+     * @throws SQLException when given service url doesn't match any envs and config doesn't have exists secrets
+     */
+    @VisibleForTesting
+    static void addClientSecretsIfRequired(String serviceRootUrl, Properties properties) throws SQLException {
         if(properties.containsKey(Constants.USER) && !properties.containsKey(Constants.USER_NAME)) {
             properties.put(Constants.USER_NAME, properties.get(Constants.USER));
         }
@@ -63,25 +82,28 @@ public class QueryServiceConnection implements Connection {
         if(properties.containsKey(Constants.USER_NAME)
                 && !properties.containsKey(Constants.CLIENT_ID)
                 && !properties.containsKey(Constants.CLIENT_SECRET)) {
+            log.debug("adding client secrets for server {}", serviceRootUrl);
             String serverUrl = serviceRootUrl.toLowerCase();
-            if(serverUrl.endsWith(Constants.STMPA_SERVER_URL)) {
+            if (serverUrl.endsWith(Constants.STMPA_SERVER_URL)) {
                 properties.put(Constants.CLIENT_ID, Constants.STMPA_DEFAULT_CLIENT_ID);
                 properties.put(Constants.CLIENT_SECRET, Constants.STMPA_DEFAULT_CLIENT_SECRET);
-            }
-            else if(serverUrl.endsWith(Constants.STMPB_SERVER_URL)) {
+            } else if (serverUrl.endsWith(Constants.STMPB_SERVER_URL)) {
                 properties.put(Constants.CLIENT_ID, Constants.STMPB_DEFAULT_CLIENT_ID);
                 properties.put(Constants.CLIENT_SECRET, Constants.STMPB_DEFAULT_CLIENT_SECRET);
-            }
-            else if(serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
-                properties.put(Constants.CLIENT_ID, Constants.PROD_DEFAULT_CLIENT_ID);
-                properties.put(Constants.CLIENT_SECRET, Constants.PROD_DEFAULT_CLIENT_SECRET);
-            } else if(serverUrl.endsWith(Constants.NA45_SERVER_URL)) {
+            } else if (serverUrl.endsWith(Constants.NA45_SERVER_URL)) {
                 properties.put(Constants.CLIENT_ID, Constants.NA45_DEFAULT_CLIENT_ID);
                 properties.put(Constants.CLIENT_SECRET, Constants.NA45_DEFAULT_CLIENT_SECRET);
-            } else if(serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
+            } else if (serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
                 properties.put(Constants.CLIENT_ID, Constants.NA46_DEFAULT_CLIENT_ID);
                 properties.put(Constants.CLIENT_SECRET, Constants.NA46_DEFAULT_CLIENT_SECRET);
+            } else if (serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
+                properties.put(Constants.CLIENT_ID, Constants.PROD_DEFAULT_CLIENT_ID);
+                properties.put(Constants.CLIENT_SECRET, Constants.PROD_DEFAULT_CLIENT_SECRET);
+            } else {
+                throw new SQLException("specified url didn't match any existing envs");
             }
+        } else {
+            log.debug("No client secrets added for server {}", serviceRootUrl);
         }
     }
 
