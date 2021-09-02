@@ -36,48 +36,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class QueryExecutor {
 
-    private QueryServiceConnection connection;
+    private static final OkHttpClient DEFAULT_CLIENT;
 
-    private OkHttpClient client;
-
-    public QueryExecutor(QueryServiceConnection connection) {
-        this.connection = connection;
-        client = createClient();
-    }
-
-    public Response executeQuery(String sql, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
-        log.info("Preparing to execute query {}", sql);
-        AnsiQueryRequest ansiQueryRequest = AnsiQueryRequest.builder().sql(sql).build();
-        RequestBody body = RequestBody.create(MediaType.parse(Constants.JSON_CONTENT), new Gson().toJson(ansiQueryRequest));
-        Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
-        StringBuilder url = new StringBuilder(Constants.PROTOCOL + tokenWithTenantUrl.get(Constants.TENANT_URL)
-                + Constants.CDP_URL
-                + Constants.ANSI_SQL_URL);
-        if (limit.isPresent()) {
-            url.append(Constants.LIMIT + limit.get() + Constants.AND);
-        }
-        if (offset.isPresent()) {
-            url.append(Constants.OFFSET + offset.get() + Constants.AND);
-        }
-        if (orderby.isPresent()) {
-            url.append(Constants.ORDERBY + orderby.get());
-        }
-        Request request = HttpHelper.buildRequest(Constants.POST, url.toString(), body, createHeaders(tokenWithTenantUrl, this.connection.getEnableArrowStream()));
-        return getResponse(request);
-    }
-
-    public Response getMetadata() throws IOException, SQLException {
-        log.info("Getting metadata from CDP query service");
-        Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
-        StringBuilder url = new StringBuilder(Constants.PROTOCOL + tokenWithTenantUrl.get(Constants.TENANT_URL)
-                + Constants.CDP_URL
-                + Constants.METADATA_URL);
-        Request request = HttpHelper.buildRequest(Constants.GET, url.toString(), null, createHeaders(tokenWithTenantUrl, false));
-        return getResponse(request);
-    }
-
-    protected OkHttpClient createClient() {
-        return new OkHttpClient().newBuilder()
+    static {
+        DEFAULT_CLIENT = new OkHttpClient().newBuilder()
                 .readTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
                 .connectTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
                 .callTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
@@ -87,11 +49,64 @@ public class QueryExecutor {
                 .build();
     }
 
+    private final QueryServiceConnection connection;
+    private final OkHttpClient client;
+
+    public QueryExecutor(QueryServiceConnection connection) {
+        this(connection, DEFAULT_CLIENT);
+    }
+
+    public QueryExecutor(QueryServiceConnection connection, OkHttpClient client) {
+        // fixme: even though constructor is public currently, it is not possible
+        //  for users to specify custom Client as part of connection creation
+        this.connection = connection;
+        this.client = client;
+    }
+
+    public Response executeQuery(String sql, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
+        // fixme: preferably, avoid using optional as parameter type, instead specify nullable value
+        log.info("Preparing to execute query {}", sql);
+        AnsiQueryRequest ansiQueryRequest = AnsiQueryRequest.builder().sql(sql).build();
+        RequestBody body = RequestBody.create(MediaType.parse(Constants.JSON_CONTENT), new Gson().toJson(ansiQueryRequest));
+        Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
+        StringBuilder url = new StringBuilder(Constants.PROTOCOL)
+                .append(tokenWithTenantUrl.get(Constants.TENANT_URL))
+                .append(Constants.CDP_URL)
+                .append(Constants.ANSI_SQL_URL);
+        if (limit.isPresent()) {
+            url.append(Constants.LIMIT).append(limit.get()).append(Constants.AND);
+        }
+        if (offset.isPresent()) {
+            url.append(Constants.OFFSET).append(offset.get()).append(Constants.AND);
+        }
+        if (orderby.isPresent()) {
+            url.append(Constants.ORDERBY).append(orderby.get());
+        }
+        Request request = HttpHelper.buildRequest(Constants.POST, url.toString(), body, createHeaders(tokenWithTenantUrl, this.connection.getEnableArrowStream()));
+        return getResponse(request);
+    }
+
+    public Response getMetadata() throws IOException, SQLException {
+        log.info("Getting metadata from CDP query service");
+        Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
+        String url = Constants.PROTOCOL + tokenWithTenantUrl.get(Constants.TENANT_URL)
+                + Constants.CDP_URL
+                + Constants.METADATA_URL;
+        Request request = HttpHelper.buildRequest(Constants.GET, url, null, createHeaders(tokenWithTenantUrl, false));
+        return getResponse(request);
+    }
+
+    @Deprecated
+    protected OkHttpClient createClient() {
+        return DEFAULT_CLIENT.newBuilder()
+                .build();
+    }
+
     protected Response getResponse(Request request) throws IOException {
         long startTime = System.currentTimeMillis();
         Response response = client.newCall(request).execute();
         long endTime = System.currentTimeMillis();
-        log.info("Total time taken to get response for url {} is {} ms", request.url().toString(), endTime - startTime);
+        log.info("Total time taken to get response for url {} is {} ms", request.url(), endTime - startTime);
         return response;
     }
 
