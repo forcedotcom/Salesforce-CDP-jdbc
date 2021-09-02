@@ -45,11 +45,6 @@ public class QueryExecutor {
         client = createClient();
     }
 
-    // if isV2Query not passed, execute defaults to v1 type.
-    public Response executeQuery(String sql, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
-        return executeQuery(sql, false, limit, offset, orderby);
-    }
-
     public Response executeQuery(String sql, boolean isV2Query, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
         log.info("Preparing to execute query {}", sql);
         AnsiQueryRequest ansiQueryRequest = AnsiQueryRequest.builder().sql(sql).build();

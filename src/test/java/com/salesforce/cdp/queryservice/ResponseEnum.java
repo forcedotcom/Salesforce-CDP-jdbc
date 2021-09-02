@@ -106,7 +106,15 @@ public enum ResponseEnum {
             "    \"endTime\": \"2021-01-11T05:34:34.040981Z\",\n" +
             "    \"rowCount\": 2,\n" +
             "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\",\n" +
-            "    \"done\": true}"),
+            "    \"done\": true," +
+            "    \"metadata\": {\n" +
+            "        \"count_num\": {\n" +
+            "            \"placeInOrder\": 0,\n" +
+            "            \"typeCode\": 3,\n" +
+            "            \"type\": \"DECIMAL\"\n" +
+            "        }\n" +
+            "} \n" +
+            "}"),
     EMPTY_RESPONSE("{\n" +
             "    \"data\": []," +
             "    \"startTime\": \"2021-01-11T05:34:34.040931Z\",\n" +
@@ -137,7 +145,15 @@ public enum ResponseEnum {
             "    \"endTime\": \"2021-01-11T05:34:34.040981Z\",\n" +
             "    \"rowCount\": 2,\n" +
             "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\",\n" +
-            "    \"done\": false}"),
+            "    \"done\": false," +
+            "    \"metadata\": {\n" +
+            "        \"count_num\": {\n" +
+            "            \"placeInOrder\": 0,\n" +
+            "            \"typeCode\": 3,\n" +
+            "            \"type\": \"DECIMAL\"\n" +
+            "        }\n" +
+            "} \n" +
+            "}"),
     RENEWED_CORE_TOKEN("{\n" +
             "    \"access_token\": \"00DR0000000KvIt\",\n" +
             "    \"signature\": \"0w96S+=\",\n" +
@@ -162,7 +178,15 @@ public enum ResponseEnum {
             "    \"startTime\": \"2021-01-11T05:34:34.040931Z\",\n" +
             "    \"endTime\": \"2021-01-11T05:34:34.040981Z\",\n" +
             "    \"rowCount\": 2,\n" +
-            "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\"}"),
+            "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\"," +
+            "    \"metadata\": {\n" +
+            "        \"count_num\": {\n" +
+            "            \"placeInOrder\": 0,\n" +
+            "            \"typeCode\": 3,\n" +
+            "            \"type\": \"DECIMAL\"\n" +
+            "        }\n" +
+            "} \n" +
+            "}"),
     QUERY_RESPONSE_WITH_METADATA("{\n" +
             "    \"data\": [\n" +
             "        {\n" +

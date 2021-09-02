@@ -77,15 +77,15 @@ public class QueryServiceResultSet implements ResultSet {
             return true;
         }
 
-        getMoreData();
-
-        if(data==null || data.size()<1) {
-            // Closing as this is move forward only cursor.
-            log.info("Resultset {} does not have any more rows. Total {} pages retrieved", this, currentPageNum);
-            return false;
+        if(isPaginationRequired()) {
+            getMoreData();
+            if(data!=null && data.size()>0)
+                return true;
         }
 
-        return true;
+        // Closing as this is move forward only cursor.
+        log.info("Resultset {} does not have any more rows. Total {} pages retrieved", this, currentPageNum);
+        return false;
     }
 
     @Override
