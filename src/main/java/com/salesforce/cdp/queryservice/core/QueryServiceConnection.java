@@ -16,6 +16,7 @@
 
 package com.salesforce.cdp.queryservice.core;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.salesforce.cdp.queryservice.model.Token;
 import com.salesforce.cdp.queryservice.util.Constants;
 import lombok.extern.slf4j.Slf4j;
@@ -42,20 +43,18 @@ public class QueryServiceConnection implements Connection {
         this.serviceRootUrl = getServiceRootUrl(url);
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
         setupDefaultClientSecretsIfRequired(serviceRootUrl, this.properties);
-        if(this.properties.containsKey(Constants.ENABLE_ARROW_STREAM)) {
-            if(this.properties.get(Constants.ENABLE_ARROW_STREAM).equals("true")) {
-                enableArrowStream = true;
-            }
-        }
+        this.enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
     }
 
-    private String getServiceRootUrl(String url) {
+    @VisibleForTesting
+    static String getServiceRootUrl(String url) {
         String serviceRootUrl = url.substring(Constants.DATASOURCE_TYPE.length());
         // removes ending slash if present
         return StringUtils.removeEnd(serviceRootUrl, "/");
     }
 
-    private void setupDefaultClientSecretsIfRequired(String serviceRootUrl, Properties properties) {
+    @VisibleForTesting
+    static void setupDefaultClientSecretsIfRequired(String serviceRootUrl, Properties properties) {
         if(properties.containsKey(Constants.USER) && !properties.containsKey(Constants.USER_NAME)) {
             properties.put(Constants.USER_NAME, properties.get(Constants.USER));
         }
@@ -64,23 +63,21 @@ public class QueryServiceConnection implements Connection {
                 && !properties.containsKey(Constants.CLIENT_ID)
                 && !properties.containsKey(Constants.CLIENT_SECRET)) {
             String serverUrl = serviceRootUrl.toLowerCase();
-            if(serverUrl.endsWith(Constants.STMPA_SERVER_URL)) {
+            if (serverUrl.endsWith(Constants.STMPA_SERVER_URL)) {
                 properties.put(Constants.CLIENT_ID, Constants.STMPA_DEFAULT_CLIENT_ID);
                 properties.put(Constants.CLIENT_SECRET, Constants.STMPA_DEFAULT_CLIENT_SECRET);
-            }
-            else if(serverUrl.endsWith(Constants.STMPB_SERVER_URL)) {
+            } else if (serverUrl.endsWith(Constants.STMPB_SERVER_URL)) {
                 properties.put(Constants.CLIENT_ID, Constants.STMPB_DEFAULT_CLIENT_ID);
                 properties.put(Constants.CLIENT_SECRET, Constants.STMPB_DEFAULT_CLIENT_SECRET);
-            }
-            else if(serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
-                properties.put(Constants.CLIENT_ID, Constants.PROD_DEFAULT_CLIENT_ID);
-                properties.put(Constants.CLIENT_SECRET, Constants.PROD_DEFAULT_CLIENT_SECRET);
-            } else if(serverUrl.endsWith(Constants.NA45_SERVER_URL)) {
+            } else if (serverUrl.endsWith(Constants.NA45_SERVER_URL)) {
                 properties.put(Constants.CLIENT_ID, Constants.NA45_DEFAULT_CLIENT_ID);
                 properties.put(Constants.CLIENT_SECRET, Constants.NA45_DEFAULT_CLIENT_SECRET);
-            } else if(serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
+            } else if (serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
                 properties.put(Constants.CLIENT_ID, Constants.NA46_DEFAULT_CLIENT_ID);
                 properties.put(Constants.CLIENT_SECRET, Constants.NA46_DEFAULT_CLIENT_SECRET);
+            } else if (serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
+                properties.put(Constants.CLIENT_ID, Constants.PROD_DEFAULT_CLIENT_ID);
+                properties.put(Constants.CLIENT_SECRET, Constants.PROD_DEFAULT_CLIENT_SECRET);
             }
         }
     }
