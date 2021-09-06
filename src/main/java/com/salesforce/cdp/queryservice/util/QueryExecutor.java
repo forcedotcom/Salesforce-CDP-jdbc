@@ -23,6 +23,9 @@ import com.salesforce.cdp.queryservice.interceptors.RetryInterceptor;
 import com.salesforce.cdp.queryservice.model.AnsiQueryRequest;
 import com.salesforce.cdp.queryservice.model.Token;
 import lombok.extern.slf4j.Slf4j;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.FailsafeException;
+import net.jodah.failsafe.RetryPolicy;
 import okhttp3.*;
 
 import java.io.IOException;
@@ -37,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 public class QueryExecutor {
 
     private static final OkHttpClient DEFAULT_CLIENT;
+    private static final OkHttpClient DEFAULT_QUERY_CLIENT;
 
     static {
         DEFAULT_CLIENT = new OkHttpClient().newBuilder()
@@ -45,22 +49,31 @@ public class QueryExecutor {
                 .callTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
                 .retryOnConnectionFailure(true)
                 .addInterceptor(new MetadataCacheInterceptor())
+                .build();
+        // By default, add retry interceptors only for query service related calls
+        DEFAULT_QUERY_CLIENT = DEFAULT_CLIENT.newBuilder()
                 .addInterceptor(new RetryInterceptor())
                 .build();
     }
 
     private final QueryServiceConnection connection;
     private final OkHttpClient client;
+    private final OkHttpClient queryClient;
 
     public QueryExecutor(QueryServiceConnection connection) {
-        this(connection, DEFAULT_CLIENT);
+        this(connection, DEFAULT_CLIENT, DEFAULT_QUERY_CLIENT);
     }
 
     public QueryExecutor(QueryServiceConnection connection, OkHttpClient client) {
+        this(connection, client, client);
+    }
+
+    public QueryExecutor(QueryServiceConnection connection, OkHttpClient client, OkHttpClient queryClient) {
         // fixme: even though constructor is public currently, it is not possible
         //  for users to specify custom Client as part of connection creation
         this.connection = connection;
         this.client = client;
+        this.queryClient = client;
     }
 
     public Response executeQuery(String sql, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
@@ -98,13 +111,15 @@ public class QueryExecutor {
 
     @Deprecated
     protected OkHttpClient createClient() {
+        // todo: remove in next iteration
         return DEFAULT_CLIENT.newBuilder()
                 .build();
     }
 
     protected Response getResponse(Request request) throws IOException {
         long startTime = System.currentTimeMillis();
-        Response response = client.newCall(request).execute();
+        // use queryClient to fetch metadata or to execute the query
+        Response response = queryClient.newCall(request).execute();
         long endTime = System.currentTimeMillis();
         log.info("Total time taken to get response for url {} is {} ms", request.url(), endTime - startTime);
         return response;
@@ -128,12 +143,18 @@ public class QueryExecutor {
         if (connection.getToken() != null && TokenHelper.isAlive(connection.getToken())) {
             return TokenHelper.getTokenWithUrl(connection.getToken());
         }
+        RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
+                .handle(TokenException.class)
+                .withMaxRetries(3);
         try {
-            Token token = TokenHelper.getToken(connection.getClientInfo(), client);
-            connection.setToken(token);
-            return TokenHelper.getTokenWithUrl(token);
-        } catch (TokenException e) {
-            throw new SQLException(e);
+            return Failsafe.with(retryPolicy)
+                    .get(() -> {
+                        Token token = TokenHelper.getToken(connection.getClientInfo(), client);
+                        connection.setToken(token);
+                        return TokenHelper.getTokenWithUrl(token);
+                    });
+        } catch (FailsafeException e) {
+            throw new SQLException(e.getCause());
         }
     }
 }
