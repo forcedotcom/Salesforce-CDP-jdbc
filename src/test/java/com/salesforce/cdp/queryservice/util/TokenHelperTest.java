@@ -16,6 +16,7 @@
 
 package com.salesforce.cdp.queryservice.util;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.salesforce.cdp.queryservice.model.Token;
@@ -29,13 +30,16 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.Mockito.*;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.Properties;
@@ -49,9 +53,6 @@ import static org.mockito.Matchers.any;
 public class TokenHelperTest {
 
     private Cache<String, Token> tokenCache;
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Mock
     private OkHttpClient client;
@@ -73,7 +74,7 @@ public class TokenHelperTest {
     }
 
     @Test
-    public void testCreateTokenSuccess() throws IOException, SQLException {
+    public void testCreateTokenSuccess() throws Exception {
         String jsonString = TOKEN_EXCHANGE.getResponse();
         Response response = new Response.Builder().code(HttpStatus.SC_OK).
                 request(buildRequest()).protocol(Protocol.HTTP_1_1).
@@ -88,7 +89,7 @@ public class TokenHelperTest {
     }
 
     @Test
-    public void testAlreadyExistingToken() throws IOException, SQLException, NoSuchFieldException, IllegalAccessException {
+    public void testAlreadyExistingToken() throws Exception {
         Token token = new Token();
         token.setAccess_token("1234");
         token.setInstance_url("abcd");
@@ -107,7 +108,7 @@ public class TokenHelperTest {
     }
 
     @Test
-    public void testExpiredToken() throws IllegalAccessException, NoSuchFieldException, IOException, SQLException {
+    public void testExpiredToken() throws Exception {
         Token token = new Token();
         token.setAccess_token("1234");
         token.setInstance_url("abcd");
@@ -137,7 +138,7 @@ public class TokenHelperTest {
     }
 
     @Test
-    public void testTokenExchangeWithException() throws IOException, SQLException {
+    public void testTokenExchangeWithException() throws Exception {
         String jsonString = OAUTH_TOKEN_ERROR.getResponse();
         Response response = new Response.Builder().code(HttpStatus.SC_INTERNAL_SERVER_ERROR).
                 request(buildRequest()).protocol(Protocol.HTTP_1_1).
@@ -145,13 +146,16 @@ public class TokenHelperTest {
                 body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
         when(remoteCall.execute()).thenReturn(response);
         when(client.newCall(any())).thenReturn(remoteCall);
-        exceptionRule.expect(SQLException.class);
-        exceptionRule.expectMessage(Messages.TOKEN_EXCHANGE_FAILURE);
-        TokenHelper.getToken(properties, client);
+
+        Throwable ex = catchThrowableOfType(() -> {
+            TokenHelper.getToken(properties, client);
+        }, TokenException.class);
+        assertThat(ex.getCause()).isInstanceOf(IOException.class);
+        assertThat(ex.getMessage()).contains("expired authorization code");
     }
 
     @Test
-    public void testCacheAfterInvalidingEntry() throws NoSuchFieldException, IllegalAccessException, IOException, SQLException {
+    public void testCacheAfterInvalidingEntry() throws Exception {
         tokenCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.MILLISECONDS).maximumSize(10).build();
         Token token = new Token();
         token.setAccess_token("1234");
@@ -188,16 +192,17 @@ public class TokenHelperTest {
         when(client.newCall(any())).thenReturn(remoteCall);
         ArgumentCaptor<Request> eventCaptor =
                 ArgumentCaptor.forClass(Request.class);
-        exceptionRule.expect(SQLException.class);
-        exceptionRule.expectMessage(Messages.TOKEN_EXCHANGE_FAILURE);
-        try {
+
+        Throwable ex = catchThrowableOfType(() -> {
             TokenHelper.getToken(properties, client);
-        } finally {
-            verify(client, times(2)).newCall(eventCaptor.capture());
-            Request request = eventCaptor.getValue();
-            String url = request.url().toString();
-            Assert.assertTrue(url.contains(Constants.TOKEN_REVOKE_URL));
-        }
+        }, TokenException.class);
+        assertThat(ex.getCause()).isInstanceOf(JsonParseException.class);
+        assertThat(ex.getMessage()).contains("Token exchange failed. Please login again");
+
+        verify(client, times(2)).newCall(eventCaptor.capture());
+        Request request = eventCaptor.getValue();
+        String url = request.url().toString();
+        Assert.assertTrue(url.contains(Constants.TOKEN_REVOKE_URL));
     }
 
     private Request buildRequest() {

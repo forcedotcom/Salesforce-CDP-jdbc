@@ -128,9 +128,12 @@ public class QueryExecutor {
         if (connection.getToken() != null && TokenHelper.isAlive(connection.getToken())) {
             return TokenHelper.getTokenWithUrl(connection.getToken());
         }
-        Token token = TokenHelper.getToken(connection.getClientInfo(), client);
-        connection.setToken(token);
-        Map<String, String> tokenMap = TokenHelper.getTokenWithUrl(token);
-        return tokenMap;
+        try {
+            Token token = TokenHelper.getToken(connection.getClientInfo(), client);
+            connection.setToken(token);
+            return TokenHelper.getTokenWithUrl(token);
+        } catch (TokenException e) {
+            throw new SQLException(e);
+        }
     }
 }

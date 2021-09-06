@@ -8,4 +8,6 @@ public class Messages {
 
     public static String METADATA_EXCEPTION = "Failed to get the metadata. Please try again.";
 
+    public static String TOKEN_FETCH_FAILURE = "Retrieving Token failed. Please try again.";
+
 }

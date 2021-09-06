@@ -20,7 +20,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.salesforce.cdp.queryservice.model.CoreTokenRenewResponse;
 import com.salesforce.cdp.queryservice.model.Token;
-import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_EXCHANGE_FAILURE;
+
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -35,20 +35,33 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.sql.SQLException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_EXCHANGE_FAILURE;
+import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_FETCH_FAILURE;
 
 @Slf4j
 public class TokenHelper {
 
-    private static Cache<String, Token> tokenCache = CacheBuilder.newBuilder().expireAfterWrite(7200000, TimeUnit.MILLISECONDS).maximumSize(100).build();
+    private static Cache<String, Token> tokenCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(7200000, TimeUnit.MILLISECONDS)
+            .maximumSize(100).build();
 
     private TokenHelper() {
         //NOOP
     }
 
-    public static Token getToken(Properties properties, OkHttpClient client) throws SQLException {
+    /**
+     * Gets the token for specified credentials
+     *
+     * @param properties Contains the credentials
+     * @param client okHttp client
+     * @return token containing info that can be used for querying
+     * @throws TokenException when unable to resolve or fetch token
+     */
+    public static Token getToken(Properties properties, OkHttpClient client) throws TokenException {
         Token token = null;
         if(properties.containsKey(Constants.CORETOKEN)) {
             token = tokenCache.getIfPresent(properties.getProperty(Constants.CORETOKEN));
@@ -61,7 +74,7 @@ public class TokenHelper {
             tokenCache.put(properties.getProperty(Constants.CORETOKEN), newToken);
             return newToken;
         }
-        if (token != null && isAlive(token)) {
+        if (isAlive(token)) {
             return token;
         } else {
             log.info("Renewing the token as the off-core token expired");
@@ -73,26 +86,27 @@ public class TokenHelper {
         }
     }
 
-    private static Token retrieveTokenWithPasswordGrant(Properties properties, OkHttpClient client) throws SQLException {
+    private static Token retrieveTokenWithPasswordGrant(Properties properties, OkHttpClient client) throws TokenException {
         // Convert password to byte array as per SA
         if (properties.getProperty(Constants.PD) == null) {
-            throw new SQLException("Password cannot be null");
+            throw new TokenException("Password cannot be null");
         }
 
         if (properties.getProperty(Constants.CLIENT_SECRET) == null) {
-            throw new SQLException("Client Secret cannot be null");
+            throw new TokenException("Client Secret cannot be null");
         }
+
         String token_url = properties.getProperty(Constants.LOGIN_URL) + Constants.CORE_TOKEN_URL;
         CoreTokenRenewResponse coreTokenRenewResponse = null;
         byte[] passwordBytes = null;
         byte[] clientSecret = null;
-        // Convert the password and client secret to byte arrays so we can empty them at will.
+        // Convert the password and client secret to byte arrays so, we can empty them at will.
         try {
             passwordBytes = Utils.safeByteArrayUrlEncode(Utils.asByteArray(properties.getProperty(Constants.PD)));
             clientSecret = Utils.asByteArray(properties.getProperty(Constants.CLIENT_SECRET));
 
             // And handle the initial login *without* immutables. This ensures that nothing
-            // is allocated in memory that cannot be cleared on demand and thus we aren't
+            // is allocated in memory that cannot be cleared on demand, and thus we aren't
             // at the garbage collectors mercy.
             String response = un_pw_login(Constants.TOKEN_GRANT_TYPE_PD,
                                           properties.getProperty(Constants.CLIENT_ID),
@@ -103,23 +117,29 @@ public class TokenHelper {
 
 
             // Then get rid of the secrets from memory
-            Arrays.fill(passwordBytes, (byte)0);
-            Arrays.fill(clientSecret, (byte)0);
+            // todo: since it is handled in finally, should we remove this?
+            fillArray(passwordBytes, (byte) 0);
+            fillArray(clientSecret, (byte)0);
 
             // And exchange the UN/PW flow authtoken for a scoped bearer token.
             coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class);
             return exchangeToken(coreTokenRenewResponse.getInstance_url(), coreTokenRenewResponse.getAccess_token(), client);
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("Caught exception while retrieving the token", e);
-            invalidateCoreToken(properties.getProperty(Constants.LOGIN_URL), coreTokenRenewResponse == null ? null : coreTokenRenewResponse.getAccess_token(), client);
-            throw new SQLException(TOKEN_EXCHANGE_FAILURE);
+            throw new TokenException(TOKEN_FETCH_FAILURE, e);
         } finally {
-            Arrays.fill(passwordBytes, (byte)0);
-            Arrays.fill(clientSecret, (byte)0);
+            fillArray(passwordBytes, (byte) 0);
+            fillArray(clientSecret, (byte)0);
         }
     }
 
-    private static Token renewToken(String url, String refreshToken, String clientId, String secret, OkHttpClient client) throws SQLException {
+    private static void fillArray(byte[] bytes, byte val) {
+        if (bytes != null) {
+            Arrays.fill(bytes, val);
+        }
+    }
+
+    private static Token renewToken(String url, String refreshToken, String clientId, String secret, OkHttpClient client) throws TokenException {
         String token_url = url + Constants.CORE_TOKEN_URL;
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(Constants.GRANT_TYPE_NAME, Constants.REFRESH_TOKEN_GRANT_TYPE);
@@ -134,36 +154,36 @@ public class TokenHelper {
             Token token = exchangeToken(url, coreTokenRenewResponse.getAccess_token(), client);
             tokenCache.put(coreTokenRenewResponse.getAccess_token(), token);
             return token;
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("Caught exception while renewing the core token", e);
-            invalidateCoreToken(url, coreTokenRenewResponse == null ? null : coreTokenRenewResponse.getAccess_token(), client);
-            throw new SQLException(e.getMessage());
+            throw new TokenException(e);
         }
     }
 
-    private static Token exchangeToken(String url, String coreToken, OkHttpClient client) throws SQLException {
+    private static Token exchangeToken(String url, String coreToken, OkHttpClient client) throws TokenException {
         String token_url = url + Constants.TOKEN_EXCHANGE_URL;
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(Constants.GRANT_TYPE_NAME, Constants.GRANT_TYPE);
         requestBody.put(Constants.SUBJECT_TOKEN_TYPE_NAME, Constants.SUBJECT_TOKEN_TYPE);
         requestBody.put(Constants.SUBJECT_TOKEN, coreToken);
         Calendar expire_time = Calendar.getInstance();
+        Response response = null;
         try {
-            Response response = login(requestBody, token_url, client);
+            response = login(requestBody, token_url, client);
             Token token = HttpHelper.handleSuccessResponse(response, Token.class, false);
             if (token.getError_description() != null) {
                 log.error("Token exchange failed with error {}", token.getError_description());
                 invalidateCoreToken(url, coreToken, client);
                 String message = token.getError_description();
-                throw new SQLException(message);
+                throw new TokenException(message);
             }
             expire_time.add(Calendar.SECOND, token.getExpires_in());
             token.setExpire_time(expire_time);
             return token;
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("Caught exception while getting the offcore token", e);
             invalidateCoreToken(url, coreToken, client);
-            throw new SQLException(TOKEN_EXCHANGE_FAILURE);
+            throw new TokenException(TOKEN_EXCHANGE_FAILURE, e);
         }
     }
 
@@ -183,17 +203,21 @@ public class TokenHelper {
         tokenCache.invalidate(tokenKey);
     }
 
-    private static Response login(Map<String, String> requestBody, String url, OkHttpClient client) throws IOException, SQLException {
+    private static Response login(Map<String, String> requestBody, String url, OkHttpClient client) throws TokenException {
         FormBody.Builder formBody = new FormBody.Builder();
-        requestBody.entrySet().stream().forEach(e -> formBody.addEncoded(e.getKey(), e.getValue()));
+        requestBody.forEach(formBody::addEncoded);
         Map<String, String> headers = Collections.singletonMap(Constants.CONTENT_TYPE, Constants.URL_ENCODED_CONTENT);
-        Request request = HttpHelper.buildRequest(Constants.POST, url, formBody.build(), headers);
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            log.error("Token exchange failed with status code {}", response.code());
-            HttpHelper.handleErrorResponse(response, Constants.ERROR_DESCRIPTION);
+        try {
+            Request request = HttpHelper.buildRequest(Constants.POST, url, formBody.build(), headers);
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                log.error("Token exchange failed with status code {}", response.code());
+                HttpHelper.handleErrorResponse(response, Constants.ERROR_DESCRIPTION);
+            }
+            return response;
+        } catch (IOException e) {
+            throw new TokenException(e);
         }
-        return response;
     }
 
     private static void invalidateCoreToken(String url, String coreToken, OkHttpClient client) {
@@ -213,14 +237,14 @@ public class TokenHelper {
         }
     }
 
-    private static String un_pw_login(String grantType, String clientId, byte[] clientSecret, String userName, byte[] passwordBytes, String tokenUrl) throws Exception
+    private static String un_pw_login(String grantType, String clientId, byte[] clientSecret, String userName, byte[] passwordBytes, String tokenUrl) throws IOException
     {
-        byte[] grantTypeSegment = (Constants.GRANT_TYPE_NAME + Constants.TOKEN_ASSIGNMENT + grantType).getBytes("utf-8");
-        byte[] clientIdSegment = (Constants.CLIENT_ID_NAME + Constants.TOKEN_ASSIGNMENT + clientId).getBytes("utf-8");
-        byte[] clientSecretSegment = (Constants.CLIENT_SECRET_NAME + Constants.TOKEN_ASSIGNMENT).getBytes("utf-8");
-        byte[] userNameSegment = (Constants.CLIENT_USER_NAME + Constants.TOKEN_ASSIGNMENT + URLEncoder.encode(userName)).getBytes("utf-8");
-        byte[] passwordSegment = (Constants.CLIENT_PD + Constants.TOKEN_ASSIGNMENT).getBytes("utf-8");
-        byte[] separator = Constants.TOKEN_SEPARATOR.getBytes("utf-8");
+        byte[] grantTypeSegment = (Constants.GRANT_TYPE_NAME + Constants.TOKEN_ASSIGNMENT + grantType).getBytes(StandardCharsets.UTF_8);
+        byte[] clientIdSegment = (Constants.CLIENT_ID_NAME + Constants.TOKEN_ASSIGNMENT + clientId).getBytes(StandardCharsets.UTF_8);
+        byte[] clientSecretSegment = (Constants.CLIENT_SECRET_NAME + Constants.TOKEN_ASSIGNMENT).getBytes(StandardCharsets.UTF_8);
+        byte[] userNameSegment = (Constants.CLIENT_USER_NAME + Constants.TOKEN_ASSIGNMENT + URLEncoder.encode(userName)).getBytes(StandardCharsets.UTF_8);
+        byte[] passwordSegment = (Constants.CLIENT_PD + Constants.TOKEN_ASSIGNMENT).getBytes(StandardCharsets.UTF_8);
+        byte[] separator = Constants.TOKEN_SEPARATOR.getBytes(StandardCharsets.UTF_8);
 
 
         // Pre-calculate the size of the postdata in bytes we'll be sending for Content-Length.
@@ -276,7 +300,6 @@ public class TokenHelper {
             log.error("Token exchange failed with status code {}", connection.getResponseCode());
             HttpHelper.handleErrorResponse(message, Constants.ERROR_DESCRIPTION);
         }
-
 
         return message;
     }
