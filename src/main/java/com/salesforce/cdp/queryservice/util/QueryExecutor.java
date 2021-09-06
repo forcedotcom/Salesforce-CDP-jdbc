@@ -143,6 +143,7 @@ public class QueryExecutor {
         if (connection.getToken() != null && TokenHelper.isAlive(connection.getToken())) {
             return TokenHelper.getTokenWithUrl(connection.getToken());
         }
+        // todo: add a wrapper for retry mechanism
         RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
                 .handle(TokenException.class)
                 .withMaxRetries(3);
@@ -154,7 +155,10 @@ public class QueryExecutor {
                         return TokenHelper.getTokenWithUrl(token);
                     });
         } catch (FailsafeException e) {
-            throw new SQLException(e.getCause());
+            if (e.getCause() != null) {
+                throw new SQLException(e.getCause().getMessage(), e.getCause());
+            }
+            throw new SQLException(e);
         }
     }
 }

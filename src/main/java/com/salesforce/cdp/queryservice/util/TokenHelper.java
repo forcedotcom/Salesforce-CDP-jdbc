@@ -39,6 +39,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static com.salesforce.cdp.queryservice.util.Messages.FAILED_LOGIN;
+import static com.salesforce.cdp.queryservice.util.Messages.RENEW_TOKEN;
 import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_EXCHANGE_FAILURE;
 import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_FETCH_FAILURE;
 
@@ -156,7 +158,7 @@ public class TokenHelper {
             return token;
         } catch (IOException e) {
             log.error("Caught exception while renewing the core token", e);
-            throw new TokenException(e);
+            throw new TokenException(RENEW_TOKEN, e);
         }
     }
 
@@ -216,7 +218,7 @@ public class TokenHelper {
             }
             return response;
         } catch (IOException e) {
-            throw new TokenException(e);
+            throw new TokenException(FAILED_LOGIN, e);
         }
     }
 
