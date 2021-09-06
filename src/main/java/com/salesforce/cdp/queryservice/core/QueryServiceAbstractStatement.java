@@ -47,8 +47,6 @@ public abstract class QueryServiceAbstractStatement {
 
     protected boolean paginationRequired;
 
-    protected String nextBatchId;
-
     private QueryExecutor queryExecutor;
 
     public QueryServiceAbstractStatement(QueryServiceConnection queryServiceConnection,
@@ -67,15 +65,15 @@ public abstract class QueryServiceAbstractStatement {
             Optional<Integer> limit = isTableauQuery ? Optional.of(Constants.MAX_LIMIT) : Optional.empty();
             Optional<String> orderby = isTableauQuery ? Optional.of("1 ASC") : Optional.empty();
 
-            boolean isPrestoPaginatedRequest = this.connection.isPrestoPaginatedRequest();
+            boolean isCursorBasedPaginationReq = this.connection.isCursorBasedPaginationReq();
 
-            Response response = queryExecutor.executeQuery(sql, isPrestoPaginatedRequest, limit, Optional.of(offset), orderby);
+            Response response = queryExecutor.executeQuery(sql, isCursorBasedPaginationReq, limit, Optional.of(offset), orderby);
             if (!response.isSuccessful()) {
                 log.error("Request query {} failed with response code {} and trace-Id {}", sql, response.code(), response.headers().get(Constants.TRACE_ID));
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
             }
             QueryServiceResponse queryServiceResponse = HttpHelper.handleSuccessResponse(response, QueryServiceResponse.class, false);
-            return createResultSetFromResponse(queryServiceResponse, isPrestoPaginatedRequest);
+            return createResultSetFromResponse(queryServiceResponse, isCursorBasedPaginationReq);
         } catch (IOException e) {
             log.error("Exception while running the query", e);
             throw new SQLException(QUERY_EXCEPTION);
@@ -102,23 +100,24 @@ public abstract class QueryServiceAbstractStatement {
         return Constants.TABLEAU_USER_AGENT_VALUE.equals(userAgent);
     }
 
-    private ResultSet createResultSetFromResponse(QueryServiceResponse queryServiceResponse, boolean isPrestoPaginatedRequest) throws SQLException {
+    private ResultSet createResultSetFromResponse(QueryServiceResponse queryServiceResponse, boolean isCursorBasedPaginationReq) throws SQLException {
         ArrowUtil arrowUtil = new ArrowUtil();
         paginationRequired = !queryServiceResponse.isDone();
         offset += queryServiceResponse.getRowCount();
-        List<Object> data = null;
+        List<Object> data;
         if(this.connection.getEnableArrowStream() && queryServiceResponse.getArrowStream() != null) {
-            data = arrowUtil.getResultSetDataFromArrowStream(queryServiceResponse, isPrestoPaginatedRequest);
+            data = arrowUtil.getResultSetDataFromArrowStream(queryServiceResponse, isCursorBasedPaginationReq);
         }
         else {
             data = queryServiceResponse.getData();
         }
 
-        if(isPrestoPaginatedRequest) {
-            nextBatchId = queryServiceResponse.getNextBatchId();
-        }
         QueryServiceResultSetMetaData resultSetMetaData = createColumnNames(queryServiceResponse);
-        return new QueryServiceResultSet(data, resultSetMetaData, this, isPrestoPaginatedRequest);
+
+        if(isCursorBasedPaginationReq) {
+            return new QueryServiceResultSetV2(data, resultSetMetaData, this, queryServiceResponse.getNextBatchId());
+        }
+        return new QueryServiceResultSet(data, resultSetMetaData, this);
     }
 
     private QueryServiceResultSetMetaData createColumnNames(QueryServiceResponse queryServiceResponse) throws SQLException {

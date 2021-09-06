@@ -37,7 +37,7 @@ public class ArrowUtil {
 	 * @return List of data map.
 	 * @throws SQLException
 	 */
-	public List<Object> getResultSetDataFromArrowStream(QueryServiceResponse queryServiceResponse, boolean isPrestoPaginatedRequest) throws SQLException {
+	public List<Object> getResultSetDataFromArrowStream(QueryServiceResponse queryServiceResponse, boolean isCursorBasedPaginationReq) throws SQLException {
 
 		byte[] bytes = Base64.getDecoder().decode(queryServiceResponse.getArrowStream());
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
@@ -52,7 +52,7 @@ public class ArrowUtil {
 				int rowCount = fieldVectors.get(0).getValueCount();
 				for(int i=0;i<rowCount;++i) {
 
-					if(isPrestoPaginatedRequest) {
+					if(isCursorBasedPaginationReq) {
 						List<Object> row = new ArrayList<>();
 						for(FieldVector fieldVector : fieldVectors) {
 							Object fieldValue = this.getFieldValue(fieldVector,i);

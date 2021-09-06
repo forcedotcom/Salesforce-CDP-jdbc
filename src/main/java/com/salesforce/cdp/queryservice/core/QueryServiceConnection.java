@@ -36,7 +36,7 @@ public class QueryServiceConnection implements Connection {
     private String serviceRootUrl;
     private Token token;
     private boolean enableArrowStream = false;
-    private boolean isPrestoPaginatedRequest = true;
+    private boolean isCursorBasedPaginationReq = true;
 
     public QueryServiceConnection(String url, Properties properties) {
         this.properties = properties;
@@ -46,8 +46,8 @@ public class QueryServiceConnection implements Connection {
 
         // default `enableArrowStream` is false
         enableArrowStream = Constants.TRUE_STR.equalsIgnoreCase((String) this.properties.get(Constants.ENABLE_ARROW_STREAM));
-        // default `isPrestoPaginatedRequest` is true
-        isPrestoPaginatedRequest = !Constants.FALSE_STR.equalsIgnoreCase((String) this.properties.get(Constants.PRESTO_PAGINATED_REQUEST));
+        // default `isCursorBasedPaginationReq` is true
+        isCursorBasedPaginationReq = !Constants.FALSE_STR.equalsIgnoreCase((String) this.properties.get(Constants.CURSOR_BASED_PAGINATION));
     }
 
     private String getServiceRootUrl(String url) {
@@ -90,8 +90,8 @@ public class QueryServiceConnection implements Connection {
         return this.enableArrowStream;
     }
 
-    public boolean isPrestoPaginatedRequest() {
-        return this.isPrestoPaginatedRequest;
+    public boolean isCursorBasedPaginationReq() {
+        return this.isCursorBasedPaginationReq;
     }
 
     @Override

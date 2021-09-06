@@ -41,31 +41,28 @@ import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
 @Slf4j
 public class QueryServiceResultSet implements ResultSet {
 
-    private List<Object> data;
+    protected List<Object> data;
     private int currentRow = -1;
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicBoolean wasNull = new AtomicBoolean();
-    private ResultSetMetaData resultSetMetaData;
+    protected ResultSetMetaData resultSetMetaData;
     private SimpleDateFormat dateFormatterWithTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-    private QueryServiceAbstractStatement statement;
+    protected QueryServiceAbstractStatement statement;
     private int currentPageNum = 1;
-    private boolean isPrestoPaginatedRequest;
 
     // NOTE: This constructor is used for metadata table, hence only data and resultSetMetadata is set.
     public QueryServiceResultSet(List<Object> data,
                                  ResultSetMetaData resultSetMetaData) {
-        this(data, resultSetMetaData, null, false);
+        this(data, resultSetMetaData, null);
     }
 
     public QueryServiceResultSet(List<Object> data,
                                  ResultSetMetaData resultSetMetaData,
-                                 QueryServiceAbstractStatement statement,
-                                 boolean isPrestoPaginatedRequest) {
+                                 QueryServiceAbstractStatement statement) {
         this.data = data;
         this.resultSetMetaData = resultSetMetaData;
         this.statement = statement;
-        this.isPrestoPaginatedRequest = isPrestoPaginatedRequest;
     }
 
     @Override
@@ -371,19 +368,13 @@ public class QueryServiceResultSet implements ResultSet {
     public Object getObject(String columnLabel) throws SQLException {
         errorOutIfClosed();
         Object row = data.get(currentRow);
-        Object value;
-
-        if(isPrestoPaginatedRequest) {
-            Integer placeInOrder = ((QueryServiceResultSetMetaData)resultSetMetaData).getColumnNameToPosition().get(columnLabel);
-            if(placeInOrder==null)
-                throw new SQLException(QUERY_EXCEPTION);
-            value = ((List)row).get(placeInOrder);
-        } else {
-            value = ((Map)row).get(columnLabel);
-        }
-
+        Object value = getValue(row, columnLabel);
         wasNull.set(value == null);
         return value;
+    }
+
+    protected Object getValue(Object row, String columnLabel) throws SQLException {
+        return ((Map)row).get(columnLabel);
     }
 
     @Override
@@ -1193,13 +1184,9 @@ public class QueryServiceResultSet implements ResultSet {
 
     private void getMoreData() throws SQLException {
         log.trace("Fetching page with number {} for resultset {}", ++currentPageNum, this);
-        ResultSet resultSet;
-
-        if(isPrestoPaginationRequired()) {
-            resultSet = statement.getNextPageFromBatchId(statement.nextBatchId);
-        } else {
-            resultSet = statement.getNextPage();
-        }
+        ResultSet resultSet = getNextPageData();
+        if(resultSet==null)
+            return;
 
         try {
             Field field = QueryServiceResultSet.class.getDeclaredField("data");
@@ -1214,12 +1201,12 @@ public class QueryServiceResultSet implements ResultSet {
         }
     }
 
-    private boolean isPaginationRequired() {
-        return statement != null && statement.isPaginationRequired();
+    protected ResultSet getNextPageData() throws SQLException {
+        return statement.getNextPage();
     }
 
-    private boolean isPrestoPaginationRequired() {
-        return statement!=null && statement.nextBatchId != null;
+    private boolean isPaginationRequired() {
+        return statement != null && statement.isPaginationRequired();
     }
 
     private void errorOutIfClosed() throws SQLException {
