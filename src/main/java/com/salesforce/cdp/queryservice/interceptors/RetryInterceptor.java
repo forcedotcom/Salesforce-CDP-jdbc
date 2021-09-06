@@ -32,17 +32,38 @@ public class RetryInterceptor implements Interceptor {
 
     @NotNull
     @Override
-    public Response intercept(@NotNull Chain chain) throws IOException {
+    public Response intercept(@NotNull Chain chain) throws IOException{
         Request request = chain.request();
-        Response response = chain.proceed(request);
-        int retryCount = 1;
-        //TODO: Make it expo backoff if needed.
-        while (Utils.getRetryStatusCodes().contains(response.code()) && retryCount <= maxRetryCount) {
-            log.error("Request failed with response code {}. Number of request retry {}", response.code(), retryCount);
-            retryCount++;
-            response.close();
-            response = chain.proceed(request);
+        Response response = proceedWithRequest(chain, request);
+
+        // TODO: Make it expo backoff if needed.
+        for(int retryCount = 1; (response == null || Utils.getRetryStatusCodes().contains(response.code())) && retryCount <= this.maxRetryCount; response = this.proceedWithRequest(chain, request)) {
+            int code = 500;
+            String msg = "";
+            if (response != null) {
+                code = response.code();
+                msg = response.message();
+                response.close();
+            }
+
+            log.error("Request failed with response code {}, msg {}. Number of request retry {}", code, msg, retryCount);
+            ++retryCount;
         }
+
+        if(response==null) {
+            throw new IOException("failed to execute the request.");
+        }
+
         return response;
+    }
+
+    private Response proceedWithRequest(Chain chain, Request request) {
+        try{
+            return chain.proceed(request);
+        } catch (IOException e) {
+            // catch and log exception but allow retry
+            log.error("Exception while running the query ", e);
+            return null;
+        }
     }
 }

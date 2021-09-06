@@ -25,10 +25,15 @@ import java.util.Set;
 
 public class Utils {
 
+    // NOTE: SC_UNPROCESSABLE_ENTITY added for retry due to bug W-9768558. Would be removed once this bug is fixed.
     private static Set<Integer> retryStatusCodes = new HashSet<>(Arrays.asList(ExtendedHttpStatusCode.SC_TOO_MANY_REQUESTS,
             ExtendedHttpStatusCode.SC_MOVED_TEMPORARILY,
             ExtendedHttpStatusCode.SC_GATEWAY_TIMEOUT,
-            ExtendedHttpStatusCode.SC_SERVICE_UNAVAILABLE));
+            ExtendedHttpStatusCode.SC_SERVICE_UNAVAILABLE,
+            ExtendedHttpStatusCode.SC_UNPROCESSABLE_ENTITY,
+            ExtendedHttpStatusCode.SC_UNAUTHORIZED,
+            ExtendedHttpStatusCode.SC_INTERNAL_SERVER_ERROR,
+            ExtendedHttpStatusCode.SC_BAD_REQUEST));
 
     private Utils() {
         //NOOP
