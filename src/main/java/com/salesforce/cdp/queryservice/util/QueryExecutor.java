@@ -39,6 +39,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class QueryExecutor {
 
+    private static final Integer DEFAULT_MAX_RETRY = 3;
+    private static final String DEFAULT_MAX_RETRY_STR = DEFAULT_MAX_RETRY.toString();
     private static final OkHttpClient DEFAULT_CLIENT;
     private static final OkHttpClient DEFAULT_QUERY_CLIENT;
 
@@ -51,8 +53,9 @@ public class QueryExecutor {
                 .addInterceptor(new MetadataCacheInterceptor())
                 .build();
         // By default, add retry interceptors only for query service related calls
+        // todo: delay adding retry interceptor so that user configured value can be used
         DEFAULT_QUERY_CLIENT = DEFAULT_CLIENT.newBuilder()
-                .addInterceptor(new RetryInterceptor())
+                .addInterceptor(new RetryInterceptor(DEFAULT_MAX_RETRY))
                 .build();
     }
 
@@ -146,7 +149,7 @@ public class QueryExecutor {
         // todo: add a wrapper for retry mechanism
         RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
                 .handle(TokenException.class)
-                .withMaxRetries(3);
+                .withMaxRetries(getMaxRetries(connection.getClientInfo()));
         try {
             return Failsafe.with(retryPolicy)
                     .get(() -> {
@@ -159,6 +162,14 @@ public class QueryExecutor {
                 throw new SQLException(e.getCause().getMessage(), e.getCause());
             }
             throw new SQLException(e);
+        }
+    }
+
+    private int getMaxRetries(Properties properties) {
+        try {
+            return Integer.parseInt(properties.getProperty(Constants.MAX_RETRIES, DEFAULT_MAX_RETRY_STR));
+        } catch (NumberFormatException e) {
+            return DEFAULT_MAX_RETRY;
         }
     }
 }

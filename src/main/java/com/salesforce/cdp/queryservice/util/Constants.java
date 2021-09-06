@@ -78,6 +78,7 @@ public class Constants {
     public static final String USER = "user";
     public static final String USER_NAME = "userName";
     public static final String PD = "password";
+    public static final String MAX_RETRIES = "maxRetries";
 
     // Response Constants
     public static final String MESSAGE = "message";
