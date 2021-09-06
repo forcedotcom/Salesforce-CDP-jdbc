@@ -41,7 +41,7 @@ import static org.mockito.Mockito.*;
 
 @PrepareForTest({HttpHelper.class, TokenHelper.class})
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("jdk.internal.reflect.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.net.ssl.*"})
 public class QueryExecutorTest {
 
     private QueryExecutor queryExecutor;

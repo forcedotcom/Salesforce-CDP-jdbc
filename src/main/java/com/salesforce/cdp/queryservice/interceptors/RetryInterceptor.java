@@ -28,7 +28,17 @@ import java.io.IOException;
 @Slf4j
 public class RetryInterceptor implements Interceptor {
 
-    private int maxRetryCount = 3;
+    private static final Integer DEFAULT_RETRY_COUNT = 3;
+
+    private final int maxRetryCount;
+
+    public RetryInterceptor() {
+        this(DEFAULT_RETRY_COUNT);
+    }
+
+    public RetryInterceptor(int maxRetryCount) {
+        this.maxRetryCount =  maxRetryCount;
+    }
 
     @NotNull
     @Override
