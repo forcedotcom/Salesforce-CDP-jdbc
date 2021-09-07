@@ -1188,6 +1188,14 @@ public class QueryServiceResultSet implements ResultSet {
         if(resultSet==null)
             return;
 
+        updateState(resultSet);
+    }
+
+    protected ResultSet getNextPageData() throws SQLException {
+        return statement.getNextPage();
+    }
+
+    protected void updateState(ResultSet resultSet) throws SQLException {
         try {
             Field field = QueryServiceResultSet.class.getDeclaredField("data");
             field.setAccessible(true);
@@ -1199,10 +1207,6 @@ public class QueryServiceResultSet implements ResultSet {
             log.error("Error while getting the data from resultset {}", this, e);
             throw new SQLException(e.getMessage());
         }
-    }
-
-    protected ResultSet getNextPageData() throws SQLException {
-        return statement.getNextPage();
     }
 
     private boolean isPaginationRequired() {

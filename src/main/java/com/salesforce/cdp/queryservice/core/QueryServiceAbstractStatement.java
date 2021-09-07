@@ -137,8 +137,7 @@ public abstract class QueryServiceAbstractStatement {
                 columnNames.add(columnName);
                 columnTypes.add(type.getType());
                 columnTypeIds.add(type.getTypeCode());
-                // TODO: remove -1, after scone fix for metadata in v2
-                columnNameToPosition.put(columnName, type.getPlaceInOrder()-1);
+                columnNameToPosition.put(columnName, type.getPlaceInOrder());
             }
         }
 

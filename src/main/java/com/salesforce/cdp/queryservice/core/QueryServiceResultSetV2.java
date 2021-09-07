@@ -51,6 +51,12 @@ public class QueryServiceResultSetV2 extends QueryServiceResultSet {
     }
 
     @Override
+    protected void updateState(ResultSet resultSet) throws SQLException {
+        super.updateState(resultSet);
+        this.nextBatchId = ((QueryServiceResultSetV2)resultSet).nextBatchId;
+    }
+
+    @Override
     protected Object getValue(Object row, String columnLabel) throws SQLException {
         Integer placeInOrder = ((QueryServiceResultSetMetaData)resultSetMetaData).getColumnNameToPosition().get(columnLabel);
         if(placeInOrder==null)
