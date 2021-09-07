@@ -653,20 +653,8 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
-        try {
-            Response response = queryExecutor.getMetadata();
-            if (!response.isSuccessful()) {
-                log.error("Metadata request failed with response code {} and trace-Id {}", response.code(), response.headers().get(Constants.TRACE_ID));
-                HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
-            }
-            MetadataResponse metadataResponse = HttpHelper.handleSuccessResponse(response, MetadataResponse.class, true);
-            return createTableResultSet(metadataResponse, tableNamePattern);
-        } catch (IOException e) {
-            log.info("Exception while getting metadata from query service", e);
-            throw new SQLException(METADATA_EXCEPTION, e);
-        } finally {
-            queryServiceConnection.close();
-        }
+        MetadataResponse metadataResponse = getMetadataResponse();
+        return createTableResultSet(metadataResponse, tableNamePattern);
     }
 
     @Override
@@ -689,19 +677,25 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+        MetadataResponse metadataResponse = getMetadataResponse();
+        return createColumnResultSet(metadataResponse, tableNamePattern);
+    }
+
+    /**
+     * Util method to fetch metadata
+     */
+    MetadataResponse getMetadataResponse() throws SQLException {
         try {
             Response response = queryExecutor.getMetadata();
             if (!response.isSuccessful()) {
-                log.error("Metadata request failed with response code {} and trace-Id {}", response.code(), response.headers().get(Constants.TRACE_ID));
+                log.error("Metadata request failed with response code {} and trace-Id {}",
+                        response.code(), response.headers().get(Constants.TRACE_ID));
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
             }
-            MetadataResponse metadataResponse = HttpHelper.handleSuccessResponse(response, MetadataResponse.class, true);
-            return createColumnResultSet(metadataResponse, tableNamePattern);
+            return HttpHelper.handleSuccessResponse(response, MetadataResponse.class, true);
         } catch (IOException e) {
             log.error("Exception while getting metadata from query service", e);
             throw new SQLException(METADATA_EXCEPTION, e);
-        } finally {
-            queryServiceConnection.close();
         }
     }
 

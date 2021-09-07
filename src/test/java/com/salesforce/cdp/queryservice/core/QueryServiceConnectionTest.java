@@ -16,10 +16,13 @@
 
 package com.salesforce.cdp.queryservice.core;
 
+import com.salesforce.cdp.queryservice.model.MetadataResponse;
 import com.salesforce.cdp.queryservice.util.Constants;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
+import org.powermock.api.support.membermodification.MemberMatcher;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
@@ -28,19 +31,31 @@ import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
+import static org.mockito.Matchers.anyInt;
+import static org.powermock.api.mockito.PowerMockito.doCallRealMethod;
+import static org.powermock.api.mockito.PowerMockito.doReturn;
+import static org.powermock.api.mockito.PowerMockito.doThrow;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.support.membermodification.MemberMatcher.method;
+import static org.powermock.api.support.membermodification.MemberModifier.replace;
+import static org.powermock.api.support.membermodification.MemberModifier.suppress;
 
 @RunWith(PowerMockRunner.class)
+@PrepareForTest({QueryServiceConnection.class})
 public class QueryServiceConnectionTest {
 
     @Test
     @DisplayName("Verify Connection creation and initialization")
-    public void testConnectionCreation() throws SQLException {
+    public void testConnectionCreation() throws Exception {
+        suppress(method(QueryServiceConnection.class, "isValid"));
+
         String serverUrl = "jdbc:queryService-jdbc:mysample://something.my.salesforce.com/";
         Properties properties = new Properties();
         properties.put(Constants.USER_NAME, "test-user");
         properties.put(Constants.USER, "test-user-12");
 
-        QueryServiceConnection connection = new QueryServiceConnection(serverUrl, properties);
+        QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
         String rootUrl = Whitebox.getInternalState(connection, "serviceRootUrl");
         assertThat(rootUrl).isEqualTo("mysample://something.my.salesforce.com");
 
@@ -58,7 +73,7 @@ public class QueryServiceConnectionTest {
         properties.put(Constants.USER, "test-user-12");
         properties.put(Constants.ENABLE_ARROW_STREAM, "true");
 
-        connection = new QueryServiceConnection(serverUrl, properties);
+        connection = spy(new QueryServiceConnection(serverUrl, properties));
         rootUrl = Whitebox.getInternalState(connection, "serviceRootUrl");
         assertThat(rootUrl).isEqualTo("mysample://something.na45.test1.pc-rnd.salesforce.com");
 
@@ -123,5 +138,35 @@ public class QueryServiceConnectionTest {
         }, SQLException.class);
         assertThat(ex).isInstanceOf(SQLException.class);
         assertThat(ex.getMessage()).contains("specified url didn't match any existing envs");
+    }
+
+    @Test
+    @DisplayName("Verify connection setup")
+    public void testIsValid() throws SQLException {
+        replace(MemberMatcher.method(QueryServiceConnection.class, "isValid"))
+                .with((o, m, args) -> {return true;});
+
+        String serverUrl = "jdbc:queryService-jdbc:mysample://something.my.salesforce.com/";
+        Properties properties = new Properties();
+        properties.put(Constants.USER_NAME, "test-user");
+        properties.put(Constants.USER, "test-user-12");
+
+        QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
+        doCallRealMethod().when(connection).isValid(anyInt());
+        QueryServiceMetadata metadata = mock(QueryServiceMetadata.class);
+        doReturn(metadata).when(connection).getMetaData();
+        doReturn(new MetadataResponse()).when(metadata).getMetadataResponse();
+
+        assertThat(connection.isValid(10)).isTrue();
+
+        doThrow(new SQLException()).when(metadata).getMetadataResponse();
+        Throwable ex = catchThrowableOfType(() -> {
+            connection.isValid(10);
+        }, SQLException.class);
+        assertThat(ex).isInstanceOf(SQLException.class);
+
+        // close connection
+        connection.close();
+        assertThat(connection.isValid(10)).isFalse();
     }
 }

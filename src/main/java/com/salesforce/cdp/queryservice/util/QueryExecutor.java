@@ -83,7 +83,7 @@ public class QueryExecutor {
         // fixme: preferably, avoid using optional as parameter type, instead specify nullable value
         log.info("Preparing to execute query {}", sql);
         AnsiQueryRequest ansiQueryRequest = AnsiQueryRequest.builder().sql(sql).build();
-        RequestBody body = RequestBody.create(MediaType.parse(Constants.JSON_CONTENT), new Gson().toJson(ansiQueryRequest));
+        RequestBody body = RequestBody.create(new Gson().toJson(ansiQueryRequest), MediaType.parse(Constants.JSON_CONTENT));
         Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
         StringBuilder url = new StringBuilder(Constants.PROTOCOL)
                 .append(tokenWithTenantUrl.get(Constants.TENANT_URL))

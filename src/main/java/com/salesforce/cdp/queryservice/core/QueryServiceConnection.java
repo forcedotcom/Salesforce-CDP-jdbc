@@ -20,7 +20,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.salesforce.cdp.queryservice.model.Token;
 import com.salesforce.cdp.queryservice.util.Constants;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.*;
@@ -44,6 +43,9 @@ public class QueryServiceConnection implements Connection {
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
         addClientSecretsIfRequired(serviceRootUrl, this.properties);
         this.enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
+
+        // use isValid to test connection
+        this.isValid(20);
     }
 
     /**
@@ -316,7 +318,13 @@ public class QueryServiceConnection implements Connection {
 
     @Override
     public boolean isValid(int timeout) throws SQLException {
-        return BooleanUtils.isFalse(isClosed());
+        if (isClosed()) {
+            return false;
+        }
+        // todo: if there is any other cheaper to check if connection is valid
+        QueryServiceMetadata serviceMetadata = (QueryServiceMetadata) getMetaData();
+        serviceMetadata.getMetadataResponse();
+        return true;
     }
 
     @Override
@@ -387,6 +395,7 @@ public class QueryServiceConnection implements Connection {
     }
 
     private void cleanup() {
+        // todo: shoudn't cleanup also clear/reset properties?
         token = null;
     }
 
