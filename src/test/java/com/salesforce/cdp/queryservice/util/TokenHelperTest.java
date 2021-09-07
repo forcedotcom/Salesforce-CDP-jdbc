@@ -151,7 +151,7 @@ public class TokenHelperTest {
             TokenHelper.getToken(properties, client);
         }, TokenException.class);
         assertThat(ex.getCause()).isInstanceOf(IOException.class);
-        assertThat(ex.getMessage()).contains("expired authorization code");
+        assertThat(ex.getCause().getMessage()).contains("expired authorization code");
     }
 
     @Test
