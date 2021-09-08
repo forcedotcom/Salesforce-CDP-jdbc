@@ -147,10 +147,14 @@ public class QueryExecutor {
             return TokenHelper.getTokenWithUrl(connection.getToken());
         }
         // todo: add a wrapper for retry mechanism
+        //  check if delay or backoff need to introduced b/w each retry
         RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
                 .handle(TokenException.class)
                 .withMaxRetries(getMaxRetries(connection.getClientInfo()));
         try {
+            // failsafe executes the given block and returns the results
+            // the failures are handled according to the policies specified
+            // Here, only one policy is used i.e, retry policy
             return Failsafe.with(retryPolicy)
                     .get(() -> {
                         Token token = TokenHelper.getToken(connection.getClientInfo(), client);
