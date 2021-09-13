@@ -663,7 +663,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
             return createTableResultSet(metadataResponse, tableNamePattern);
         } catch (IOException e) {
             log.info("Exception while getting metadata from query service", e);
-            throw new SQLException(METADATA_EXCEPTION);
+            throw new SQLException(METADATA_EXCEPTION, e);
         } finally {
             queryServiceConnection.close();
         }
@@ -699,7 +699,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
             return createColumnResultSet(metadataResponse, tableNamePattern);
         } catch (IOException e) {
             log.error("Exception while getting metadata from query service", e);
-            throw new SQLException(METADATA_EXCEPTION);
+            throw new SQLException(METADATA_EXCEPTION, e);
         } finally {
             queryServiceConnection.close();
         }

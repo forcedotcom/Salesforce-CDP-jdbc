@@ -50,7 +50,7 @@ public class QueryExecutorTest {
     private QueryServiceConnection connection;
 
     @Before
-    public void init() throws SQLException {
+    public void init() throws Exception {
         Properties properties = new Properties();
         properties.put(Constants.BASE_URL, "https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com");
         properties.put(Constants.CORETOKEN, "Test_Token");
