@@ -20,7 +20,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.salesforce.cdp.queryservice.model.Token;
 import com.salesforce.cdp.queryservice.util.Constants;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.*;
@@ -31,6 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 public class QueryServiceConnection implements Connection {
+
+    private static final String TEST_CONNECT_QUERY = "select 1";
 
     private AtomicBoolean closed = new AtomicBoolean(false);
     private Properties properties;
@@ -44,6 +45,9 @@ public class QueryServiceConnection implements Connection {
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
         addClientSecretsIfRequired(serviceRootUrl, this.properties);
         this.enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
+
+        // use isValid to test connection
+        this.isValid(20);
     }
 
     /**
@@ -316,7 +320,12 @@ public class QueryServiceConnection implements Connection {
 
     @Override
     public boolean isValid(int timeout) throws SQLException {
-        return BooleanUtils.isFalse(isClosed());
+        if (isClosed()) {
+            return false;
+        }
+        try (PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY)) {
+            return statement.execute();
+        }
     }
 
     @Override
@@ -387,6 +396,7 @@ public class QueryServiceConnection implements Connection {
     }
 
     private void cleanup() {
+        // todo: shoudn't cleanup also clear/reset properties?
         token = null;
     }
 
