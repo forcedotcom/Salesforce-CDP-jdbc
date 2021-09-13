@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class QueryServiceConnection implements Connection {
 
+    private static final String TEST_CONNECT_QUERY = "select 1";
+
     private AtomicBoolean closed = new AtomicBoolean(false);
     private Properties properties;
     private final String serviceRootUrl;
@@ -321,10 +323,9 @@ public class QueryServiceConnection implements Connection {
         if (isClosed()) {
             return false;
         }
-        // todo: if there is any other cheaper to check if connection is valid
-        QueryServiceMetadata serviceMetadata = (QueryServiceMetadata) getMetaData();
-        serviceMetadata.getMetadataResponse();
-        return true;
+        try (PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY)) {
+            return statement.execute();
+        }
     }
 
     @Override

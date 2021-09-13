@@ -16,7 +16,6 @@
 
 package com.salesforce.cdp.queryservice.core;
 
-import com.salesforce.cdp.queryservice.model.MetadataResponse;
 import com.salesforce.cdp.queryservice.util.Constants;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -32,6 +31,7 @@ import java.util.Properties;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.doCallRealMethod;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.doThrow;
@@ -153,13 +153,13 @@ public class QueryServiceConnectionTest {
 
         QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
         doCallRealMethod().when(connection).isValid(anyInt());
-        QueryServiceMetadata metadata = mock(QueryServiceMetadata.class);
-        doReturn(metadata).when(connection).getMetaData();
-        doReturn(new MetadataResponse()).when(metadata).getMetadataResponse();
+        QueryServicePreparedStatement preparedStatement = mock(QueryServicePreparedStatement.class);
+        doReturn(preparedStatement).when(connection).prepareStatement(anyString());
+        doReturn(true).when(preparedStatement).execute();
 
         assertThat(connection.isValid(10)).isTrue();
 
-        doThrow(new SQLException()).when(metadata).getMetadataResponse();
+        doThrow(new SQLException()).when(preparedStatement).execute();
         Throwable ex = catchThrowableOfType(() -> {
             connection.isValid(10);
         }, SQLException.class);
