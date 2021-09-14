@@ -81,7 +81,7 @@ public abstract class QueryServiceAbstractStatement {
             return createResultSetFromResponse(queryServiceResponse);
         } catch (IOException e) {
             log.error("Exception while running the query", e);
-            throw new SQLException(QUERY_EXCEPTION);
+            throw new SQLException(QUERY_EXCEPTION, e);
         }
     }
 
@@ -113,8 +113,8 @@ public abstract class QueryServiceAbstractStatement {
         if (queryServiceResponse.getMetadata() == null && queryServiceResponse.getRowCount() > 0) {
             Map<String, Object> row = queryServiceResponse.getData().get(0);
             columnNames = new ArrayList<>(row.keySet());
-            columnTypes = Collections.EMPTY_LIST;
-            columnTypeIds = Collections.EMPTY_LIST;
+            columnTypes = Collections.emptyList();
+            columnTypeIds = Collections.emptyList();
         } else if (queryServiceResponse.getMetadata() != null) {
             log.info("Metadata is {}", queryServiceResponse.getMetadata());
             Map<String, Type> metadata = queryServiceResponse.getMetadata();
@@ -124,9 +124,9 @@ public abstract class QueryServiceAbstractStatement {
                 columnTypeIds.add(metadata.get(columnName).getTypeCode());
             }
         } else {
-            columnNames = Collections.EMPTY_LIST;
-            columnTypes = Collections.EMPTY_LIST;
-            columnTypeIds = Collections.EMPTY_LIST;
+            columnNames = Collections.emptyList();
+            columnTypes = Collections.emptyList();
+            columnTypeIds = Collections.emptyList();
         }
         resultSetMetaData = new QueryServiceResultSetMetaData(columnNames, columnTypes, columnTypeIds);
         log.trace("Received column names are {}", columnNames);

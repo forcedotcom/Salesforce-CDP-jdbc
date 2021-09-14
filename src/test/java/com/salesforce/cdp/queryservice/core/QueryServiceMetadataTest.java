@@ -23,9 +23,7 @@ import okhttp3.*;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -37,13 +35,12 @@ import java.sql.Types;
 import java.util.Properties;
 
 import static com.salesforce.cdp.queryservice.ResponseEnum.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.Mockito.doReturn;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceMetadataTest {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Mock
     private QueryServiceConnection queryServiceConnection;
@@ -74,9 +71,11 @@ public class QueryServiceMetadataTest {
                 message("Unauthorized").
                 body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
         doReturn(response).when(queryExecutor).getMetadata();
-        exceptionRule.expect(SQLException.class);
-        exceptionRule.expectMessage("Internal Server Error");
-        queryServiceMetadata.getTables("", "", "", new String [0]);
+
+        Throwable ex = catchThrowableOfType(() -> {
+            queryServiceMetadata.getTables("", "", "", new String [0]);
+        }, SQLException.class);
+        assertThat(ex.getMessage()).contains("Failed to get the metadata. Please try again");
     }
 
     @Test
@@ -101,9 +100,11 @@ public class QueryServiceMetadataTest {
                 message("Not Found").
                 body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
         doReturn(response).when(queryExecutor).getMetadata();
-        exceptionRule.expect(SQLException.class);
-        exceptionRule.expectMessage(METADATA_EXCEPTION);
-        queryServiceMetadata.getColumns("", "", "", "");
+
+        Throwable ex = catchThrowableOfType(() -> {
+            queryServiceMetadata.getColumns("", "", "", "");
+        }, SQLException.class);
+        assertThat(ex.getMessage()).contains(METADATA_EXCEPTION);
     }
 
     @Test

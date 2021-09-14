@@ -16,19 +16,26 @@
 
 package com.salesforce.cdp.queryservice.util;
 
+import com.google.common.collect.Sets;
 import com.salesforce.cdp.queryservice.interfaces.ExtendedHttpStatusCode;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
 public class Utils {
 
-    private static Set<Integer> retryStatusCodes = new HashSet<>(Arrays.asList(ExtendedHttpStatusCode.SC_TOO_MANY_REQUESTS,
+    // NOTE: SC_UNPROCESSABLE_ENTITY added for retry due to bug W-9768558. Would be removed once this bug is fixed.
+    private static final Set<Integer> retryStatusCodes = Collections.unmodifiableSet(Sets.newHashSet(
+            ExtendedHttpStatusCode.SC_TOO_MANY_REQUESTS,
             ExtendedHttpStatusCode.SC_MOVED_TEMPORARILY,
             ExtendedHttpStatusCode.SC_GATEWAY_TIMEOUT,
-            ExtendedHttpStatusCode.SC_SERVICE_UNAVAILABLE));
+            ExtendedHttpStatusCode.SC_SERVICE_UNAVAILABLE,
+            ExtendedHttpStatusCode.SC_UNPROCESSABLE_ENTITY,
+            ExtendedHttpStatusCode.SC_UNAUTHORIZED,
+            ExtendedHttpStatusCode.SC_INTERNAL_SERVER_ERROR,
+            ExtendedHttpStatusCode.SC_BAD_REQUEST
+    ));
 
     private Utils() {
         //NOOP
@@ -90,7 +97,7 @@ public class Utils {
         }
 
 
-        // Now allocate the new byte array to accomodate for the values, each encoded byte is 3 bytes now, but we already
+        // Now allocate the new byte array to accommodate for the values, each encoded byte is 3 bytes now, but we already
         // have one byte of the three for the original bytes, so we only need to allocate origlength + bytesNeedingReEncode * 2
         byte [] encoded = new byte[byteArray.length + (bytesNeedingReEncode * 2)];
 
