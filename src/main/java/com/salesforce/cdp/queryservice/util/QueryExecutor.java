@@ -150,6 +150,8 @@ public class QueryExecutor {
         //  check if delay or backoff need to introduced b/w each retry
         RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
                 .handle(TokenException.class)
+                .onRetry(e -> log.warn("Failure #{}. Retrying.", e.getAttemptCount()))
+                .onRetriesExceeded(e -> log.warn("Failed to connect. Max retries exceeded."))
                 .withMaxRetries(getMaxRetries(connection.getClientInfo()));
         try {
             // failsafe executes the given block and returns the results
