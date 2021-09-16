@@ -38,6 +38,7 @@ public class QueryServiceConnection implements Connection {
     private final String serviceRootUrl;
     private Token token;
     private boolean enableArrowStream = false;
+    private final boolean isSocksProxyDisabled;
 
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
         this.properties = properties; // fixme: do deeepCopy and modify the props
@@ -45,6 +46,7 @@ public class QueryServiceConnection implements Connection {
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
         addClientSecretsIfRequired(serviceRootUrl, this.properties);
         this.enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
+        this.isSocksProxyDisabled = Boolean.parseBoolean(this.properties.getProperty(Constants.DISABLE_SOCKS_PROXY));
 
         // use isValid to test connection
         this.isValid(20);
@@ -113,6 +115,10 @@ public class QueryServiceConnection implements Connection {
 
     public boolean getEnableArrowStream() {
         return this.enableArrowStream;
+    }
+
+    public boolean isSocksProxyDisabled() {
+        return this.isSocksProxyDisabled;
     }
 
     @Override
