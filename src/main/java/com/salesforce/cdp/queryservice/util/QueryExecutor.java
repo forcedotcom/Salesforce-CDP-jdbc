@@ -22,7 +22,6 @@ import com.salesforce.cdp.queryservice.interceptors.MetadataCacheInterceptor;
 import com.salesforce.cdp.queryservice.interceptors.RetryInterceptor;
 import com.salesforce.cdp.queryservice.model.AnsiQueryRequest;
 import com.salesforce.cdp.queryservice.model.Token;
-import com.salesforce.cdp.queryservice.util.internal.SFDefaultProxySelectorWrapper;
 import com.salesforce.cdp.queryservice.util.internal.SFDefaultSocketFactoryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
@@ -53,7 +52,6 @@ public class QueryExecutor {
                 .callTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
                 .retryOnConnectionFailure(true)
                 .socketFactory(new SFDefaultSocketFactoryWrapper(false))
-                .proxySelector(new SFDefaultProxySelectorWrapper())
                 .addInterceptor(new MetadataCacheInterceptor())
                 .build();
         // By default, add retry interceptors only for query service related calls
