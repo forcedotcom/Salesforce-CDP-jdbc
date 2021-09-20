@@ -108,10 +108,10 @@ public enum ResponseEnum {
             "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\",\n" +
             "    \"done\": true," +
             "    \"metadata\": {\n" +
-            "        \"count_num\": {\n" +
+            "        \"telephonenumber__c\": {\n" +
             "            \"placeInOrder\": 0,\n" +
-            "            \"typeCode\": 3,\n" +
-            "            \"type\": \"DECIMAL\"\n" +
+            "            \"typeCode\": 12,\n" +
+            "            \"type\": \"VARCHAR\"\n" +
             "        }\n" +
             "} \n" +
             "}"),
@@ -147,10 +147,10 @@ public enum ResponseEnum {
             "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\",\n" +
             "    \"done\": false," +
             "    \"metadata\": {\n" +
-            "        \"count_num\": {\n" +
+            "        \"telephonenumber__c\": {\n" +
             "            \"placeInOrder\": 0,\n" +
-            "            \"typeCode\": 3,\n" +
-            "            \"type\": \"DECIMAL\"\n" +
+            "            \"typeCode\": 12,\n" +
+            "            \"type\": \"VARCHAR\"\n" +
             "        }\n" +
             "} \n" +
             "}"),
@@ -180,10 +180,10 @@ public enum ResponseEnum {
             "    \"rowCount\": 2,\n" +
             "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\"," +
             "    \"metadata\": {\n" +
-            "        \"count_num\": {\n" +
+            "        \"telephonenumber__c\": {\n" +
             "            \"placeInOrder\": 0,\n" +
-            "            \"typeCode\": 3,\n" +
-            "            \"type\": \"DECIMAL\"\n" +
+            "            \"typeCode\": 12,\n" +
+            "            \"type\": \"VARCHAR\"\n" +
             "        }\n" +
             "} \n" +
             "}"),

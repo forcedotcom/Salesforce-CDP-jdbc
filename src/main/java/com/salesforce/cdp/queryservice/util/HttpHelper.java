@@ -27,7 +27,7 @@ import okhttp3.Response;
 import org.apache.commons.collections4.MapUtils;
 
 import java.io.IOException;
-import java.sql.SQLException;
+import java.util.Locale;
 import java.util.Map;
 
 @Slf4j
@@ -35,15 +35,17 @@ public class HttpHelper {
 
     private static final ObjectReader mapperReader = new ObjectMapper().reader();
 
-    public static void handleErrorResponse(Response response, String propertyName) throws IOException, SQLException {
+    public static void handleErrorResponse(Response response, String propertyName) throws IOException {
         handleErrorResponse(response.body().string(), propertyName);
     }
 
-    public static void handleErrorResponse(String response, String propertyName) throws IOException, SQLException {
+    public static void handleErrorResponse(String response, String propertyName) throws IOException {
         ObjectNode node = mapperReader.readValue(response, ObjectNode.class);
         JsonNode jsonNode = node.get(propertyName);
-        String message = jsonNode == null ? String.format("Property %s is not defined", propertyName) : node.get(propertyName).asText();
-        throw new SQLException(message);
+        String message = jsonNode == null ?
+                String.format(Locale.ROOT, "Property %s is not defined", propertyName) :
+                node.get(propertyName).asText();
+        throw new IOException(message);
     }
 
     public static <T> T handleSuccessResponse(Response response, Class<T> type, boolean cacheResponse) throws IOException {
@@ -62,11 +64,9 @@ public class HttpHelper {
     protected static Request buildRequest(String method, String url, RequestBody body, Map<String, String> headers) {
         Request.Builder builder = new Request.Builder()
                 .url(url)
-                .method(method, body == null ? null : body);
+                .method(method, body);
         if (!MapUtils.isEmpty(headers)) {
-            for (String key : headers.keySet()) {
-                builder.addHeader(key, headers.get(key));
-            }
+            headers.forEach(builder::addHeader);
         }
         if (!headers.containsKey(Constants.USER_AGENT)) {
             builder.addHeader(Constants.USER_AGENT, Constants.USER_AGENT_VALUE);

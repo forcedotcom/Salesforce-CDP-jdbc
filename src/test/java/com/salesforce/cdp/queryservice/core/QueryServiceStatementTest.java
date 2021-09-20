@@ -22,12 +22,12 @@ import com.salesforce.cdp.queryservice.util.QueryExecutor;
 import com.salesforce.cdp.queryservice.ResponseEnum;
 import okhttp3.*;
 import org.apache.http.HttpStatus;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
-import static org.junit.Assert.assertThat;
+
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -45,9 +45,6 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServiceStatementTest {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Mock
     private QueryServiceConnection queryServiceConnection;
@@ -76,9 +73,11 @@ public class QueryServiceStatementTest {
                 message("Unauthorized").
                 body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
         doReturn(response).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
-        exceptionRule.expect(SQLException.class);
-        exceptionRule.expectMessage("Authorization header verification failed");
-        queryServiceStatement.executeQuery("select FirstName__c from Individual__dlm limit 10");
+
+        Throwable ex = catchThrowableOfType(() -> {
+            queryServiceStatement.executeQuery("select FirstName__c from Individual__dlm limit 10");
+        }, SQLException.class);
+        Assertions.assertThat(ex.getMessage()).contains("Failed to get the response for the query. Please try again.");
     }
 
     @Test
@@ -116,9 +115,10 @@ public class QueryServiceStatementTest {
     @Test
     public void testExceuteQueryWithIOException() throws IOException, SQLException {
         doThrow(new IOException("IO Exception")).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
-        exceptionRule.expect(SQLException.class);
-        exceptionRule.expectMessage(QUERY_EXCEPTION);
-        queryServiceStatement.executeQuery("select FirstName__c from Individual__dlm limit 10");
+        Throwable ex = catchThrowableOfType(() -> {
+            queryServiceStatement.executeQuery("select FirstName__c from Individual__dlm limit 10");
+        }, SQLException.class);
+        Assertions.assertThat(ex.getMessage()).contains(QUERY_EXCEPTION);
     }
 
     @Test

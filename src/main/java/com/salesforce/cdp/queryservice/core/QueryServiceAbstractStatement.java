@@ -91,7 +91,7 @@ public abstract class QueryServiceAbstractStatement {
             return createResultSetFromResponse(queryServiceResponse, true);
         } catch (IOException e) {
             log.error("Exception while running the query", e);
-            throw new SQLException(QUERY_EXCEPTION);
+            throw new SQLException(QUERY_EXCEPTION, e);
         }
     }
 
