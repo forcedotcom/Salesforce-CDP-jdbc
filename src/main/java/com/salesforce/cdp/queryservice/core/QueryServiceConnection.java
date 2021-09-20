@@ -48,8 +48,11 @@ public class QueryServiceConnection implements Connection {
 
         // default `enableArrowStream` is false
         enableArrowStream = Constants.TRUE_STR.equalsIgnoreCase((String) this.properties.get(Constants.ENABLE_ARROW_STREAM));
-        // default `isCursorBasedPaginationReq` is true
-        isCursorBasedPaginationReq = !Constants.FALSE_STR.equalsIgnoreCase((String) this.properties.get(Constants.CURSOR_BASED_PAGINATION));
+
+//        // default `isCursorBasedPaginationReq` is true
+//        isCursorBasedPaginationReq = !Constants.FALSE_STR.equalsIgnoreCase((String) this.properties.get(Constants.CURSOR_BASED_PAGINATION));
+        // default `isCursorBasedPaginationReq` is kept false till query-service v2 prod release
+        isCursorBasedPaginationReq = Constants.TRUE_STR.equalsIgnoreCase((String) this.properties.get(Constants.CURSOR_BASED_PAGINATION));
 
         // use isValid to test connection
         this.isValid(20);
