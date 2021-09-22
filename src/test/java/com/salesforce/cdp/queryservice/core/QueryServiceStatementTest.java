@@ -228,7 +228,7 @@ public class QueryServiceStatementTest {
 
     private Request buildRequest() {
         return new Request.Builder()
-                .url("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL)
+                .url("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL + Constants.QUESTION_MARK)
                 .method(Constants.POST, RequestBody.create("{test: test}", MediaType.parse("application/json")))
                 .build();
     }
