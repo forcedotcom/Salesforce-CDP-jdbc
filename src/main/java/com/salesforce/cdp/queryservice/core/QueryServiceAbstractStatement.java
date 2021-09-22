@@ -61,11 +61,13 @@ public abstract class QueryServiceAbstractStatement {
     public ResultSet executeQuery(String sql) throws SQLException {
         try {
             this.sql = sql;
-            boolean isTableauQuery = isTableauQuery();
-            Optional<Integer> limit = isTableauQuery ? Optional.of(Constants.MAX_LIMIT) : Optional.empty();
-            Optional<String> orderby = isTableauQuery ? Optional.of("1 ASC") : Optional.empty();
-
             boolean isCursorBasedPaginationReq = this.connection.isCursorBasedPaginationReq();
+
+            boolean requireManagedPagination = isTableauQuery() && !isCursorBasedPaginationReq;
+            Optional<Integer> limit = requireManagedPagination ? Optional.of(Constants.MAX_LIMIT) : Optional.empty();
+            Optional<String> orderby = requireManagedPagination ? Optional.of("1 ASC") : Optional.empty();
+
+
 
             Response response = queryExecutor.executeQuery(sql, isCursorBasedPaginationReq, limit, Optional.of(offset), orderby);
             if (!response.isSuccessful()) {
