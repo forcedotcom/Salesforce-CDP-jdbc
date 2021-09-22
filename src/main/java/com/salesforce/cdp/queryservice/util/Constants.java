@@ -69,6 +69,7 @@ public class Constants {
     public static final String JSON_CONTENT = "application/json";
     public static final String URL_ENCODED_CONTENT = "application/x-www-form-urlencoded";
     public static final String ENABLE_ARROW_STREAM = "enable-arrow-stream";
+    public static final String DISABLE_SOCKS_PROXY = "disableSocksProxy";
 
     // Property Constants
     public static final String CORETOKEN = "coreToken";
