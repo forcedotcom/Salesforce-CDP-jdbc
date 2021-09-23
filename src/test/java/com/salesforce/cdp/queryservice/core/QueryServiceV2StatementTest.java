@@ -135,8 +135,7 @@ public class QueryServiceV2StatementTest {
         ArgumentCaptor<Optional> captor = ArgumentCaptor.forClass(Optional.class);
         verify(queryExecutor, times(1)).executeQuery(eq("select Id__c, FirstName__c from UnifiedIndividual__dlm limit 1"),  anyBoolean(), any(Optional.class), any(Optional.class), captor.capture());
         Optional<String> value = captor.getValue();
-        String val = value.get();
-        Assert.assertEquals(val, "1 ASC");
+        Assert.assertEquals(value, Optional.empty());
     }
 
     private Request buildRequest() {
