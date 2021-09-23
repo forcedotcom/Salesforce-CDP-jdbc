@@ -13,6 +13,8 @@ public class Messages {
 
     public static String FAILED_LOGIN = "Failed to login. Please check credentials";
 
+    public static String FAILED_LOGIN_2 = "Failed to login(2). Please check credentials";
+
     public static String RENEW_TOKEN = "Failed to Renew Token. Please retry";
 
 }

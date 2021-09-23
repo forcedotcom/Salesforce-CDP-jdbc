@@ -22,6 +22,7 @@ import com.salesforce.cdp.queryservice.interceptors.MetadataCacheInterceptor;
 import com.salesforce.cdp.queryservice.interceptors.RetryInterceptor;
 import com.salesforce.cdp.queryservice.model.AnsiQueryRequest;
 import com.salesforce.cdp.queryservice.model.Token;
+import com.salesforce.cdp.queryservice.util.internal.SFDefaultSocketFactoryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.FailsafeException;
@@ -50,6 +51,7 @@ public class QueryExecutor {
                 .connectTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
                 .callTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
                 .retryOnConnectionFailure(true)
+                .socketFactory(new SFDefaultSocketFactoryWrapper(false))
                 .addInterceptor(new MetadataCacheInterceptor())
                 .build();
         // By default, add retry interceptors only for query service related calls
@@ -75,8 +77,10 @@ public class QueryExecutor {
         // fixme: even though constructor is public currently, it is not possible
         //  for users to specify custom Client as part of connection creation
         this.connection = connection;
-        this.client = client;
-        this.queryClient = client;
+
+        // this makes query executor not reuse across requests
+        this.client = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
+        this.queryClient = updateClientWithSocketFactory(queryClient, connection.isSocksProxyDisabled());
     }
 
     public Response executeQuery(String sql, boolean isV2Query, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
@@ -165,6 +169,8 @@ public class QueryExecutor {
         //  check if delay or backoff need to introduced b/w each retry
         RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
                 .handle(TokenException.class)
+                .onRetry(e -> log.warn("Failure #{}. Retrying.", e.getAttemptCount()))
+                .onRetriesExceeded(e -> log.warn("Failed to connect. Max retries exceeded."))
                 .withMaxRetries(getMaxRetries(connection.getClientInfo()));
         try {
             // failsafe executes the given block and returns the results
@@ -191,4 +197,14 @@ public class QueryExecutor {
             return DEFAULT_MAX_RETRY;
         }
     }
+
+    private static OkHttpClient updateClientWithSocketFactory(OkHttpClient client, boolean isSocksProxyDisabled) {
+        if (isSocksProxyDisabled) {
+            return client.newBuilder()
+                    .socketFactory(new SFDefaultSocketFactoryWrapper(true))
+                    .build();
+        }
+        return client;
+    }
+
 }
