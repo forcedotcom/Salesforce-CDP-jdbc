@@ -38,6 +38,7 @@ public class QueryServiceConnection implements Connection {
     private final String serviceRootUrl;
     private Token token;
     private boolean enableArrowStream = false;
+    private boolean isCursorBasedPaginationReq = true;
     private final boolean isSocksProxyDisabled;
 
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
@@ -45,7 +46,13 @@ public class QueryServiceConnection implements Connection {
         this.serviceRootUrl = getServiceRootUrl(url);
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
         addClientSecretsIfRequired(serviceRootUrl, this.properties);
-        this.enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
+
+        // default `enableArrowStream` is false
+        enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
+
+        // default `isCursorBasedPaginationReq` is kept false till query-service v2 prod release
+        isCursorBasedPaginationReq = Boolean.parseBoolean(this.properties.getProperty(Constants.CURSOR_BASED_PAGINATION));
+
         this.isSocksProxyDisabled = Boolean.parseBoolean(this.properties.getProperty(Constants.DISABLE_SOCKS_PROXY));
 
         // use isValid to test connection
@@ -115,6 +122,10 @@ public class QueryServiceConnection implements Connection {
 
     public boolean getEnableArrowStream() {
         return this.enableArrowStream;
+    }
+
+    public boolean isCursorBasedPaginationReq() {
+        return this.isCursorBasedPaginationReq;
     }
 
     public boolean isSocksProxyDisabled() {

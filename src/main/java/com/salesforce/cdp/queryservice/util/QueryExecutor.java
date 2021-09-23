@@ -83,7 +83,7 @@ public class QueryExecutor {
         this.queryClient = updateClientWithSocketFactory(queryClient, connection.isSocksProxyDisabled());
     }
 
-    public Response executeQuery(String sql, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
+    public Response executeQuery(String sql, boolean isV2Query, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
         // fixme: preferably, avoid using optional as parameter type, instead specify nullable value
         log.info("Preparing to execute query {}", sql);
         AnsiQueryRequest ansiQueryRequest = AnsiQueryRequest.builder().sql(sql).build();
@@ -91,8 +91,9 @@ public class QueryExecutor {
         Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
         StringBuilder url = new StringBuilder(Constants.PROTOCOL)
                 .append(tokenWithTenantUrl.get(Constants.TENANT_URL))
-                .append(Constants.CDP_URL)
-                .append(Constants.ANSI_SQL_URL);
+                .append(isV2Query ? Constants.CDP_URL_V2: Constants.CDP_URL)
+                .append(Constants.ANSI_SQL_URL)
+                .append(Constants.QUESTION_MARK);
         if (limit.isPresent()) {
             url.append(Constants.LIMIT).append(limit.get()).append(Constants.AND);
         }
@@ -103,6 +104,20 @@ public class QueryExecutor {
             url.append(Constants.ORDERBY).append(orderby.get());
         }
         Request request = HttpHelper.buildRequest(Constants.POST, url.toString(), body, createHeaders(tokenWithTenantUrl, this.connection.getEnableArrowStream()));
+        return getResponse(request);
+    }
+
+    public Response executeNextBatchQuery(String nextBatchId) throws IOException, SQLException {
+        log.info("Preparing to execute query for nextBatch {}", nextBatchId);
+        Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
+        StringBuilder url = new StringBuilder(Constants.PROTOCOL + tokenWithTenantUrl.get(Constants.TENANT_URL)
+                + Constants.CDP_URL_V2
+                + Constants.ANSI_SQL_URL
+                + Constants.SLASH
+                + nextBatchId
+        );
+
+        Request request = HttpHelper.buildRequest(Constants.GET, url.toString(), null, createHeaders(tokenWithTenantUrl, this.connection.getEnableArrowStream()));
         return getResponse(request);
     }
 
@@ -138,7 +153,7 @@ public class QueryExecutor {
         headers.put(Constants.AUTHORIZATION, tokenWithTenantUrl.get(Constants.ACCESS_TOKEN));
         headers.put(Constants.CONTENT_TYPE, Constants.JSON_CONTENT);
         if(enableArrowStream) {
-            headers.put(Constants.ENABLE_ARROW_STREAM,"true");
+            headers.put(Constants.ENABLE_ARROW_STREAM, Constants.TRUE_STR);
         }
         if (properties.containsKey(Constants.USER_AGENT)) {
             headers.put(Constants.USER_AGENT, properties.get(Constants.USER_AGENT).toString());

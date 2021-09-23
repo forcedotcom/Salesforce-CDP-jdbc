@@ -39,7 +39,7 @@ public class MetadataCacheInterceptor implements Interceptor {
             response = new Response.Builder().code(HttpStatus.SC_OK).
                     request(request).protocol(Protocol.HTTP_1_1).
                     message("OK").
-                    addHeader("from-local-cache", "true").
+                    addHeader("from-local-cache", Constants.TRUE_STR).
                     body(ResponseBody.create(responseString, MediaType.parse(Constants.JSON_CONTENT))).build();
         } else {
             log.trace("Cache miss for metadata response. Getting from server");

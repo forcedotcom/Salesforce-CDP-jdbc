@@ -19,7 +19,6 @@ package com.salesforce.cdp.queryservice.util;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.model.Token;
 import okhttp3.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,14 +72,22 @@ public class QueryExecutorTest {
         PowerMockito.mockStatic(TokenHelper.class);
         when(TokenHelper.getToken(any(Properties.class), any(OkHttpClient.class))).thenReturn(getToken());
         when(TokenHelper.getTokenWithUrl(any(Token.class))).thenReturn(getTokenWithUrl());
-        when(HttpHelper.buildRequest(anyString(), anyString(), any(RequestBody.class), any(Map.class))).thenReturn(buildRequest());
+        when(HttpHelper.buildRequest(anyString(), anyString(), any(RequestBody.class), any(Map.class))).thenReturn(buildRequest(false));
     }
 
     @Test
     public void testExecuteQuery() throws IOException, SQLException {
-        queryExecutor.executeQuery("select FirstName__c from Individual__dlm limit 10", Optional.empty(), Optional.empty(), Optional.empty());
+        queryExecutor.executeQuery("select FirstName__c from Individual__dlm limit 10", false, Optional.empty(), Optional.empty(), Optional.empty());
         PowerMockito.verifyStatic();
-        HttpHelper.buildRequest(eq(Constants.POST), eq("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL), any(RequestBody.class), any(Map.class));
+        HttpHelper.buildRequest(eq(Constants.POST), eq("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL + Constants.QUESTION_MARK), any(RequestBody.class), any(Map.class));
+    }
+
+    @Test
+    public void testExecuteQueryV2() throws IOException, SQLException {
+        when(HttpHelper.buildRequest(anyString(), anyString(), any(RequestBody.class), any(Map.class))).thenReturn(buildRequest(true));
+        queryExecutor.executeQuery("select FirstName__c from Individual__dlm limit 10", true, Optional.empty(), Optional.empty(), Optional.empty());
+        PowerMockito.verifyStatic(times(1));
+        HttpHelper.buildRequest(eq(Constants.POST), eq("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL_V2 + Constants.ANSI_SQL_URL + Constants.QUESTION_MARK), any(RequestBody.class), any(Map.class));
     }
 
     @Test
@@ -92,9 +99,9 @@ public class QueryExecutorTest {
 
     @Test
     public void testExecuteQueryWithOptionalParams() throws IOException, SQLException {
-        queryExecutor.executeQuery("select FirstName__c from Individual__dlm limit 10", Optional.of(10), Optional.of(10), Optional.of("1 ASC"));
+        queryExecutor.executeQuery("select FirstName__c from Individual__dlm limit 10", false, Optional.of(10), Optional.of(10), Optional.of("1 ASC"));
         PowerMockito.verifyStatic();
-        HttpHelper.buildRequest(eq(Constants.POST), eq("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL + "limit=10&offset=10&orderby=1 ASC")
+        HttpHelper.buildRequest(eq(Constants.POST), eq("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL + Constants.QUESTION_MARK + "limit=10&offset=10&orderby=1 ASC")
                 , any(RequestBody.class), any(Map.class));
     }
 
@@ -112,9 +119,9 @@ public class QueryExecutorTest {
         return tokenMap;
     }
 
-    private Request buildRequest() {
+    private Request buildRequest(boolean isV2) {
         return new Request.Builder()
-                .url("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.ANSI_SQL_URL)
+                .url("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + (isV2 ? Constants.CDP_URL_V2: Constants.CDP_URL) + Constants.ANSI_SQL_URL + Constants.QUESTION_MARK)
                 .method(Constants.POST, RequestBody.create("{test: test}", MediaType.parse("application/json")))
                 .build();
     }

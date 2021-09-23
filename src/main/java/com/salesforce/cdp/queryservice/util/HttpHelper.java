@@ -55,8 +55,7 @@ public class HttpHelper {
     }
 
     public static <T> T handleSuccessResponse(String responseString, Class<T> type) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(responseString, type);
+        return new ObjectMapper().readValue(responseString, type);
     }
 
     protected static Request buildRequest(String method, String url, RequestBody body, Map<String, String> headers) {
