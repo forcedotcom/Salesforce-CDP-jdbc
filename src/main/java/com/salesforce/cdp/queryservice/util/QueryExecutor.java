@@ -22,6 +22,7 @@ import com.salesforce.cdp.queryservice.interceptors.MetadataCacheInterceptor;
 import com.salesforce.cdp.queryservice.interceptors.RetryInterceptor;
 import com.salesforce.cdp.queryservice.model.AnsiQueryRequest;
 import com.salesforce.cdp.queryservice.model.Token;
+import com.salesforce.cdp.queryservice.util.internal.SFDefaultSocketFactoryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.FailsafeException;
@@ -50,6 +51,7 @@ public class QueryExecutor {
                 .connectTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
                 .callTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
                 .retryOnConnectionFailure(true)
+                .socketFactory(new SFDefaultSocketFactoryWrapper(false))
                 .addInterceptor(new MetadataCacheInterceptor())
                 .build();
         // By default, add retry interceptors only for query service related calls
@@ -75,11 +77,13 @@ public class QueryExecutor {
         // fixme: even though constructor is public currently, it is not possible
         //  for users to specify custom Client as part of connection creation
         this.connection = connection;
-        this.client = client;
-        this.queryClient = client;
+
+        // this makes query executor not reuse across requests
+        this.client = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
+        this.queryClient = updateClientWithSocketFactory(queryClient, connection.isSocksProxyDisabled());
     }
 
-    public Response executeQuery(String sql, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
+    public Response executeQuery(String sql, boolean isV2Query, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
         // fixme: preferably, avoid using optional as parameter type, instead specify nullable value
         log.info("Preparing to execute query {}", sql);
         AnsiQueryRequest ansiQueryRequest = AnsiQueryRequest.builder().sql(sql).build();
@@ -87,8 +91,9 @@ public class QueryExecutor {
         Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
         StringBuilder url = new StringBuilder(Constants.PROTOCOL)
                 .append(tokenWithTenantUrl.get(Constants.TENANT_URL))
-                .append(Constants.CDP_URL)
-                .append(Constants.ANSI_SQL_URL);
+                .append(isV2Query ? Constants.CDP_URL_V2: Constants.CDP_URL)
+                .append(Constants.ANSI_SQL_URL)
+                .append(Constants.QUESTION_MARK);
         if (limit.isPresent()) {
             url.append(Constants.LIMIT).append(limit.get()).append(Constants.AND);
         }
@@ -99,6 +104,20 @@ public class QueryExecutor {
             url.append(Constants.ORDERBY).append(orderby.get());
         }
         Request request = HttpHelper.buildRequest(Constants.POST, url.toString(), body, createHeaders(tokenWithTenantUrl, this.connection.getEnableArrowStream()));
+        return getResponse(request);
+    }
+
+    public Response executeNextBatchQuery(String nextBatchId) throws IOException, SQLException {
+        log.info("Preparing to execute query for nextBatch {}", nextBatchId);
+        Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
+        StringBuilder url = new StringBuilder(Constants.PROTOCOL + tokenWithTenantUrl.get(Constants.TENANT_URL)
+                + Constants.CDP_URL_V2
+                + Constants.ANSI_SQL_URL
+                + Constants.SLASH
+                + nextBatchId
+        );
+
+        Request request = HttpHelper.buildRequest(Constants.GET, url.toString(), null, createHeaders(tokenWithTenantUrl, this.connection.getEnableArrowStream()));
         return getResponse(request);
     }
 
@@ -134,7 +153,7 @@ public class QueryExecutor {
         headers.put(Constants.AUTHORIZATION, tokenWithTenantUrl.get(Constants.ACCESS_TOKEN));
         headers.put(Constants.CONTENT_TYPE, Constants.JSON_CONTENT);
         if(enableArrowStream) {
-            headers.put(Constants.ENABLE_ARROW_STREAM,"true");
+            headers.put(Constants.ENABLE_ARROW_STREAM, Constants.TRUE_STR);
         }
         if (properties.containsKey(Constants.USER_AGENT)) {
             headers.put(Constants.USER_AGENT, properties.get(Constants.USER_AGENT).toString());
@@ -150,6 +169,8 @@ public class QueryExecutor {
         //  check if delay or backoff need to introduced b/w each retry
         RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
                 .handle(TokenException.class)
+                .onRetry(e -> log.warn("Failure #{}. Retrying.", e.getAttemptCount()))
+                .onRetriesExceeded(e -> log.warn("Failed to connect. Max retries exceeded."))
                 .withMaxRetries(getMaxRetries(connection.getClientInfo()));
         try {
             // failsafe executes the given block and returns the results
@@ -176,4 +197,14 @@ public class QueryExecutor {
             return DEFAULT_MAX_RETRY;
         }
     }
+
+    private static OkHttpClient updateClientWithSocketFactory(OkHttpClient client, boolean isSocksProxyDisabled) {
+        if (isSocksProxyDisabled) {
+            return client.newBuilder()
+                    .socketFactory(new SFDefaultSocketFactoryWrapper(true))
+                    .build();
+        }
+        return client;
+    }
+
 }

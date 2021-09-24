@@ -18,28 +18,27 @@ package com.salesforce.cdp.queryservice.util;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.primitives.Bytes;
 import com.salesforce.cdp.queryservice.model.CoreTokenRenewResponse;
 import com.salesforce.cdp.queryservice.model.Token;
 
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.salesforce.cdp.queryservice.util.Messages.FAILED_LOGIN;
+import static com.salesforce.cdp.queryservice.util.Messages.FAILED_LOGIN_2;
 import static com.salesforce.cdp.queryservice.util.Messages.RENEW_TOKEN;
 import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_EXCHANGE_FAILURE;
 import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_FETCH_FAILURE;
@@ -110,12 +109,12 @@ public class TokenHelper {
             // And handle the initial login *without* immutables. This ensures that nothing
             // is allocated in memory that cannot be cleared on demand, and thus we aren't
             // at the garbage collectors mercy.
-            String response = un_pw_login(Constants.TOKEN_GRANT_TYPE_PD,
+            Response response = un_pw_login(Constants.TOKEN_GRANT_TYPE_PD,
                                           properties.getProperty(Constants.CLIENT_ID),
                                           clientSecret,
                                           properties.getProperty(Constants.USER_NAME),
                                           passwordBytes,
-                                          token_url);
+                                          token_url, client);
 
 
             // Then get rid of the secrets from memory
@@ -124,7 +123,7 @@ public class TokenHelper {
             fillArray(clientSecret, (byte)0);
 
             // And exchange the UN/PW flow authtoken for a scoped bearer token.
-            coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class);
+            coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class, false);
             return exchangeToken(coreTokenRenewResponse.getInstance_url(), coreTokenRenewResponse.getAccess_token(), client);
         } catch (IOException e) {
             log.error("Caught exception while retrieving the token", e);
@@ -183,7 +182,7 @@ public class TokenHelper {
             token.setExpire_time(expire_time);
             return token;
         } catch (IOException e) {
-            log.error("Caught exception while getting the offcore token", e);
+            log.error("Caught exception while exchanging the offcore token", e);
             invalidateCoreToken(url, coreToken, client);
             throw new TokenException(TOKEN_EXCHANGE_FAILURE, e);
         }
@@ -213,12 +212,13 @@ public class TokenHelper {
             Request request = HttpHelper.buildRequest(Constants.POST, url, formBody.build(), headers);
             Response response = client.newCall(request).execute();
             if (!response.isSuccessful()) {
-                log.error("Token exchange failed with status code {}", response.code());
+                log.error("login failed with status code {}", response.code());
                 HttpHelper.handleErrorResponse(response, Constants.ERROR_DESCRIPTION);
             }
             return response;
         } catch (IOException e) {
-            throw new TokenException(FAILED_LOGIN, e);
+            log.error("login failed", e);
+            throw new TokenException(FAILED_LOGIN_2, e);
         }
     }
 
@@ -239,70 +239,41 @@ public class TokenHelper {
         }
     }
 
-    private static String un_pw_login(String grantType, String clientId, byte[] clientSecret, String userName, byte[] passwordBytes, String tokenUrl) throws IOException
-    {
-        byte[] grantTypeSegment = (Constants.GRANT_TYPE_NAME + Constants.TOKEN_ASSIGNMENT + grantType).getBytes(StandardCharsets.UTF_8);
-        byte[] clientIdSegment = (Constants.CLIENT_ID_NAME + Constants.TOKEN_ASSIGNMENT + clientId).getBytes(StandardCharsets.UTF_8);
-        byte[] clientSecretSegment = (Constants.CLIENT_SECRET_NAME + Constants.TOKEN_ASSIGNMENT).getBytes(StandardCharsets.UTF_8);
-        byte[] userNameSegment = (Constants.CLIENT_USER_NAME + Constants.TOKEN_ASSIGNMENT + URLEncoder.encode(userName)).getBytes(StandardCharsets.UTF_8);
+    private static Response un_pw_login(
+            String grantType, String clientId, byte[] clientSecret,
+            String userName, byte[] passwordBytes,
+            String tokenUrl, OkHttpClient client
+    ) throws TokenException {
+        byte[] grantTypeSegment = (Constants.GRANT_TYPE_NAME + Constants.TOKEN_ASSIGNMENT + grantType)
+                .getBytes(StandardCharsets.UTF_8);
+        byte[] clientIdSegment = (Constants.CLIENT_ID_NAME + Constants.TOKEN_ASSIGNMENT + clientId)
+                .getBytes(StandardCharsets.UTF_8);
+        byte[] clientSecretSegment = (Constants.CLIENT_SECRET_NAME + Constants.TOKEN_ASSIGNMENT)
+                .getBytes(StandardCharsets.UTF_8);
+        byte[] userNameSegment = (Constants.CLIENT_USER_NAME + Constants.TOKEN_ASSIGNMENT +
+                URLEncoder.encode(userName)).getBytes(StandardCharsets.UTF_8);
         byte[] passwordSegment = (Constants.CLIENT_PD + Constants.TOKEN_ASSIGNMENT).getBytes(StandardCharsets.UTF_8);
         byte[] separator = Constants.TOKEN_SEPARATOR.getBytes(StandardCharsets.UTF_8);
 
-
-        // Pre-calculate the size of the postdata in bytes we'll be sending for Content-Length.
-        int postDataLength = grantTypeSegment.length +
-                separator.length +
-                clientIdSegment.length +
-                separator.length +
-                clientSecretSegment.length +
-                clientSecret.length +
-                separator.length +
-                userNameSegment.length +
-                separator.length +
-                passwordSegment.length +
-                passwordBytes.length;
-
-
-        // Setup the connection parameters and write out the POST body
-        HttpURLConnection connection = (HttpURLConnection)(new URL(tokenUrl).openConnection());
-        connection.setDoOutput(true);
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("User-Agent", "cdp/jdbc");
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        connection.setRequestProperty("Content-Length", Integer.toString(postDataLength));
-        connection.setRequestProperty("Connection", "Keep-Alive");
-        connection.setUseCaches(false);
-
-        OutputStream os = connection.getOutputStream();
-        os.write(grantTypeSegment);
-        os.write(separator);
-        os.write(clientIdSegment);
-        os.write(separator);
-        os.write(clientSecretSegment);
-        os.write(clientSecret);
-        os.write(separator);
-        os.write(userNameSegment);
-        os.write(separator);
-        os.write(passwordSegment);
-        os.write(passwordBytes);
-        os.flush();
-
-        // Read back the response body.
-        BufferedReader br = new BufferedReader(new InputStreamReader((connection.getInputStream())));
-        StringBuilder sb = new StringBuilder();
-        String output;
-        while ((output = br.readLine()) != null) {
-            sb.append(output);
+        byte[] body = Bytes.concat(
+                grantTypeSegment, separator, clientIdSegment, separator, clientSecretSegment, clientSecret,
+                separator, userNameSegment, separator, passwordSegment, passwordBytes
+        );
+        try {
+            RequestBody requestBody = RequestBody.create(body, MediaType.parse(Constants.URL_ENCODED_CONTENT));
+            Map<String, String> headers = Collections.singletonMap(Constants.CONTENT_TYPE, Constants.URL_ENCODED_CONTENT);
+            Request request = HttpHelper.buildRequest(Constants.POST, tokenUrl, requestBody, headers);
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                log.error("login with user credentials failed with status code {}", response.code());
+                HttpHelper.handleErrorResponse(response, Constants.ERROR_DESCRIPTION);
+            }
+            return response;
+        } catch (IOException e) {
+            log.error("login with user credentials failed", e);
+            throw new TokenException(FAILED_LOGIN, e);
+        } finally {
+            fillArray(body, (byte)0);
         }
-
-        String message = sb.toString();
-
-        // And return the message we got or error it.
-        if (connection.getResponseCode() != 200) {
-            log.error("Token exchange failed with status code {}", connection.getResponseCode());
-            HttpHelper.handleErrorResponse(message, Constants.ERROR_DESCRIPTION);
-        }
-
-        return message;
     }
 }

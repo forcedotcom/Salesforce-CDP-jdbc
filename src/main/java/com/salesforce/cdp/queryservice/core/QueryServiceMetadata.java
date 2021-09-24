@@ -642,13 +642,13 @@ public class QueryServiceMetadata implements DatabaseMetaData {
     @Override
     public ResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern) throws SQLException {
         return new QueryServiceResultSet(Collections.EMPTY_LIST,
-                new QueryServiceResultSetMetaData(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST));
+                new QueryServiceResultSetMetaData());
     }
 
     @Override
     public ResultSet getProcedureColumns(String catalog, String schemaPattern, String procedureNamePattern, String columnNamePattern) throws SQLException {
         return new QueryServiceResultSet(Collections.EMPTY_LIST,
-                new QueryServiceResultSetMetaData(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST));
+                new QueryServiceResultSetMetaData());
     }
 
     @Override
@@ -972,14 +972,14 @@ public class QueryServiceMetadata implements DatabaseMetaData {
             log.info("No metadata for this org");
             resultSet = new QueryServiceResultSet(Collections.EMPTY_LIST, new QueryServiceResultSetMetaData(dbMetadata));
         } else if (needAllTables) {
-            List<Map<String, Object>> data = new ArrayList<>();
+            List<Object> data = new ArrayList<>();
             for (TableMetadata metadata : metadataResponse.getMetadata()) {
                 data.add(createRow(metadata));
                 resultSet = new QueryServiceResultSet(data, new QueryServiceResultSetMetaData(dbMetadata));
             }
         } else {
             String tableNameRegex = Utils.convertPatternToRegEx(tableNamePattern);
-            List<Map<String, Object>> data = new ArrayList<>();
+            List<Object> data = new ArrayList<>();
             for (TableMetadata metadata : metadataResponse.getMetadata()) {
                 if (Pattern.matches(tableNameRegex, metadata.getName())) {
                     data.add(createRow(metadata));
@@ -1012,7 +1012,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
             log.info("No metadata for this org");
             resultSet = new QueryServiceResultSet(Collections.EMPTY_LIST, new QueryServiceResultSetMetaData(dbMetadata));
         } else {
-            List<Map<String, Object>> data = new ArrayList<>();
+            List<Object> data = new ArrayList<>();
             for (TableMetadata metadata : metadataResponse.getMetadata()) {
                 if (!metadata.getName().equals(tableNamePattern)) {
                     continue;

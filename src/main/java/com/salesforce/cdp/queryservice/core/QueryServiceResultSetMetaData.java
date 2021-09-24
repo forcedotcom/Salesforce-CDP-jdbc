@@ -24,23 +24,26 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class QueryServiceResultSetMetaData implements ResultSetMetaData {
 
-    List<String> columnNames;
-    List<String> columnTypes;
-    List<Integer> columnTypeIds;
+    List<String> columnNames = Collections.EMPTY_LIST;
+    List<String> columnTypes = Collections.EMPTY_LIST;
+    List<Integer> columnTypeIds = Collections.EMPTY_LIST;
+    Map<String, Integer> columnNameToPosition = new HashMap<>();
 
-    public QueryServiceResultSetMetaData(List<String> columnNames, List<String> columnTypes, List<Integer> columnTypeIds) {
+    public QueryServiceResultSetMetaData(List<String> columnNames, List<String> columnTypes, List<Integer> columnTypeIds, Map<String, Integer> columnNameToPosition) {
         this.columnNames = columnNames;
         this.columnTypes = columnTypes;
         this.columnTypeIds = columnTypeIds;
+        this.columnNameToPosition = columnNameToPosition;
     }
 
     public QueryServiceResultSetMetaData() {
-        this.columnNames = Collections.EMPTY_LIST;
     }
 
     public QueryServiceResultSetMetaData(QueryServiceDbMetadata metadata) {
@@ -55,6 +58,10 @@ public class QueryServiceResultSetMetaData implements ResultSetMetaData {
             return 0;
         }
         return columnNames.size();
+    }
+
+    public Map<String, Integer> getColumnNameToPosition() {
+        return columnNameToPosition;
     }
 
     @Override

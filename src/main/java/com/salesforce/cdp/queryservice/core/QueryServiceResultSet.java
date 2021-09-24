@@ -36,25 +36,28 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
+
 @Slf4j
 public class QueryServiceResultSet implements ResultSet {
 
-    private List<Map<String, Object>> data;
+    protected List<Object> data;
     private int currentRow = -1;
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicBoolean wasNull = new AtomicBoolean();
-    private ResultSetMetaData resultSetMetaData;
+    protected ResultSetMetaData resultSetMetaData;
     private SimpleDateFormat dateFormatterWithTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-    private QueryServiceAbstractStatement statement;
+    protected QueryServiceAbstractStatement statement;
     private int currentPageNum = 1;
 
-    public QueryServiceResultSet(List<Map<String, Object>> data,
+    // NOTE: This constructor is used for metadata table, hence only data and resultSetMetadata is set.
+    public QueryServiceResultSet(List<Object> data,
                                  ResultSetMetaData resultSetMetaData) {
         this(data, resultSetMetaData, null);
     }
 
-    public QueryServiceResultSet(List<Map<String, Object>> data,
+    public QueryServiceResultSet(List<Object> data,
                                  ResultSetMetaData resultSetMetaData,
                                  QueryServiceAbstractStatement statement) {
         this.data = data;
@@ -65,14 +68,18 @@ public class QueryServiceResultSet implements ResultSet {
     @Override
     public boolean next() throws SQLException {
         errorOutIfClosed();
+
         currentRow++;
         if (currentRow < data.size()) {
             return true;
         }
-        if (isPaginationRequired()) {
+
+        if(isPaginationRequired()) {
             getMoreData();
-            return true;
+            if(data!=null && data.size()>0)
+                return true;
         }
+
         // Closing as this is move forward only cursor.
         log.info("Resultset {} does not have any more rows. Total {} pages retrieved", this, currentPageNum);
         return false;
@@ -360,10 +367,14 @@ public class QueryServiceResultSet implements ResultSet {
     @Override
     public Object getObject(String columnLabel) throws SQLException {
         errorOutIfClosed();
-        Map<String, Object> row = data.get(currentRow);
-        Object value = row.get(columnLabel);
+        Object row = data.get(currentRow);
+        Object value = getValue(row, columnLabel);
         wasNull.set(value == null);
         return value;
+    }
+
+    protected Object getValue(Object row, String columnLabel) throws SQLException {
+        return ((Map)row).get(columnLabel);
     }
 
     @Override
@@ -1173,11 +1184,22 @@ public class QueryServiceResultSet implements ResultSet {
 
     private void getMoreData() throws SQLException {
         log.trace("Fetching page with number {} for resultset {}", ++currentPageNum, this);
-        ResultSet resultSet = statement.getNextPage();
+        ResultSet resultSet = getNextPageData();
+        if(resultSet==null)
+            return;
+
+        updateState(resultSet);
+    }
+
+    protected ResultSet getNextPageData() throws SQLException {
+        return statement.getNextPage();
+    }
+
+    protected void updateState(ResultSet resultSet) throws SQLException {
         try {
             Field field = QueryServiceResultSet.class.getDeclaredField("data");
             field.setAccessible(true);
-            List<Map<String, Object>> nextPageData =  (List<Map<String, Object>>) field.get(resultSet);
+            List<Object> nextPageData =  (List<Object>) field.get(resultSet);
             field.setAccessible(false);
             this.data = nextPageData;
             this.currentRow = 0;

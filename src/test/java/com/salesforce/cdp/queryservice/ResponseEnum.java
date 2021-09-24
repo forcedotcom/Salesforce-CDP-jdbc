@@ -106,7 +106,67 @@ public enum ResponseEnum {
             "    \"endTime\": \"2021-01-11T05:34:34.040981Z\",\n" +
             "    \"rowCount\": 2,\n" +
             "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\",\n" +
-            "    \"done\": true}"),
+            "    \"done\": true," +
+            "    \"metadata\": {\n" +
+            "        \"telephonenumber__c\": {\n" +
+            "            \"placeInOrder\": 0,\n" +
+            "            \"typeCode\": 12,\n" +
+            "            \"type\": \"VARCHAR\"\n" +
+            "        }\n" +
+            "} \n" +
+            "}"),
+    QUERY_RESPONSE_V2("{\n" +
+            "    \"data\": [\n" +
+            "        [\n" +
+            "            \"00034d6c-f5b4-348a-9fc2-7707d5b07dba\",\n" +
+            "            \"Larae\"\n" +
+            "        ]\n" +
+            "    ],\n" +
+            "    \"startTime\": \"2021-09-21T10:38:55.520428Z\",\n" +
+            "    \"endTime\": \"2021-09-21T10:39:02.995939Z\",\n" +
+            "    \"rowCount\": 1,\n" +
+            "    \"queryId\": \"20210921_103858_00784_rpkgk\",\n" +
+            "    \"nextBatchId\": \"\",\n" +
+            "    \"done\": true,\n" +
+            "    \"metadata\": {\n" +
+            "        \"Id__c\": {\n" +
+            "            \"type\": \"VARCHAR\",\n" +
+            "            \"placeInOrder\": 0,\n" +
+            "            \"typeCode\": 12\n" +
+            "        },\n" +
+            "        \"FirstName__c\": {\n" +
+            "            \"type\": \"VARCHAR\",\n" +
+            "            \"placeInOrder\": 1,\n" +
+            "            \"typeCode\": 12\n" +
+            "        }\n" +
+            "    }\n" +
+            "}"),
+    PAGINATED_RESPONSE_V2("{\n" +
+            "    \"data\": [\n" +
+            "        [\n" +
+            "            \"00034d6c-f5b4-348a-9fc2-7707d5b07dba\",\n" +
+            "            \"Larae\"\n" +
+            "        ]\n" +
+            "    ],\n" +
+            "    \"startTime\": \"2021-09-21T10:38:55.520428Z\",\n" +
+            "    \"endTime\": \"2021-09-21T10:39:02.995939Z\",\n" +
+            "    \"rowCount\": 1,\n" +
+            "    \"queryId\": \"20210921_103858_00784_rpkgk\",\n" +
+            "    \"nextBatchId\": \"f98c7bcd-b1bd-4e8d-b98d-11aabdd6c604\",\n" +
+            "    \"done\": false,\n" +
+            "    \"metadata\": {\n" +
+            "        \"Id__c\": {\n" +
+            "            \"type\": \"VARCHAR\",\n" +
+            "            \"placeInOrder\": 0,\n" +
+            "            \"typeCode\": 12\n" +
+            "        },\n" +
+            "        \"FirstName__c\": {\n" +
+            "            \"type\": \"VARCHAR\",\n" +
+            "            \"placeInOrder\": 1,\n" +
+            "            \"typeCode\": 12\n" +
+            "        }\n" +
+            "    }\n" +
+            "}"),
     EMPTY_RESPONSE("{\n" +
             "    \"data\": []," +
             "    \"startTime\": \"2021-01-11T05:34:34.040931Z\",\n" +
@@ -137,7 +197,15 @@ public enum ResponseEnum {
             "    \"endTime\": \"2021-01-11T05:34:34.040981Z\",\n" +
             "    \"rowCount\": 2,\n" +
             "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\",\n" +
-            "    \"done\": false}"),
+            "    \"done\": false," +
+            "    \"metadata\": {\n" +
+            "        \"telephonenumber__c\": {\n" +
+            "            \"placeInOrder\": 0,\n" +
+            "            \"typeCode\": 12,\n" +
+            "            \"type\": \"VARCHAR\"\n" +
+            "        }\n" +
+            "} \n" +
+            "}"),
     RENEWED_CORE_TOKEN("{\n" +
             "    \"access_token\": \"00DR0000000KvIt\",\n" +
             "    \"signature\": \"0w96S+=\",\n" +
@@ -162,7 +230,15 @@ public enum ResponseEnum {
             "    \"startTime\": \"2021-01-11T05:34:34.040931Z\",\n" +
             "    \"endTime\": \"2021-01-11T05:34:34.040981Z\",\n" +
             "    \"rowCount\": 2,\n" +
-            "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\"}"),
+            "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\"," +
+            "    \"metadata\": {\n" +
+            "        \"telephonenumber__c\": {\n" +
+            "            \"placeInOrder\": 0,\n" +
+            "            \"typeCode\": 12,\n" +
+            "            \"type\": \"VARCHAR\"\n" +
+            "        }\n" +
+            "} \n" +
+            "}"),
     QUERY_RESPONSE_WITH_METADATA("{\n" +
             "    \"data\": [\n" +
             "        {\n" +
