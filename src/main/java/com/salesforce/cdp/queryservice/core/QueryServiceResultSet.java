@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class QueryServiceResultSet implements ResultSet {
     public QueryServiceResultSet(List<Object> data,
                                  ResultSetMetaData resultSetMetaData,
                                  QueryServiceAbstractStatement statement) {
-        this.data = data;
+        this.data = data == null ? new ArrayList<>(): data;
         this.resultSetMetaData = resultSetMetaData;
         this.statement = statement;
     }
