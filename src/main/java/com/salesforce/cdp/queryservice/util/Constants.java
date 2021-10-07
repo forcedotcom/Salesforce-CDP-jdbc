@@ -95,7 +95,7 @@ public class Constants {
 
     // Integer Constants
     public static final int REST_TIME_OUT = 300;
-    public static final Integer MAX_LIMIT = 49999;
+    public static final Integer MAX_LIMIT = 4999;
 
     // Token Constants
     public static final String GRANT_TYPE_NAME = "grant_type";
