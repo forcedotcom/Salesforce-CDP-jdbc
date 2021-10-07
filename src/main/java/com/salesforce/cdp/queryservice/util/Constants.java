@@ -94,7 +94,7 @@ public class Constants {
     public static final String GET = "GET";
 
     // Integer Constants
-    public static final int REST_TIME_OUT = 180;
+    public static final int REST_TIME_OUT = 300;
     public static final Integer MAX_LIMIT = 4999;
 
     // Token Constants
