@@ -50,8 +50,8 @@ public class QueryServiceConnection implements Connection {
         // default `enableArrowStream` is false
         enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
 
-        // default `isCursorBasedPaginationReq` is kept false till query-service v2 prod release
-        isCursorBasedPaginationReq = Boolean.parseBoolean(this.properties.getProperty(Constants.CURSOR_BASED_PAGINATION));
+        // default `isCursorBasedPaginationReq` is true
+        isCursorBasedPaginationReq = Boolean.parseBoolean(this.properties.getProperty(Constants.CURSOR_BASED_PAGINATION, Constants.TRUE_STR));
 
         this.isSocksProxyDisabled = Boolean.parseBoolean(this.properties.getProperty(Constants.DISABLE_SOCKS_PROXY));
 
