@@ -62,10 +62,20 @@ Sample Python Code
 ```
 import jaydebeapi
 
+// Sample properties with username and password flow.
 properties = {
     'user': "<UserName>",
     'password': "<Password>"
 }
+
+// Sample properties with oAuth (User agent) flow.
+properties = {
+    'coreToken': "<CoreToken>",
+    'refreshToken': "<Refresh Token>",
+    'clientId", "<Client Id of the connected App>",
+    'clientSecret", "<Client Secret of the connected App>"
+}
+
 
 conn = jaydebeapi.connect("com.salesforce.cdp.queryservice.QueryServiceDriver", "jdbc:queryService-jdbc:https://login.salesforce.com", properties, "<Complete Path to JDBC driver>")
 
