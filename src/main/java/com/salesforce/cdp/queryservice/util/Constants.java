@@ -123,4 +123,8 @@ public class Constants {
     public static final String TOKEN_ASSIGNMENT = "=";
     public static final String TRUE_STR = "true";
     public static final String FALSE_STR = "false";
+    public static final String ACCEPT_ENCODING = "Accept-Encoding";
+    public static final String GZIP_ENCODING = "gzip";
+    public static final String CONTENT_ENCODING = "Content-Encoding";
+    public static final String CONTENT_LENGTH = "Content-Length";
 }
