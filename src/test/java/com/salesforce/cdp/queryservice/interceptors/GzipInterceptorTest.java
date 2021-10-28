@@ -5,6 +5,8 @@ import com.salesforce.cdp.queryservice.util.Constants;
 import okhttp3.*;
 
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -19,14 +21,14 @@ class GzipInterceptorTest {
     private Interceptor.Chain chain;
     private GzipInterceptor gzipInterceptor;
 
-
-    void setUp() {
+    @BeforeEach
+    private void setUp() {
         chain = mock(Interceptor.Chain.class);
         gzipInterceptor = new GzipInterceptor();
         doReturn(buildRequest()).when(chain).request();
     }
 
-    private Request buildRequest() {
+    private  Request buildRequest() {
         return new Request.Builder()
                 .url("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.METADATA_URL)
                 .method(Constants.POST, RequestBody.create("{test: test}", MediaType.parse("application/json")))
@@ -35,14 +37,14 @@ class GzipInterceptorTest {
 
     @Test
     void testInterceptForCompressedRequestBody() throws IOException {
-        setUp();
+
         doReturn(buildCompressedResponse()).when(chain).proceed(any(Request.class));
         Response response=gzipInterceptor.intercept(chain);
         Assert.assertEquals(ResponseEnum.QUERY_RESPONSE.getResponse(),response.body().string());
     }
     @Test
     void testInterceptForNonCompressedRequestBody() throws IOException {
-        setUp();
+
         doReturn(buildNonCompressedResponse(ResponseEnum.QUERY_RESPONSE)).when(chain).proceed(any(Request.class));
         Response response=gzipInterceptor.intercept(chain);
         Assert.assertEquals(ResponseEnum.QUERY_RESPONSE.getResponse(),response.body().string());
