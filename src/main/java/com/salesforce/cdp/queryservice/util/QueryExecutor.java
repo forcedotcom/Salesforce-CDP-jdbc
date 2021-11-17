@@ -18,7 +18,7 @@ package com.salesforce.cdp.queryservice.util;
 
 import com.google.gson.Gson;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
-import com.salesforce.cdp.queryservice.interceptors.GzipInterceptor;
+
 import com.salesforce.cdp.queryservice.interceptors.MetadataCacheInterceptor;
 import com.salesforce.cdp.queryservice.interceptors.RetryInterceptor;
 import com.salesforce.cdp.queryservice.model.AnsiQueryRequest;
@@ -54,7 +54,6 @@ public class QueryExecutor {
                 .retryOnConnectionFailure(true)
                 .socketFactory(new SFDefaultSocketFactoryWrapper(false))
                 .addInterceptor(new MetadataCacheInterceptor())
-                .addInterceptor(new GzipInterceptor())
                 .build();
         // By default, add retry interceptors only for query service related calls
         // todo: delay adding retry interceptor so that user configured value can be used
