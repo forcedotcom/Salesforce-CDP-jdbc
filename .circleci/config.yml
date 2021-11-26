@@ -1,0 +1,28 @@
+version: 2.1
+
+executors:
+  openjdk-8:
+    docker:
+      - image: circleci/openjdk:8
+  openjdk-11:
+    docker:
+      - image: circleci/openjdk:11
+
+jobs:
+  maven:
+    parameters:
+      executor:
+        type: "string"
+    executor:
+      name: << parameters.executor >>
+    steps:
+      - checkout
+      - run: mvn clean install
+
+workflows:
+  ci:
+    jobs:
+      - maven:
+          matrix:
+            parameters:
+              executor: ["openjdk-8", "openjdk-11"]
