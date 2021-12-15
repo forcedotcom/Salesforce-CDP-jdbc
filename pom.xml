@@ -15,8 +15,8 @@
         <junit.platform.version>1.0.0-M4</junit.platform.version>
         <junit.vintage.version>4.12.0-M4</junit.vintage.version>
         <powermock.version>1.7.1</powermock.version>
-        <lombok.version>1.18.8</lombok.version>
-        <slf4j.version>1.7.30</slf4j.version>
+        <lombok.version>1.18.22</lombok.version>
+        <slf4j.version>1.7.32</slf4j.version>
     </properties>
 
     <dependencies>
@@ -84,16 +84,6 @@
             <artifactId>powermock-module-junit4</artifactId>
             <version>${powermock.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-1.2-api</artifactId>
-            <version>2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
