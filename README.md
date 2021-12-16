@@ -6,9 +6,16 @@ The JDBC driver can be used with the tools like Tableau or independently with an
 
 Get the Driver from this repo.
 
+# Connected App
+To use JDBC driver, admins will have to create a connected app in the Salesforce org. Please follow the steps mentioned in Salesforce CDP setup in below link to create a connected app. 
+If you create a connected app using below link, you need not pass client Id and secret mentioned in the code examples below. Or else please pass client Id and secret.
+
+https://extensiongallery.tableau.com/connectors/270
+
+# Java Code
 Load the Driver into your Java classPath
 
-Create Connection
+Create Connection with oAuth tokens
 ```
    Class.forName("com.salesforce.cdp.queryservice.QueryServiceDriver");
    Properties properties = new Properties();
@@ -17,8 +24,19 @@ Create Connection
    properties.put("clientId", <Client Id of the connected App>);
    properties.put("clientSecret", <Client Secret of the connected App>);
 
-   Connection connection =  DriverManager.getConnection("jdbc:queryService-jdbc:<Salesforce Core instance URL>", properties);
+   Connection connection =  DriverManager.getConnection("jdbc:queryService-jdbc:https://login.salesforce.com", properties);
 ```
+Create Connection with UserName and Password
+
+```
+Class.forName("com.salesforce.cdp.queryservice.QueryServiceDriver");
+   Properties properties = new Properties();
+   properties.put("user", <UserName>);
+   properties.put("password", <Password>);
+
+   Connection connection =  DriverManager.getConnection("jdbc:queryService-jdbc:https://login.salesforce.com", properties);
+```
+
 Create Statements/ Prepared Statements to execute Query and get ResultSet
 ```
 PreparedStatement preparedStatement = connection.prepareStatement("select FirstName__c, BirthDate__c, YearlyIncome__c from Individual__dlm where FirstName__c = ? and YearlyIncome__c > ?");
@@ -31,6 +49,41 @@ while (resultSet.next()) {
        log.info("FirstName : {}, BirthDate__c : {}, YearlyIncome__c : {}", resultSet.getString("FirstName__c"), resultSet.getTimestamp("BirthDate__c"), resultSet.getInt("YearlyIncome__c"));
 ```
 
+
+# Python Code
+The JDBC driver can also be used with python. We need JaydebeAPI wrapper on top of the JDBC driver to call JDBC methods.
+
+Install JaydebeAPI using PIP
+```
+pip install JayDeBeApi
+```
+Sample Python Code
+
+```
+import jaydebeapi
+
+// Sample properties with username and password flow.
+properties = {
+    'user': "<UserName>",
+    'password': "<Password>"
+}
+
+// Sample properties with oAuth (User agent) flow.
+properties = {
+    'coreToken': "<CoreToken>",
+    'refreshToken': "<Refresh Token>",
+    'clientId", "<Client Id of the connected App>",
+    'clientSecret", "<Client Secret of the connected App>"
+}
+
+
+conn = jaydebeapi.connect("com.salesforce.cdp.queryservice.QueryServiceDriver", "jdbc:queryService-jdbc:https://login.salesforce.com", properties, "<Complete Path to JDBC driver>")
+
+curs = conn.cursor()
+curs.execute('SELECT * FROM ssot__Individual__dlm')
+data = curs.fetchall()
+```
+
 # Notes:
     
-    Add order by clause in the query to fetch the paginated results.
+    Add order by clause in the query to fetch the paginated results for V1 API.

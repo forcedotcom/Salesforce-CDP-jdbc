@@ -18,6 +18,7 @@ package com.salesforce.cdp.queryservice.util;
 
 import com.google.gson.Gson;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
+
 import com.salesforce.cdp.queryservice.interceptors.MetadataCacheInterceptor;
 import com.salesforce.cdp.queryservice.interceptors.RetryInterceptor;
 import com.salesforce.cdp.queryservice.model.AnsiQueryRequest;
