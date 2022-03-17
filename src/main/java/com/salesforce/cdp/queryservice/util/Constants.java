@@ -55,6 +55,10 @@ public class Constants {
     public static final String NA46_DEFAULT_CLIENT_ID = "3MVG9sA57VMGPDfeS67yma6IPflHn83FRhxVpmnuzp7R8uS42JYshQ7gWgWR63CQRgKL9gY5AfitSme.01ib6";
     public static final String NA46_DEFAULT_CLIENT_SECRET = "BDAF015C3D2418008842CAE91B0C8DD2D672B41707FB11EA3CFC5A5392E31866";
 
+    //Audience constants for different environments
+    public static final String PROD_SERVER_AUD = "login.salesforce.com";
+    public static final String TEST_SERVER_AUD = "login.test1.pc-rnd.salesforce.com";
+
     // Parameter constants
     public static final String LIMIT = "limit=";
     public static final String OFFSET = "offset=";
@@ -83,6 +87,7 @@ public class Constants {
     public static final String USER = "user";
     public static final String USER_NAME = "userName";
     public static final String PD = "password";
+    public static final String PRIVATE_KEY = "privateKey";
     public static final String MAX_RETRIES = "maxRetries";
 
     // Response Constants
@@ -102,6 +107,7 @@ public class Constants {
     public static final String GRANT_TYPE = "urn:salesforce:grant-type:external:cdp";
     public static final String REFRESH_TOKEN_GRANT_TYPE = "refresh_token";
     public static final String TOKEN_GRANT_TYPE_PD = "password";
+    public static final String TOKEN_GRANT_TYPE_JWT_BEARER = "urn:ietf:params:oauth:grant-type:jwt-bearer";
     public static final String SUBJECT_TOKEN_TYPE_NAME = "subject_token_type";
     public static final String SUBJECT_TOKEN_TYPE = "urn:ietf:params:oauth:token-type:access_token";
     public static final String SUBJECT_TOKEN = "subject_token";
@@ -111,6 +117,7 @@ public class Constants {
     public static final String CLIENT_SECRET_NAME = "client_secret";
     public static final String CLIENT_USER_NAME = "username";
     public static final String CLIENT_PD = "password";
+    public static final String ASSERTION = "assertion";
 
     // Header Constants
     public static final String TRACE_ID = "x-trace-id";

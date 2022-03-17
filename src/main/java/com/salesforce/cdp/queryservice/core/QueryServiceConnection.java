@@ -42,7 +42,7 @@ public class QueryServiceConnection implements Connection {
     private final boolean isSocksProxyDisabled;
 
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
-        this.properties = properties; // fixme: do deeepCopy and modify the props
+        this.properties = properties; // fixme: do deepCopy and modify the props
         this.serviceRootUrl = getServiceRootUrl(url);
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
         addClientSecretsIfRequired(serviceRootUrl, this.properties);

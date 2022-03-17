@@ -11,6 +11,8 @@ public class Messages {
 
     public static String TOKEN_FETCH_FAILURE = "Retrieving Token failed. Please try again.";
 
+    public static String JWT_CREATION_FAILURE = "JWT assertion creation failed. Please try again.";
+
     public static String FAILED_LOGIN = "Failed to login. Please check credentials";
 
     public static String FAILED_LOGIN_2 = "Failed to login(2). Please check credentials";
