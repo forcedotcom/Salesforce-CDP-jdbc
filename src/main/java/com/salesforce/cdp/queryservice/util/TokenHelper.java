@@ -25,7 +25,6 @@ import com.salesforce.cdp.queryservice.model.Token;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
-import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
@@ -40,7 +39,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -77,9 +75,11 @@ public class TokenHelper {
             token = tokenCache.getIfPresent(properties.getProperty(Constants.CORETOKEN));
         }
         if (token == null) {
-            if(properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD)) {
+            if(properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD) &&
+                    !properties.getProperty(Constants.USER_NAME).isEmpty() && !properties.getProperty(Constants.PD).isEmpty()) {
                 return retrieveTokenWithPasswordGrant(properties, client);
-            } else if (properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PRIVATE_KEY)) {
+            } else if (properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PRIVATE_KEY) &&
+                    !properties.getProperty(Constants.USER_NAME).isEmpty() && !properties.getProperty(Constants.PRIVATE_KEY).isEmpty()) {
                 return retrieveTokenWithJWTBearerGrant(properties, client);
             }
             Token newToken = exchangeToken(properties.getProperty(Constants.LOGIN_URL), properties.getProperty(Constants.CORETOKEN), client);
