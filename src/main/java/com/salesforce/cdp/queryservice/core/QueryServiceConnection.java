@@ -88,13 +88,14 @@ public class QueryServiceConnection implements Connection {
      */
     @VisibleForTesting
     static void addClientSecretsIfRequired(String serviceRootUrl, Properties properties) throws SQLException {
-        if(properties.containsKey(Constants.USER) && !properties.containsKey(Constants.USER_NAME)) {
+        if (properties.containsKey(Constants.USER) && !properties.containsKey(Constants.USER_NAME)) {
             properties.put(Constants.USER_NAME, properties.get(Constants.USER));
         }
 
-        if(properties.containsKey(Constants.USER_NAME)
+        if (properties.containsKey(Constants.USER_NAME)
                 && !properties.containsKey(Constants.CLIENT_ID)
-                && !properties.containsKey(Constants.CLIENT_SECRET)) {
+                && !properties.containsKey(Constants.CLIENT_SECRET)
+                && !properties.containsKey(Constants.PRIVATE_KEY)) {
             log.debug("adding client secrets for server {}", serviceRootUrl);
             String serverUrl = serviceRootUrl.toLowerCase();
             if (serverUrl.endsWith(Constants.STMPA_SERVER_URL)) {

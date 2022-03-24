@@ -75,11 +75,11 @@ public class TokenHelper {
             token = tokenCache.getIfPresent(properties.getProperty(Constants.CORETOKEN));
         }
         if (token == null) {
-            if(properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD) &&
-                    !properties.getProperty(Constants.USER_NAME).isEmpty() && !properties.getProperty(Constants.PD).isEmpty()) {
+            if(properties.containsKey(Constants.USER_NAME) && !properties.getProperty(Constants.USER_NAME).isEmpty()
+                    && properties.containsKey(Constants.PD) && !properties.getProperty(Constants.PD).isEmpty()) {
                 return retrieveTokenWithPasswordGrant(properties, client);
-            } else if (properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PRIVATE_KEY) &&
-                    !properties.getProperty(Constants.USER_NAME).isEmpty() && !properties.getProperty(Constants.PRIVATE_KEY).isEmpty()) {
+            } else if (properties.containsKey(Constants.USER_NAME) && !properties.getProperty(Constants.USER_NAME).isEmpty()
+                    && properties.containsKey(Constants.PRIVATE_KEY)) {
                 return retrieveTokenWithJWTBearerGrant(properties, client);
             }
             Token newToken = exchangeToken(properties.getProperty(Constants.LOGIN_URL), properties.getProperty(Constants.CORETOKEN), client);
@@ -145,6 +145,18 @@ public class TokenHelper {
     }
 
     private static Token retrieveTokenWithJWTBearerGrant(Properties properties, OkHttpClient client) throws TokenException {
+        if (properties.getProperty(Constants.USER_NAME) == null || properties.getProperty(Constants.USER_NAME).isEmpty()) {
+            throw new TokenException("Username cannot be null/empty for key-pair authentication");
+        }
+
+        if (properties.getProperty(Constants.PRIVATE_KEY) == null || properties.getProperty(Constants.PRIVATE_KEY).isEmpty()) {
+            throw new TokenException("Private key cannot be null/empty for key-pair authentication");
+        }
+
+        if (properties.getProperty(Constants.CLIENT_ID) == null || properties.getProperty(Constants.CLIENT_ID).isEmpty()) {
+            throw new TokenException("Client Id cannot be null/empty for key-pair authentication");
+        }
+
         String token_url = properties.getProperty(Constants.LOGIN_URL) + Constants.CORE_TOKEN_URL;
         CoreTokenRenewResponse coreTokenRenewResponse = null;
         try {
