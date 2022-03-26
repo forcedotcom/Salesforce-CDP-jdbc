@@ -98,13 +98,7 @@ public class QueryServiceConnection implements Connection {
                 && !properties.containsKey(Constants.PRIVATE_KEY)) {
             log.debug("adding client secrets for server {}", serviceRootUrl);
             String serverUrl = serviceRootUrl.toLowerCase();
-            if (serverUrl.endsWith(Constants.STMPA_SERVER_URL)) {
-                properties.put(Constants.CLIENT_ID, Constants.STMPA_DEFAULT_CLIENT_ID);
-                properties.put(Constants.CLIENT_SECRET, Constants.STMPA_DEFAULT_CLIENT_SECRET);
-            } else if (serverUrl.endsWith(Constants.STMPB_SERVER_URL)) {
-                properties.put(Constants.CLIENT_ID, Constants.STMPB_DEFAULT_CLIENT_ID);
-                properties.put(Constants.CLIENT_SECRET, Constants.STMPB_DEFAULT_CLIENT_SECRET);
-            } else if (serverUrl.endsWith(Constants.NA45_SERVER_URL)) {
+            if (serverUrl.endsWith(Constants.NA45_SERVER_URL)) {
                 properties.put(Constants.CLIENT_ID, Constants.NA45_DEFAULT_CLIENT_ID);
                 properties.put(Constants.CLIENT_SECRET, Constants.NA45_DEFAULT_CLIENT_SECRET);
             } else if (serverUrl.endsWith(Constants.NA46_SERVER_URL)) {

@@ -12,9 +12,9 @@ If you create a connected app using below link, you need not pass client Id and 
 
 https://extensiongallery.tableau.com/connectors/270
 
-Alternatively, if you want to use key pair authentication instead of username and password, please follow the below steps to generate a key pair and configure public certificate with your connected app.
+Alternatively, if you want to use key pair authentication instead of username and password, please follow the below steps to generate a key pair and configure certificate with your connected app.
 
-### Create a Private Public Key Pair and a Public Digital Certificate 
+### Create a Private Public Key Pair and a Digital x509 Certificate
 Open terminal and change directories to any folder and run the following commands:
 
 #### 1. Create a private public key pair
@@ -37,6 +37,7 @@ openssl pkcs8 -topk8 -nocrypt -in keypair.key -out private.key
 
 This flow utilizes Salesforce's server to server [JWT bearer flow](https://help.salesforce.com/articleView?id=remoteaccess_oauth_jwt_flow.htm&type=5) for acquiring an access token. This portion of the setup will walk you through setting up the connected app.
 
+**Note:** For more detailed instructions, please visit: [Create a Connected App](https://help.salesforce.com/s/articleView?id=sf.connected_app_create.htm&type=5)
 1. Login to Salesforce → Setup and Search "**App Manager**"
 2. In the Setup’s Quick Find search "**App Manager**"
 3. Select **“New Connected App”**
@@ -45,14 +46,15 @@ This flow utilizes Salesforce's server to server [JWT bearer flow](https://help.
     3. Contact Email: Your email address
     4. Under API Heading, check the box for **“Enable OAuth Settings”**
     5. Callback URL: https://oauth.pstmn.io/v1/callback
+
+    **Note:** You can use your own callback url, which is nothing but the endpoint where redirect will happen after successful authorization.
     6. Select the checkbox for **“Use digital signatures”**
-    7. Select **“Choose File”** and select the **certificate.crt** file created in [Create a Private Public Key Pair and a Public Digital Certificate](#Create a Private Public Key Pair and a Public Digital Certificate) section
+    7. Select **“Choose File”** and select the **certificate.crt** file created in [Create a Private Public Key Pair and a Digital x509 Certificate](#Create a Private Public Key Pair and a Digital x509 Certificate) section
     8. Under **“Selected OAuth Scopes”** move the following from the “Available OAuth Scopes” to “Selected OAuth Scopes”
         1. Manage user data via APIs (api)
         2. Perform requests at any time (refresh_token, offline_access)
         3. Perform ANSI SQL queries on Salesforce CDP data (cdp_query_api)
         4. Manage Salesforce CDP profile data (cdp_profile_api)
-        5. Manage Salesforce CDP Ingestion API data (cdp_ingest_api)
         6. Note: feel free to select others if needed.
 
        > Your screen should look similar to this
@@ -75,7 +77,7 @@ At this point your connected app has been configured however there is a ***_one 
 The URL format will look like:
 
 ```
-<YOUR_ORG_URL>/services/oauth2/authorize?response_type=code&client_id=<YOUR_CONSUMER_KEY>&scope=api refresh_token cdp_profile_api cdp_query_api cdp_ingest_api&redirect_uri=https://oauth.pstmn.io/v1/callback
+<YOUR_ORG_URL>/services/oauth2/authorize?response_type=code&client_id=<YOUR_CONSUMER_KEY>&scope=api refresh_token cdp_profile_api cdp_query_api&redirect_uri=<YOUR_CALLBACK_URL>
 ```
 >Notice the scope parameter in the above URL. ***It’s important that you select all the required custom CDP scopes in this request***. All further JWT bearer flow requests will honor ONLY these scopes
 
@@ -86,7 +88,7 @@ The URL format will look like:
 **YOUR_CONSUMER_KEY** is the consumer key noted in step 3.x above.
 
 **Example URL:**
->https://querycdp2test-dev-ed.lightning.force.com/services/oauth2/authorize?response_type=code&client_id=asdlfjasldfjsaldfjaslfds&scope=api%20refresh_token%20cdp_profile_api%20cdp_query_api%20cdp_ingest_api&redirect_uri=https://oauth.pstmn.io/v1/callback
+>https://querycdp2test-dev-ed.lightning.force.com/services/oauth2/authorize?response_type=code&client_id=asdlfjasldfjsaldfjaslfds&scope=api%20refresh_token%20cdp_profile_api%20cdp_query_api&redirect_uri=https://oauth.pstmn.io/v1/callback
 
 1. Paste that URL in a browser window.
 2. This prompts a consent dialog asking permission for each of the scopes requested above.  Select **Allow** and you should be redirected back.
@@ -133,7 +135,7 @@ Class.forName("com.salesforce.cdp.queryservice.QueryServiceDriver");
    Properties properties = new Properties();
    properties.put("user", <UserName>);
    properties.put("clientId", <Client Id of the connected App>);
-   properties.put("privateKey", <Private Key corresponding to the public digital certificate configured in the connected App>);
+   properties.put("privateKey", <Private Key string corresponding to the digital x509 certificate configured in the connected App>);
    
 
    Connection connection =  DriverManager.getConnection("jdbc:queryService-jdbc:https://login.salesforce.com", properties);
@@ -168,6 +170,13 @@ import jaydebeapi
 properties = {
     'user': "<UserName>",
     'password': "<Password>"
+}
+
+// Sample properties with key-pair authentication flow.
+properties = {
+    'user': "<UserName>",
+    'clientId", "<Client Id of the connected App>",
+    'privateKey': "<Private Key string corresponding to the digital x509 certificate configured in the connected App>"
 }
 
 // Sample properties with oAuth (User agent) flow.

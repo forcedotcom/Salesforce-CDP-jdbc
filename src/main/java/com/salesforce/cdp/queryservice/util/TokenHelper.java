@@ -185,7 +185,6 @@ public class TokenHelper {
 
     private static String getAudienceForJWTAssertion(String serviceRootUrl) throws SQLException {
         String serverUrl = serviceRootUrl.toLowerCase();
-        //STMPA and STMPB envs are ignored as they are not used anymore.
         if (serverUrl.endsWith(Constants.NA45_SERVER_URL) || serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
             return Constants.TEST_SERVER_AUD;
         } else if (serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
@@ -382,7 +381,7 @@ public class TokenHelper {
                     .setSubject(userName)
                     .setAudience(audience)
                     .setIssuedAt(Date.from(now))
-                    .setExpiration(Date.from(now.plus(5l, ChronoUnit.MINUTES)))
+                    .setExpiration(Date.from(now.plus(2l, ChronoUnit.MINUTES)))
                     .signWith(rsaPrivateKey, SignatureAlgorithm.RS256)
                     .compact();
         } catch (Exception e) {
@@ -394,8 +393,8 @@ public class TokenHelper {
     }
 
     private static RSAPrivateKey getPrivateKey(String rsaPrivateKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        rsaPrivateKey = rsaPrivateKey.replace("-----BEGIN PRIVATE KEY-----", "");
-        rsaPrivateKey = rsaPrivateKey.replace("-----END PRIVATE KEY-----", "");
+        rsaPrivateKey = rsaPrivateKey.replace(Constants.BEGIN_PRIVATE_KEY, "");
+        rsaPrivateKey = rsaPrivateKey.replace(Constants.END_PRIVATE_KEY, "");
         rsaPrivateKey = rsaPrivateKey.replaceAll("\\s", "");
 
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(rsaPrivateKey));
