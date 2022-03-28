@@ -49,7 +49,7 @@ public class Constants {
 
     //Audience constants for different environments
     public static final String PROD_SERVER_AUD = "login.salesforce.com";
-    public static final String TEST_SERVER_AUD = "login.test1.pc-rnd.salesforce.com";
+    public static final String DEV_TEST_SERVER_AUD = "login.test1.pc-rnd.salesforce.com";
 
     // Parameter constants
     public static final String LIMIT = "limit=";
