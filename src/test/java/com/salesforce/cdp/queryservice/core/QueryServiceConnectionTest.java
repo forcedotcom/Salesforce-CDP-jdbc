@@ -47,6 +47,35 @@ import static org.powermock.api.support.membermodification.MemberModifier.suppre
 @PowerMockIgnore({"jdk.internal.reflect.*"})
 public class QueryServiceConnectionTest {
 
+    private String privateKey = "-----BEGIN PRIVATE KEY-----\n" +
+            "MIIEvAsGOODANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDEd+ersBuV1tAv\n" +
+            "Dx3TzZsgtHf23+gfgea7TdDsv+ANiSwEDohgvrCETYbLvezul/t8EyrGwu9Ob7FW\n" +
+            "oqaNgI5ZXN8ykdI+G0XkCEUIQL5+iH1UXceSh35xqdDLozgDvqnPp6CtsoTlQVnt\n" +
+            "F9B/7UrzLz40DEH+/aihlLKd/0+n/mXbO0vf9ORCas/h8923bMdmg05uQda4vwaF\n" +
+            "RoN8JqSYaE0m+pbHFhxYoR9sV43S1X2T1d1gqsa5GJZ7x5C5Xc8fcargh/E/kV6m\n" +
+            "BTYKBb17mqWnxmztgbT5cwVGbAE3A5L0jdCED0jPCdouGW99vc+i0pSKwH+zIfO\n" +
+            "Hqqjk91nAgMBAAECggEAPMr5dcfFkWigkJ811I8ffEw7gJTsJ6uzcKvQhSGOO8IB\n" +
+            "S7QPgRggWKAAoNTBFscSez8XEm/JStUG487qiIiKA57YNbanfq5Dvx7L9ZTLHS4w\n" +
+            "0cf+9tlUR+mLASgdMhNySh4NexHtS18ga1veGWectIkez04nsbZd0rnHV1pkFI/5\n" +
+            "ek1cSuJ9L5IyNiLx8+K7x2msEMtJDG6Motmo6MTm39xkM8w9yLCJG3F7tRR/eD7+\n" +
+            "cVGrdMVNiaxZY/SCYzcGpfwzfTX16o5a5osnB/11RXNLKnXg/dk2+3dQxPlXXu/a\n" +
+            "rz5ca1dM8UsrR5K+fNJNWitiUm9zDzZEZ1o8uoxRiQKBgQDz43loFciVnrsiH3Gh\n" +
+            "NiCvdgZh3lqUzz8C+HW4xFwYqbg1XPt4Sv21Fu4a4gK+rjrXqz7H1Nf2toyfxtH7\n" +
+            "QhrZwC6+vAtIvGstWVaXrmLA1gOwyJ0ar/nwBfBGdaLoi6EnX/YpEnfiTfng8yu1\n" +
+            "0JvoMJceF0LOHTikDUDht/OSPQKBgQDOOZVlS5IeNp+i8xVhHdMsZqEcWbEWqb3o\n" +
+            "cQbTPwvHXma4cqVue7ZrUmFwsd3ilkbEJsYpWPcAWN7QQ2VgcvBf6uvmYX4YhIJX\n" +
+            "XKNgk6FN+9d09PZaVfE+f4TDIRjtJ9DVaBgURj72H9/J7K6AAgbeKzglcNObWdQs\n" +
+            "5qq1IPyccwKBgADHG+8CCsa3X99m/ETIWGhW1wRe4iXNV2Uac74UGjsV53Uy27Zx\n" +
+            "fseiEBZT3DBhe9yONkAK5LlrsZ0c1DSZ7F3/Z+bB0MNlnm3hmA4RnU0CIbbhnOal\n" +
+            "4wUp76851tAo3B21B6Lv5SP6na5i+TORvb2K0ifNcHAZ1cFoLWnK3WL9AoGAcSrw\n" +
+            "bNH3sVTQbZ9v0AeJ5we6yc/+ei1T5caAtFQYpqOLQxTG68Y/6M0gY7N3y+wjkWil\n" +
+            "vfLwOOSMAUW60B7DAr/srFQ72kB9NmvDzC+3iQ/2wFvdBN28sUtRE7OJ9jqvQy0I\n" +
+            "abfSvUXojOqxJ9X05t5YzVMRDGNTKAC9FQCxHzkCgYANLL6ypEx2khqurXAuVa1/\n" +
+            "eOWbpzftHQO11Fy/dAbOd9Uyl5ks1F2ljzQCPJzSwwJ3fKHQfdDHQYaVRqtAKdG8\n" +
+            "aqObOSrtr2RLYfWF9M+dY6JjbMuErohnOuqYEX7cARhSpP0O6f/UMhm/uvgiwSGm\n" +
+            "nkxuHk2xwyIHynqlbQOpQw==\n" +
+            "-----END PRIVATE KEY-----\n";
+
     @Test
     @DisplayName("Verify Connection creation and initialization")
     public void testConnectionCreation() throws Exception {
@@ -71,7 +100,7 @@ public class QueryServiceConnectionTest {
 
         // test with arrowStream enabled
         serverUrl = "jdbc:queryService-jdbc:mysample://something.na45.test1.pc-rnd.salesforce.com/";
-        properties = new Properties();
+        properties.clear();
         properties.put(Constants.USER, "test-user-12");
         properties.put(Constants.ENABLE_ARROW_STREAM, "true");
 
@@ -118,11 +147,18 @@ public class QueryServiceConnectionTest {
         assertThat(properties.size()).isEqualTo(4);
 
         // case when no username is present
-        properties = new Properties();
+        properties.clear();
         QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
         assertThat(properties.size()).isEqualTo(0);
 
-        // case when username, clientId/clientSecret exists
+        // case when only username is present
+        properties.clear();
+        properties.put(Constants.USER_NAME, "test-user");
+        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
+        assertThat(properties.size()).isEqualTo(3);
+
+        // case when username, clientId/clientSecret are present
+        properties.clear();
         properties.put(Constants.USER_NAME, "test-user");
         properties.put(Constants.CLIENT_ID, "bleh");
         QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
@@ -131,6 +167,13 @@ public class QueryServiceConnectionTest {
         properties.put(Constants.CLIENT_SECRET, "secret");
         QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
         assertThat(properties.size()).isEqualTo(3);
+
+        // case when username and privateKey are present
+        properties.clear();
+        properties.put(Constants.USER_NAME, "test-user");
+        properties.put(Constants.PRIVATE_KEY, privateKey);
+        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
+        assertThat(properties.size()).isEqualTo(2);
 
         Throwable ex = catchThrowableOfType(() -> {
             String url = "mysample://something.na46.test1.pc-rnd.example.com";
@@ -143,7 +186,7 @@ public class QueryServiceConnectionTest {
     }
 
     @Test
-    @DisplayName("Verify connection setup")
+    @DisplayName("Verify connection setup - username/password flow")
     public void testIsValid() throws SQLException {
         replace(MemberMatcher.method(QueryServiceConnection.class, "isValid"))
                 .with((o, m, args) -> {return true;});
@@ -152,6 +195,37 @@ public class QueryServiceConnectionTest {
         Properties properties = new Properties();
         properties.put(Constants.USER_NAME, "test-user");
         properties.put(Constants.USER, "test-user-12");
+
+        QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
+        doCallRealMethod().when(connection).isValid(anyInt());
+        QueryServicePreparedStatement preparedStatement = mock(QueryServicePreparedStatement.class);
+        doReturn(preparedStatement).when(connection).prepareStatement(anyString());
+        doReturn(true).when(preparedStatement).execute();
+
+        assertThat(connection.isValid(10)).isTrue();
+
+        doThrow(new SQLException()).when(preparedStatement).execute();
+        Throwable ex = catchThrowableOfType(() -> {
+            connection.isValid(10);
+        }, SQLException.class);
+        assertThat(ex).isInstanceOf(SQLException.class);
+
+        // close connection
+        connection.close();
+        assertThat(connection.isValid(10)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Verify connection setup - key pair auth flow")
+    public void testIsValidKeyPairAuth() throws SQLException {
+        replace(MemberMatcher.method(QueryServiceConnection.class, "isValid"))
+                .with((o, m, args) -> {return true;});
+
+        String serverUrl = "jdbc:queryService-jdbc:mysample://something.my.salesforce.com/";
+        Properties properties = new Properties();
+        properties.put(Constants.USER_NAME, "test-user");
+        properties.put(Constants.CLIENT_ID, Constants.PROD_DEFAULT_CLIENT_ID);
+        properties.put(Constants.PRIVATE_KEY, privateKey);
 
         QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
         doCallRealMethod().when(connection).isValid(anyInt());
