@@ -48,33 +48,33 @@ import static org.powermock.api.support.membermodification.MemberModifier.suppre
 public class QueryServiceConnectionTest {
 
     private String privateKey = "-----BEGIN PRIVATE KEY-----\n" +
-            "MIIEvAsGOODANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDEd+ersBuV1tAv\n" +
-            "Dx3TzZsgtHf23+gfgea7TdDsv+ANiSwEDohgvrCETYbLvezul/t8EyrGwu9Ob7FW\n" +
+            "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDEd+ersBuV4tAv\n" +
+            "Dx3TzZsgtHf83+gfgea7TdDsv+ANiSwEDohgvrCETYbLvezul/t8EyrGwu9Ob7FW\n" +
             "oqaNgI5ZXN8ykdI+G0XkCEUIQL5+iH1UXceSh35xqdDLozgDvqnPp6CtsoTlQVnt\n" +
-            "F9B/7UrzLz40DEH+/aihlLKd/0+n/mXbO0vf9ORCas/h8923bMdmg05uQda4vwaF\n" +
+            "F9B/7UrzLz40DEH+/aihlLKd/0+n/mabO0vf9ORCas/h8923bMdmg05uQda4vwaF\n" +
             "RoN8JqSYaE0m+pbHFhxYoR9sV43S1X2T1d1gqsa5GJZ7x5C5Xc8fcargh/E/kV6m\n" +
-            "BTYKBb17mqWnxmztgbT5cwVGbAE3A5L0jdCED0jPCdouGW99vc+i0pSKwH+zIfO\n" +
+            "BTYKBb17mqWnxmztgbT5cwVGbAE3A5L04jdCED0jPCdouGN99vc+i0pSKwH+zIfO\n" +
             "Hqqjk91nAgMBAAECggEAPMr5dcfFkWigkJ811I8ffEw7gJTsJ6uzcKvQhSGOO8IB\n" +
             "S7QPgRggWKAAoNTBFscSez8XEm/JStUG487qiIiKA57YNbanfq5Dvx7L9ZTLHS4w\n" +
-            "0cf+9tlUR+mLASgdMhNySh4NexHtS18ga1veGWectIkez04nsbZd0rnHV1pkFI/5\n" +
-            "ek1cSuJ9L5IyNiLx8+K7x2msEMtJDG6Motmo6MTm39xkM8w9yLCJG3F7tRR/eD7+\n" +
+            "0cU+9tlUR+mLASgdMhNySh4NexHtS18ga1veGWectIkez04nsbZd0rnHV1pkFI/5\n" +
+            "ek1cSuJ9L5IyNiLx8+K7x2msEMuJDG6Motmo6MTm39xkM8w9yLCJG3F7tRR/eD7+\n" +
             "cVGrdMVNiaxZY/SCYzcGpfwzfTX16o5a5osnB/11RXNLKnXg/dk2+3dQxPlXXu/a\n" +
-            "rz5ca1dM8UsrR5K+fNJNWitiUm9zDzZEZ1o8uoxRiQKBgQDz43loFciVnrsiH3Gh\n" +
-            "NiCvdgZh3lqUzz8C+HW4xFwYqbg1XPt4Sv21Fu4a4gK+rjrXqz7H1Nf2toyfxtH7\n" +
-            "QhrZwC6+vAtIvGstWVaXrmLA1gOwyJ0ar/nwBfBGdaLoi6EnX/YpEnfiTfng8yu1\n" +
+            "rz5ca1dM8U9rR5K+fNJNWitiUm9zDzZEZ1o8uoxRiQKBgQDz43loFciVnrsiH3Gh\n" +
+            "NiCvdgZh3laUzz8C+HW4xFwYqbL1XPt4Sv21Fu4a4gK+rjrXqz7H1Nf2toyfxtH7\n" +
+            "QhrZwC6+vAtIvGstWVaNrmLA1gOwyJ0ar/nwBfBGdaLoU6EnX/YpEnfiTfng8yuH\n" +
             "0JvoMJceF0LOHTikDUDht/OSPQKBgQDOOZVlS5IeNp+i8xVhHdMsZqEcWbEWqb3o\n" +
             "cQbTPwvHXma4cqVue7ZrUmFwsd3ilkbEJsYpWPcAWN7QQ2VgcvBf6uvmYX4YhIJX\n" +
             "XKNgk6FN+9d09PZaVfE+f4TDIRjtJ9DVaBgURj72H9/J7K6AAgbeKzglcNObWdQs\n" +
-            "5qq1IPyccwKBgADHG+8CCsa3X99m/ETIWGhW1wRe4iXNV2Uac74UGjsV53Uy27Zx\n" +
+            "5qq1IPyccwKBgADHG+8CCsa3X99m/ETIWGhW1wRe4iXNV2UaB74UGjsV53Uy27Zx\n" +
             "fseiEBZT3DBhe9yONkAK5LlrsZ0c1DSZ7F3/Z+bB0MNlnm3hmA4RnU0CIbbhnOal\n" +
-            "4wUp76851tAo3B21B6Lv5SP6na5i+TORvb2K0ifNcHAZ1cFoLWnK3WL9AoGAcSrw\n" +
+            "4wUp76851tAo3B21B6Lv5SP6na5i+CORvb2K0iCNcHAZ1cFoLWnK3WL9AoGAcSrw\n" +
             "bNH3sVTQbZ9v0AeJ5we6yc/+ei1T5caAtFQYpqOLQxTG68Y/6M0gY7N3y+wjkWil\n" +
-            "vfLwOOSMAUW60B7DAr/srFQ72kB9NmvDzC+3iQ/2wFvdBN28sUtRE7OJ9jqvQy0I\n" +
-            "abfSvUXojOqxJ9X05t5YzVMRDGNTKAC9FQCxHzkCgYANLL6ypEx2khqurXAuVa1/\n" +
-            "eOWbpzftHQO11Fy/dAbOd9Uyl5ks1F2ljzQCPJzSwwJ3fKHQfdDHQYaVRqtAKdG8\n" +
-            "aqObOSrtr2RLYfWF9M+dY6JjbMuErohnOuqYEX7cARhSpP0O6f/UMhm/uvgiwSGm\n" +
-            "nkxuHk2xwyIHynqlbQOpQw==\n" +
-            "-----END PRIVATE KEY-----\n";
+            "vfLwOOSMAUW60B7DAh/srFQ72kB9NmvDzC+3iQ/2wFvdBN28sUtRE7OJ9jqvQy0I\n" +
+            "abfSvUXojOqxJ9X05t5YxVMRDGNTKAC9FQCxHzkCgYANLL6ypEx2khqurXAuVa1/\n" +
+            "eOWbpzftHQO11Fy/dAbOd9Uyl5ks1F2ljzQCPJzSwwJ3fKHQfdDHQYaVRqtAKbG8\n" +
+            "aqObOSrtr2RLYfWF9M+pD6JjbMuErohnOuqYEX7cARhSpP0O6f/UMhm/uvgiwSGm\n" +
+            "nkxuHk2xwyIHybqlbQOpQw==\n" +
+            "-----END PRIVATE KEY-----";
 
     @Test
     @DisplayName("Verify Connection creation and initialization")
