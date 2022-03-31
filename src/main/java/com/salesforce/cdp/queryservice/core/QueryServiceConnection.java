@@ -413,8 +413,9 @@ public class QueryServiceConnection implements Connection {
     }
 
     public void setToken(Token token) {
-        // Store token at connection level only for username password flow.
-        if (properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD)) {
+        // Store token at connection level only for username password and key pair auth flows.
+        if ((properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD)) ||
+                (properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PRIVATE_KEY))) {
             this.token = token;
         }
     }
