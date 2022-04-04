@@ -102,7 +102,7 @@ The URL format will look like:
 4. **Optional:** If you want to verify everything is authorized correctly, in the Quick Find search for **“Connected Apps OAuth Usage”**. Here you will see your connected app and should see a user count of 1.
 
    ![Connected App Verification Screenshot](images/connected-app-verification.png)
-5. 
+
 # Java Code
 Load the Driver into your Java classPath
 
