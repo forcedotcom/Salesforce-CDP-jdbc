@@ -35,14 +35,6 @@ public class Constants {
     public static final String DRIVER_VERSION = "1.0";
 
     // Common client id and secret information
-    public static final String STMPA_SERVER_URL = "stmpa.stm.salesforce.com";
-    public static final String STMPA_DEFAULT_CLIENT_ID = "3MVG9Iu66FKeHhIMTw4_fbTKdbfgYVQXSsSJ6jOMZWGwgJ0RVhaGO3_RXBTxmWUHholNWtSgpa6nmjNeOvdBX";
-    public static final String STMPA_DEFAULT_CLIENT_SECRET = "9662F811A0702D3FE62BCF2AF3A51D06F38E1D0FA1573E5D17301C9FA4B216BB";
-
-    public static final String STMPB_SERVER_URL = "stmpb.stm.salesforce.com";
-    public static final String STMPB_DEFAULT_CLIENT_ID = "3MVG9Iu66FKeHhIPHKRhbohYVNiUUHCt2h_HeUwYwzEdrn4unY9uMKKdfYeGnb19ngLq6T6Q8hwEHVexROWav";
-    public static final String STMPB_DEFAULT_CLIENT_SECRET = "B5494AAAF046EF5002CB50662171FCEDEDCE9B04B74C824CDDD8139249CD3E94";
-
     public static final String PROD_SERVER_URL = ".salesforce.com";
     public static final String PROD_DEFAULT_CLIENT_ID = "3MVG9VeAQy5y3BQVJqaUbFmV5jd8imcck2K5idmrTTGocSu9qZZ6qkbuEkxECKVYwmzm3WgvxkujqsxZDcBpL";
     public static final String PROD_DEFAULT_CLIENT_SECRET = "1007FFFBA2B6B6B1EF21E2B03F4C4F692ADE10AB7DEF19E00D8AAF85EF6F6A12";
@@ -54,6 +46,10 @@ public class Constants {
     public static final String NA46_SERVER_URL = "na46.test1.pc-rnd.salesforce.com";
     public static final String NA46_DEFAULT_CLIENT_ID = "3MVG9sA57VMGPDfeS67yma6IPflHn83FRhxVpmnuzp7R8uS42JYshQ7gWgWR63CQRgKL9gY5AfitSme.01ib6";
     public static final String NA46_DEFAULT_CLIENT_SECRET = "BDAF015C3D2418008842CAE91B0C8DD2D672B41707FB11EA3CFC5A5392E31866";
+
+    //Audience constants for different environments
+    public static final String PROD_SERVER_AUD = "login.salesforce.com";
+    public static final String DEV_TEST_SERVER_AUD = "login.test1.pc-rnd.salesforce.com";
 
     // Parameter constants
     public static final String LIMIT = "limit=";
@@ -83,6 +79,7 @@ public class Constants {
     public static final String USER = "user";
     public static final String USER_NAME = "userName";
     public static final String PD = "password";
+    public static final String PRIVATE_KEY = "privateKey";
     public static final String MAX_RETRIES = "maxRetries";
 
     // Response Constants
@@ -102,6 +99,7 @@ public class Constants {
     public static final String GRANT_TYPE = "urn:salesforce:grant-type:external:cdp";
     public static final String REFRESH_TOKEN_GRANT_TYPE = "refresh_token";
     public static final String TOKEN_GRANT_TYPE_PD = "password";
+    public static final String TOKEN_GRANT_TYPE_JWT_BEARER = "urn:ietf:params:oauth:grant-type:jwt-bearer";
     public static final String SUBJECT_TOKEN_TYPE_NAME = "subject_token_type";
     public static final String SUBJECT_TOKEN_TYPE = "urn:ietf:params:oauth:token-type:access_token";
     public static final String SUBJECT_TOKEN = "subject_token";
@@ -111,6 +109,7 @@ public class Constants {
     public static final String CLIENT_SECRET_NAME = "client_secret";
     public static final String CLIENT_USER_NAME = "username";
     public static final String CLIENT_PD = "password";
+    public static final String ASSERTION = "assertion";
 
     // Header Constants
     public static final String TRACE_ID = "x-trace-id";
@@ -127,4 +126,7 @@ public class Constants {
     public static final String GZIP_ENCODING = "gzip";
     public static final String CONTENT_ENCODING = "Content-Encoding";
     public static final String CONTENT_LENGTH = "Content-Length";
+
+    public static final String BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----";
+    public static final String END_PRIVATE_KEY = "-----END PRIVATE KEY-----";
 }

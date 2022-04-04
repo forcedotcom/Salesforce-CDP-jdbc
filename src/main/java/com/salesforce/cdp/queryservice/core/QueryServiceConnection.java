@@ -42,7 +42,7 @@ public class QueryServiceConnection implements Connection {
     private final boolean isSocksProxyDisabled;
 
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
-        this.properties = properties; // fixme: do deeepCopy and modify the props
+        this.properties = properties; // fixme: do deepCopy and modify the props
         this.serviceRootUrl = getServiceRootUrl(url);
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
         addClientSecretsIfRequired(serviceRootUrl, this.properties);
@@ -88,22 +88,17 @@ public class QueryServiceConnection implements Connection {
      */
     @VisibleForTesting
     static void addClientSecretsIfRequired(String serviceRootUrl, Properties properties) throws SQLException {
-        if(properties.containsKey(Constants.USER) && !properties.containsKey(Constants.USER_NAME)) {
+        if (properties.containsKey(Constants.USER) && !properties.containsKey(Constants.USER_NAME)) {
             properties.put(Constants.USER_NAME, properties.get(Constants.USER));
         }
 
-        if(properties.containsKey(Constants.USER_NAME)
+        if (properties.containsKey(Constants.USER_NAME)
                 && !properties.containsKey(Constants.CLIENT_ID)
-                && !properties.containsKey(Constants.CLIENT_SECRET)) {
+                && !properties.containsKey(Constants.CLIENT_SECRET)
+                && !properties.containsKey(Constants.PRIVATE_KEY)) {
             log.debug("adding client secrets for server {}", serviceRootUrl);
             String serverUrl = serviceRootUrl.toLowerCase();
-            if (serverUrl.endsWith(Constants.STMPA_SERVER_URL)) {
-                properties.put(Constants.CLIENT_ID, Constants.STMPA_DEFAULT_CLIENT_ID);
-                properties.put(Constants.CLIENT_SECRET, Constants.STMPA_DEFAULT_CLIENT_SECRET);
-            } else if (serverUrl.endsWith(Constants.STMPB_SERVER_URL)) {
-                properties.put(Constants.CLIENT_ID, Constants.STMPB_DEFAULT_CLIENT_ID);
-                properties.put(Constants.CLIENT_SECRET, Constants.STMPB_DEFAULT_CLIENT_SECRET);
-            } else if (serverUrl.endsWith(Constants.NA45_SERVER_URL)) {
+            if (serverUrl.endsWith(Constants.NA45_SERVER_URL)) {
                 properties.put(Constants.CLIENT_ID, Constants.NA45_DEFAULT_CLIENT_ID);
                 properties.put(Constants.CLIENT_SECRET, Constants.NA45_DEFAULT_CLIENT_SECRET);
             } else if (serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
@@ -418,8 +413,9 @@ public class QueryServiceConnection implements Connection {
     }
 
     public void setToken(Token token) {
-        // Store token at connection level only for username password flow.
-        if (properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD)) {
+        // Store token at connection level only for username password and key pair auth flows.
+        if ((properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD)) ||
+                (properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PRIVATE_KEY))) {
             this.token = token;
         }
     }
