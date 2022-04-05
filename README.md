@@ -1,8 +1,9 @@
 # Salesforce-CDP-jdbc
 Enables a jdbc connection to Salesforce CDP.
+The Salesforce CDP Java Database Connectivity (JDBC) driver allows for a connection to the Salesforce CDP ANSI SQL API. This connection lets you access and retrieve data using your favorite tools that are supported by JDBC.
 
 # How to use:
-The JDBC driver can be used with the tools like Tableau or independently with any Java JDBC client to connect to Salesforce CDP and retrieve the data.
+The JDBC driver can be used with the tools like Tableau, DBeaver or independently with any Java JDBC client to connect to Salesforce CDP and retrieve the data.
 
 Get the Driver from this repo.
 
