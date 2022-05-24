@@ -48,6 +48,7 @@ public class QueryServiceResultSet implements ResultSet {
     private final AtomicBoolean wasNull = new AtomicBoolean();
     protected ResultSetMetaData resultSetMetaData;
     private SimpleDateFormat dateFormatterWithTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private SimpleDateFormat dateFormatterWithUTCTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
     protected QueryServiceAbstractStatement statement;
     private int currentPageNum = 1;
@@ -819,10 +820,13 @@ public class QueryServiceResultSet implements ResultSet {
         }
         dateFormatter.setTimeZone(cal.getTimeZone());
         dateFormatterWithTime.setTimeZone(cal.getTimeZone());
+        dateFormatterWithUTCTime.setTimeZone(cal.getTimeZone());
         try {
             String valueString = value.toString();
             if (valueString.length() == 10) {
                 cal.setTime(dateFormatter.parse(value.toString()));
+            } else if(valueString.contains("UTC")){
+                cal.setTime(dateFormatterWithUTCTime.parse(value.toString()));
             } else {
                 cal.setTime(dateFormatterWithTime.parse(value.toString()));
             }
