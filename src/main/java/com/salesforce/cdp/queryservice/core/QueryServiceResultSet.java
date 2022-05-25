@@ -47,9 +47,9 @@ public class QueryServiceResultSet implements ResultSet {
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicBoolean wasNull = new AtomicBoolean();
     protected ResultSetMetaData resultSetMetaData;
-    private SimpleDateFormat dateFormatterWithTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    private SimpleDateFormat dateFormatterWithUTCTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-    private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+    private final String dateSimple = "yyyy-MM-dd";
+    private final String dateISOStandard = "yyyy-MM-dd'T'HH:mm:ss";
+    private final String dateWithTime = "yyyy-MM-dd HH:mm:ss.SSS";
     protected QueryServiceAbstractStatement statement;
     private int currentPageNum = 1;
 
@@ -818,23 +818,25 @@ public class QueryServiceResultSet implements ResultSet {
             wasNull.set(true);
             return null;
         }
-        dateFormatter.setTimeZone(cal.getTimeZone());
-        dateFormatterWithTime.setTimeZone(cal.getTimeZone());
-        dateFormatterWithUTCTime.setTimeZone(cal.getTimeZone());
+        String[] formats = new String[] {dateWithTime, dateISOStandard, dateSimple};
         try {
             String valueString = value.toString();
-            if (valueString.length() == 10) {
-                cal.setTime(dateFormatter.parse(value.toString()));
-            } else if(valueString.contains("UTC")){
-                cal.setTime(dateFormatterWithUTCTime.parse(value.toString()));
-            } else {
-                cal.setTime(dateFormatterWithTime.parse(value.toString()));
+            //valueString = "1989-04-01 00:00:00.000 UTC";
+            for (String format: formats) {
+                SimpleDateFormat sdFormat = new SimpleDateFormat(format);
+                sdFormat.setTimeZone(cal.getTimeZone());
+                try {
+                    cal.setTime(sdFormat.parse(valueString));
+                    return new Date(cal.getTimeInMillis());
+                } catch (ParseException e) {
+                    log.warn("Date format does not match the formatter, trying another format", e);
+                }
             }
-            return new Date(cal.getTimeInMillis());
         }
-        catch (IllegalArgumentException | ParseException e) {
+        catch (IllegalArgumentException e) {
             throw new SQLException("Invalid date from server: " + value, e);
         }
+        return null;
     }
 
     @Override
