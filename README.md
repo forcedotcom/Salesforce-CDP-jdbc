@@ -48,7 +48,7 @@ This flow utilizes Salesforce's server to server [JWT bearer flow](https://help.
     5. Callback URL: https://oauth.pstmn.io/v1/callback \
    **Note:** You can use your own callback url, which is nothing but the endpoint where redirect will happen after successful authorization.
     6. Select the checkbox for **“Use digital signatures”**
-    7. Select **“Choose File”** and select the **certificate.crt** file created in [Create a Private Public Key Pair and a Digital x509 Certificate](#Create a Private Public Key Pair and a Digital x509 Certificate) section
+    7. Select **“Choose File”** and select the **certificate.crt** file created in [Create a Private Public Key Pair and a Digital x509 Certificate](#Create-a-Private-Public-Key-Pair-and-a-Digital-x509-Certificate) section
     8. Under **“Selected OAuth Scopes”** move the following from the “Available OAuth Scopes” to “Selected OAuth Scopes”
        1. Manage user data via APIs (api)
        2. Perform requests at any time (refresh_token, offline_access)
