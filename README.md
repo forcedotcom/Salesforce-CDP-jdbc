@@ -45,30 +45,25 @@ This flow utilizes Salesforce's server to server [JWT bearer flow](https://help.
     2. API Name: CDP_API (or whatever default value is pre-populated)
     3. Contact Email: Your email address
     4. Under API Heading, check the box for **“Enable OAuth Settings”**
-    5. Callback URL: https://oauth.pstmn.io/v1/callback
-
-    **Note:** You can use your own callback url, which is nothing but the endpoint where redirect will happen after successful authorization.
+    5. Callback URL: https://oauth.pstmn.io/v1/callback \
+   **Note:** You can use your own callback url, which is nothing but the endpoint where redirect will happen after successful authorization.
     6. Select the checkbox for **“Use digital signatures”**
-    7. Select **“Choose File”** and select the **certificate.crt** file created in [Create a Private Public Key Pair and a Digital x509 Certificate](#Create a Private Public Key Pair and a Digital x509 Certificate) section
+    7. Select **“Choose File”** and select the **certificate.crt** file created in [Create a Private Public Key Pair and a Digital x509 Certificate](#Create-a-Private-Public-Key-Pair-and-a-Digital-x509-Certificate) section
     8. Under **“Selected OAuth Scopes”** move the following from the “Available OAuth Scopes” to “Selected OAuth Scopes”
-        1. Manage user data via APIs (api)
-        2. Perform requests at any time (refresh_token, offline_access)
-        3. Perform ANSI SQL queries on Salesforce CDP data (cdp_query_api)
-        4. Manage Salesforce CDP profile data (cdp_profile_api)
-        6. Note: feel free to select others if needed.
-
-       > Your screen should look similar to this
-
+       1. Manage user data via APIs (api)
+       2. Perform requests at any time (refresh_token, offline_access)
+       3. Perform ANSI SQL queries on Salesforce CDP data (cdp_query_api)
+       4. Manage Salesforce CDP profile data (cdp_profile_api)
+       5. Note: feel free to select others if needed. \
+   Your screen should look similar to this
        ![Connected App Setup 1 Screenshot](images/connected-app-setup-1.png)
     9. Select **Save** (on the next screen select **Continue**)
-    10. Make note of the **Consumer Key** value. This will be used as the **“clientId”** variable for establishing connection.
-
-        ![Connected App Setup 2 Screenshot](images/connected-app-setup-2.png)
-
+    10. Make note of the **Consumer Key** value. This will be used as the **“clientId”** variable for establishing connection. \
+   ![Connected App Setup 2 Screenshot](images/connected-app-setup-2.png)
 4. At the top of your newly created connected app click “Manage”
-    1. Select **“Edit Policies”**
-    2. Change **“IP Relaxation”** to **“Relax IP restrictions”**
-    3. Select **Save**
+   1. Select **“Edit Policies”**
+   2. Change **“IP Relaxation”** to **“Relax IP restrictions”**
+   3. Select **Save**
 
 ## App Authorization
 
