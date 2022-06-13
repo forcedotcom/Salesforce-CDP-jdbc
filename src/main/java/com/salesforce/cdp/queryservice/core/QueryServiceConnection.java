@@ -40,6 +40,7 @@ public class QueryServiceConnection implements Connection {
     private boolean enableArrowStream = false;
     private boolean isCursorBasedPaginationReq = true;
     private final boolean isSocksProxyDisabled;
+    private boolean enableStreamFlow = false;
 
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
         this.properties = properties; // fixme: do deepCopy and modify the props
@@ -54,6 +55,9 @@ public class QueryServiceConnection implements Connection {
         isCursorBasedPaginationReq = Boolean.parseBoolean(this.properties.getProperty(Constants.CURSOR_BASED_PAGINATION, Constants.TRUE_STR));
 
         this.isSocksProxyDisabled = Boolean.parseBoolean(this.properties.getProperty(Constants.DISABLE_SOCKS_PROXY));
+
+        // default `enableStreamFlow` is false
+        enableStreamFlow = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_STREAM_FLOW, Constants.FALSE_STR));
 
         // use isValid to test connection
         this.isValid(20);
@@ -125,6 +129,10 @@ public class QueryServiceConnection implements Connection {
 
     public boolean isSocksProxyDisabled() {
         return this.isSocksProxyDisabled;
+    }
+
+    public boolean isEnableStreamFlow() {
+        return enableStreamFlow;
     }
 
     @Override

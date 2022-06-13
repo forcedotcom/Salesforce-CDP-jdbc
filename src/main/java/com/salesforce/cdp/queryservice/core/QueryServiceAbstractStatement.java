@@ -16,6 +16,9 @@
 
 package com.salesforce.cdp.queryservice.core;
 
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
+import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
 import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
 import com.salesforce.cdp.queryservice.model.Type;
 import com.salesforce.cdp.queryservice.util.ArrowUtil;
@@ -23,6 +26,7 @@ import com.salesforce.cdp.queryservice.util.Constants;
 import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
+import com.salesforce.cdp.queryservice.util.QueryGrpcExecutor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 
@@ -49,6 +53,8 @@ public abstract class QueryServiceAbstractStatement {
 
     private QueryExecutor queryExecutor;
 
+    private QueryGrpcExecutor queryGrpcExecutor;
+
     public QueryServiceAbstractStatement(QueryServiceConnection queryServiceConnection,
                                          int resultSetType,
                                          int resultSetConcurrency) {
@@ -56,26 +62,33 @@ public abstract class QueryServiceAbstractStatement {
         this.resultSetType = resultSetType;
         this.resultSetConcurrency = resultSetConcurrency;
         this.queryExecutor = createQueryExecutor();
+        this.queryGrpcExecutor = createQueryGrpcExecutor();
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {
         try {
             this.sql = sql;
+            boolean isEnableStreamFlow = this.connection.isEnableStreamFlow();
+
             boolean isCursorBasedPaginationReq = this.connection.isCursorBasedPaginationReq();
 
             boolean requireManagedPagination = isTableauQuery() && !isCursorBasedPaginationReq;
             Optional<Integer> limit = requireManagedPagination ? Optional.of(Constants.MAX_LIMIT) : Optional.empty();
             Optional<String> orderby = requireManagedPagination ? Optional.of("1 ASC") : Optional.empty();
 
+            if(isEnableStreamFlow) {
+                Iterator<AnsiSqlQueryStreamResponse> response = queryGrpcExecutor.executeQuery(sql, limit, Optional.of(offset), orderby);
+                return createResultSetFromResponse(response);
+            } else {
+                Response response = queryExecutor.executeQuery(sql, isCursorBasedPaginationReq, limit, Optional.of(offset), orderby);
 
-
-            Response response = queryExecutor.executeQuery(sql, isCursorBasedPaginationReq, limit, Optional.of(offset), orderby);
-            if (!response.isSuccessful()) {
-                log.error("Request query {} failed with response code {} and trace-Id {}", sql, response.code(), response.headers().get(Constants.TRACE_ID));
-                HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
+                if (!response.isSuccessful()) {
+                    log.error("Request query {} failed with response code {} and trace-Id {}", sql, response.code(), response.headers().get(Constants.TRACE_ID));
+                    HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
+                }
+                QueryServiceResponse queryServiceResponse = HttpHelper.handleSuccessResponse(response, QueryServiceResponse.class, false);
+                return createResultSetFromResponse(queryServiceResponse, isCursorBasedPaginationReq);
             }
-            QueryServiceResponse queryServiceResponse = HttpHelper.handleSuccessResponse(response, QueryServiceResponse.class, false);
-            return createResultSetFromResponse(queryServiceResponse, isCursorBasedPaginationReq);
         } catch (IOException e) {
             log.error("Exception while running the query", e);
             throw new SQLException(QUERY_EXCEPTION);
@@ -122,6 +135,16 @@ public abstract class QueryServiceAbstractStatement {
         return new QueryServiceResultSet(data, resultSetMetaData, this);
     }
 
+    private ResultSet createResultSetFromResponse(Iterator<AnsiSqlQueryStreamResponse> queryServiceResponse) throws SQLException {
+        if(queryServiceResponse.hasNext()) {
+            // first batch is metadata
+            QueryServiceResultSetMetaData resultSetMetaData = createColumnNames(queryServiceResponse.next().getMetadata());
+            return new QueryServiceHyperResultSet(queryServiceResponse, resultSetMetaData, this);
+        }
+        // TODO: test this
+        throw new SQLException(queryServiceResponse.toString());
+    }
+
     private QueryServiceResultSetMetaData createColumnNames(QueryServiceResponse queryServiceResponse) throws SQLException {
         QueryServiceResultSetMetaData resultSetMetaData;
         List<String> columnNames = new ArrayList<>();
@@ -148,6 +171,33 @@ public abstract class QueryServiceAbstractStatement {
         return resultSetMetaData;
     }
 
+    private QueryServiceResultSetMetaData createColumnNames(Struct metadata) throws SQLException {
+        QueryServiceResultSetMetaData resultSetMetaData;
+        List<String> columnNames = new ArrayList<>();
+        List<String> columnTypes = new ArrayList<>();
+        List<Integer> columnTypeIds = new ArrayList<>();
+        Map<String, Integer> columnNameToPosition = new HashMap<>();
+
+        if (metadata == null) {
+            throw new SQLException(QUERY_EXCEPTION);
+        } else {
+            log.debug("Metadata is {}", metadata);
+            Map<String, Value> metadataMap = metadata.getFieldsMap();
+            for (String columnName : metadataMap.keySet()) {
+                // TODO: exception handling
+                final Map<String, Value> metadataValue = metadataMap.get(columnName).getStructValue().getFieldsMap();
+                columnNames.add(columnName);
+                columnTypes.add(metadataValue.get("type").getStringValue());
+                columnTypeIds.add((int)metadataValue.get("typeCode").getNumberValue());
+                columnNameToPosition.put(columnName, (int)metadataValue.get("placeInOrder").getNumberValue());
+            }
+        }
+
+        resultSetMetaData = new QueryServiceResultSetMetaData(columnNames, columnTypes, columnTypeIds, columnNameToPosition);
+        log.trace("Received column names are {}", columnNames);
+        return resultSetMetaData;
+    }
+
     public boolean isPaginationRequired() {
         return paginationRequired;
     }
@@ -164,5 +214,7 @@ public abstract class QueryServiceAbstractStatement {
         return new QueryExecutor(connection);
     }
 
-
+    protected QueryGrpcExecutor createQueryGrpcExecutor() {
+        return new QueryGrpcExecutor(connection);
+    }
 }

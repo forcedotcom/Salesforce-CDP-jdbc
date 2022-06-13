@@ -42,15 +42,21 @@ import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
 @Slf4j
 public class QueryServiceResultSet implements ResultSet {
 
-    protected List<Object> data;
-    private int currentRow = -1;
     private final AtomicBoolean closed = new AtomicBoolean();
-    private final AtomicBoolean wasNull = new AtomicBoolean();
     protected ResultSetMetaData resultSetMetaData;
     private SimpleDateFormat dateFormatterWithTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+    // TODO: With timeZone, without timezone
+    private SimpleDateFormat dateFormatterTrino = new SimpleDateFormat("MMM d, yyyy, HH:mm:ss a");
+
+    protected List<Object> data;
+    protected int currentRow = -1;
+    protected int currentPageNum = 1;
+    protected final AtomicBoolean wasNull = new AtomicBoolean();
     protected QueryServiceAbstractStatement statement;
-    private int currentPageNum = 1;
+
+    // TODO: test if there is any issue with adding this
+    public QueryServiceResultSet() {}
 
     // NOTE: This constructor is used for metadata table, hence only data and resultSetMetadata is set.
     public QueryServiceResultSet(List<Object> data,
@@ -819,12 +825,15 @@ public class QueryServiceResultSet implements ResultSet {
         }
         dateFormatter.setTimeZone(cal.getTimeZone());
         dateFormatterWithTime.setTimeZone(cal.getTimeZone());
+        dateFormatterTrino.setTimeZone(cal.getTimeZone());
         try {
             String valueString = value.toString();
             if (valueString.length() == 10) {
-                cal.setTime(dateFormatter.parse(value.toString()));
+                cal.setTime(dateFormatter.parse(valueString));
+            } else if(valueString.contains(",")) {
+                cal.setTime(dateFormatterTrino.parse(valueString));
             } else {
-                cal.setTime(dateFormatterWithTime.parse(value.toString()));
+                cal.setTime(dateFormatterWithTime.parse(valueString));
             }
             return new Date(cal.getTimeInMillis());
         }
@@ -1214,7 +1223,7 @@ public class QueryServiceResultSet implements ResultSet {
         return statement != null && statement.isPaginationRequired();
     }
 
-    private void errorOutIfClosed() throws SQLException {
+    protected void errorOutIfClosed() throws SQLException {
         if (isClosed()) {
             throw new SQLException("Resultset is already closed");
         }

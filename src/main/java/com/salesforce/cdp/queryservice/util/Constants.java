@@ -70,6 +70,7 @@ public class Constants {
     public static final String ENABLE_ARROW_STREAM = "enable-arrow-stream";
     public static final String CURSOR_BASED_PAGINATION = "cursor-based-pagination";
     public static final String DISABLE_SOCKS_PROXY = "disableSocksProxy";
+    public static final String ENABLE_STREAM_FLOW = "enable-stream-flow";
 
     // Property Constants
     public static final String CORETOKEN = "coreToken";
