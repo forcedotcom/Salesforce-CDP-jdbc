@@ -21,10 +21,13 @@ import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
 import com.salesforce.a360.queryservice.grpc.v1.QueryServiceGrpc;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.interceptors.GrpcInterceptor;
-import com.salesforce.cdp.queryservice.interceptors.GrpcRetryInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.FailsafeException;
+import net.jodah.failsafe.RetryPolicy;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -46,7 +49,6 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
     static {
         // TODO: set timeouts - idle timeout, total timeout, keepalive timeout
         DEFAULT_CHANNEL = ManagedChannelBuilder.forAddress(url, port)
-//                .intercept(new GrpcRetryInterceptor())
 //                .idleTimeout()
 //                .keepAliveTimeout()
                 .usePlaintext() // TODO: ssl?
@@ -64,7 +66,33 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
         this.channel = channel;
     }
 
-    public Iterator<AnsiSqlQueryStreamResponse> executeQuery(String sql) throws IOException, SQLException {
+    public Iterator<AnsiSqlQueryStreamResponse> executeQueryWithRetry(String sql) throws IOException, SQLException {
+        // TODO: retry case wise.
+        RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
+                .handle(StatusRuntimeException.class)
+//                .handleIf((res, ex) -> {System.out.print(res); return true;})
+                .onRetry(e -> log.warn("Failure #{}. Retrying.", e.getAttemptCount()))
+                .onRetriesExceeded(e -> log.warn("Failed to connect. Max retries exceeded."))
+                .withMaxRetries(DEFAULT_MAX_RETRY);
+        try {
+            return Failsafe.with(retryPolicy)
+                    .get(() -> {
+                        Iterator<AnsiSqlQueryStreamResponse> response = executeQuery(sql);
+                        // This checks if there is failure in first chunk itself.
+                        // NOTE: failure in later chunks is not handled intentionally here.
+                        // as in that case, we expect a new request from client.
+                        response.hasNext();
+                        return response;
+                    });
+        } catch (FailsafeException e) {
+            if (e.getCause() != null) {
+                throw new SQLException(e.getCause().getMessage(), e.getCause());
+            }
+            throw new SQLException(e);
+        }
+    }
+
+    private Iterator<AnsiSqlQueryStreamResponse> executeQuery(String sql) throws IOException, SQLException {
         log.info("Preparing to execute query {}", sql);
          Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
          StringBuilder tenantUrl = (new StringBuilder("https://")).append((String)tokenWithTenantUrl.get("tenantUrl"));

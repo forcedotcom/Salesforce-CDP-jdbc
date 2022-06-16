@@ -81,7 +81,7 @@ public abstract class QueryServiceAbstractStatement {
             Optional<String> orderby = requireManagedPagination ? Optional.of("1 ASC") : Optional.empty();
 
             if(isEnableStreamFlow) {
-                Iterator<AnsiSqlQueryStreamResponse> response = queryGrpcExecutor.executeQuery(sql);
+                Iterator<AnsiSqlQueryStreamResponse> response = queryGrpcExecutor.executeQueryWithRetry(sql);
                 return createResultSetFromResponse(response);
             } else {
                 Response response = queryExecutor.executeQuery(sql, isCursorBasedPaginationReq, limit, Optional.of(offset), orderby);
