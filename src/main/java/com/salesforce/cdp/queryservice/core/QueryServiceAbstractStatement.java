@@ -55,6 +55,10 @@ public abstract class QueryServiceAbstractStatement {
 
     private QueryGrpcExecutor queryGrpcExecutor;
 
+    private static final String KEY_TYPE = "type";
+    private static final String KEY_TYPE_CODE = "typeCode";
+    private static final String KEY_PLACE_IN_ORDER = "placeInOrder";
+
     public QueryServiceAbstractStatement(QueryServiceConnection queryServiceConnection,
                                          int resultSetType,
                                          int resultSetConcurrency) {
@@ -77,7 +81,7 @@ public abstract class QueryServiceAbstractStatement {
             Optional<String> orderby = requireManagedPagination ? Optional.of("1 ASC") : Optional.empty();
 
             if(isEnableStreamFlow) {
-                Iterator<AnsiSqlQueryStreamResponse> response = queryGrpcExecutor.executeQuery(sql, limit, Optional.of(offset), orderby);
+                Iterator<AnsiSqlQueryStreamResponse> response = queryGrpcExecutor.executeQuery(sql);
                 return createResultSetFromResponse(response);
             } else {
                 Response response = queryExecutor.executeQuery(sql, isCursorBasedPaginationReq, limit, Optional.of(offset), orderby);
@@ -136,13 +140,16 @@ public abstract class QueryServiceAbstractStatement {
     }
 
     private ResultSet createResultSetFromResponse(Iterator<AnsiSqlQueryStreamResponse> queryServiceResponse) throws SQLException {
-        if(queryServiceResponse.hasNext()) {
-            // first batch is metadata
-            QueryServiceResultSetMetaData resultSetMetaData = createColumnNames(queryServiceResponse.next().getMetadata());
-            return new QueryServiceHyperResultSet(queryServiceResponse, resultSetMetaData, this);
+        try {
+            if(queryServiceResponse.hasNext()) {
+                // first batch is metadata
+                QueryServiceResultSetMetaData resultSetMetaData = createColumnNames(queryServiceResponse.next().getMetadata());
+                return new QueryServiceHyperResultSet(queryServiceResponse, resultSetMetaData, this);
+            }
+            throw new SQLException(queryServiceResponse.toString());
+        } catch (Exception e) {
+            throw new SQLException(e.getMessage());
         }
-        // TODO: test this
-        throw new SQLException(queryServiceResponse.toString());
     }
 
     private QueryServiceResultSetMetaData createColumnNames(QueryServiceResponse queryServiceResponse) throws SQLException {
@@ -182,14 +189,17 @@ public abstract class QueryServiceAbstractStatement {
             throw new SQLException(QUERY_EXCEPTION);
         } else {
             log.debug("Metadata is {}", metadata);
-            Map<String, Value> metadataMap = metadata.getFieldsMap();
-            for (String columnName : metadataMap.keySet()) {
-                // TODO: exception handling
-                final Map<String, Value> metadataValue = metadataMap.get(columnName).getStructValue().getFieldsMap();
-                columnNames.add(columnName);
-                columnTypes.add(metadataValue.get("type").getStringValue());
-                columnTypeIds.add((int)metadataValue.get("typeCode").getNumberValue());
-                columnNameToPosition.put(columnName, (int)metadataValue.get("placeInOrder").getNumberValue());
+            try {
+                Map<String, Value> metadataMap = metadata.getFieldsMap();
+                for (String columnName : metadataMap.keySet()) {
+                    columnNames.add(columnName);
+                    final Map<String, Value> metadataValue = metadataMap.get(columnName).getStructValue().getFieldsMap();
+                    columnTypes.add(metadataValue.get(KEY_TYPE).getStringValue());
+                    columnTypeIds.add((int)metadataValue.get(KEY_TYPE_CODE).getNumberValue());
+                    columnNameToPosition.put(columnName, (int)metadataValue.get(KEY_PLACE_IN_ORDER).getNumberValue());
+                }
+            } catch (Exception e) {
+                throw new SQLException(QUERY_EXCEPTION);
             }
         }
 

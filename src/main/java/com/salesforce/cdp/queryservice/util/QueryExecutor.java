@@ -18,16 +18,9 @@ package com.salesforce.cdp.queryservice.util;
 
 import com.google.gson.Gson;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
-
-import com.salesforce.cdp.queryservice.interceptors.MetadataCacheInterceptor;
 import com.salesforce.cdp.queryservice.interceptors.RetryInterceptor;
 import com.salesforce.cdp.queryservice.model.AnsiQueryRequest;
-import com.salesforce.cdp.queryservice.model.Token;
-import com.salesforce.cdp.queryservice.util.internal.SFDefaultSocketFactoryWrapper;
 import lombok.extern.slf4j.Slf4j;
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.FailsafeException;
-import net.jodah.failsafe.RetryPolicy;
 import okhttp3.*;
 
 import java.io.IOException;
@@ -36,25 +29,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class QueryExecutor {
+public class QueryExecutor extends QueryTokenExecutor {
 
-    private static final Integer DEFAULT_MAX_RETRY = 3;
-    private static final String DEFAULT_MAX_RETRY_STR = DEFAULT_MAX_RETRY.toString();
-    private static final OkHttpClient DEFAULT_CLIENT;
     private static final OkHttpClient DEFAULT_QUERY_CLIENT;
-
     static {
-        DEFAULT_CLIENT = new OkHttpClient().newBuilder()
-                .readTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
-                .connectTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
-                .callTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
-                .retryOnConnectionFailure(true)
-                .socketFactory(new SFDefaultSocketFactoryWrapper(false))
-                .addInterceptor(new MetadataCacheInterceptor())
-                .build();
         // By default, add retry interceptors only for query service related calls
         // todo: delay adding retry interceptor so that user configured value can be used
         DEFAULT_QUERY_CLIENT = DEFAULT_CLIENT.newBuilder()
@@ -62,26 +42,16 @@ public class QueryExecutor {
                 .build();
     }
 
-    private final QueryServiceConnection connection;
-    private final OkHttpClient client;
     private final OkHttpClient queryClient;
 
     public QueryExecutor(QueryServiceConnection connection) {
-        this(connection, DEFAULT_CLIENT, DEFAULT_QUERY_CLIENT);
+        this(connection, null, null);
     }
 
-    public QueryExecutor(QueryServiceConnection connection, OkHttpClient client) {
-        this(connection, client, client);
-    }
-
-    public QueryExecutor(QueryServiceConnection connection, OkHttpClient client, OkHttpClient queryClient) {
-        // fixme: even though constructor is public currently, it is not possible
-        //  for users to specify custom Client as part of connection creation
-        this.connection = connection;
-
-        // this makes query executor not reuse across requests
-        this.client = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
-        this.queryClient = updateClientWithSocketFactory(queryClient, connection.isSocksProxyDisabled());
+    public QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client) {
+        super(connection, tokenClient);
+        client = client == null ? DEFAULT_QUERY_CLIENT : client;
+        this.queryClient = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
     }
 
     public Response executeQuery(String sql, boolean isV2Query, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
@@ -132,22 +102,6 @@ public class QueryExecutor {
         return getResponse(request);
     }
 
-    @Deprecated
-    protected OkHttpClient createClient() {
-        // todo: remove in next iteration
-        return DEFAULT_CLIENT.newBuilder()
-                .build();
-    }
-
-    protected Response getResponse(Request request) throws IOException {
-        long startTime = System.currentTimeMillis();
-        // use queryClient to fetch metadata or to execute the query
-        Response response = queryClient.newCall(request).execute();
-        long endTime = System.currentTimeMillis();
-        log.info("Total time taken to get response for url {} is {} ms", request.url(), endTime - startTime);
-        return response;
-    }
-
     private Map<String, String> createHeaders(Map<String, String> tokenWithTenantUrl, boolean enableArrowStream) throws SQLException {
         Properties properties = connection.getClientInfo();
         Map<String, String> headers = new HashMap<>();
@@ -162,50 +116,12 @@ public class QueryExecutor {
         return headers;
     }
 
-    protected Map<String, String> getTokenWithTenantUrl() throws SQLException {
-        if (connection.getToken() != null && TokenHelper.isAlive(connection.getToken())) {
-            return TokenHelper.getTokenWithUrl(connection.getToken());
-        }
-        // todo: add a wrapper for retry mechanism
-        //  check if delay or backoff need to introduced b/w each retry
-        RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
-                .handle(TokenException.class)
-                .onRetry(e -> log.warn("Failure #{}. Retrying.", e.getAttemptCount()))
-                .onRetriesExceeded(e -> log.warn("Failed to connect. Max retries exceeded."))
-                .withMaxRetries(getMaxRetries(connection.getClientInfo()));
-        try {
-            // failsafe executes the given block and returns the results
-            // the failures are handled according to the policies specified
-            // Here, only one policy is used i.e, retry policy
-            return Failsafe.with(retryPolicy)
-                    .get(() -> {
-                        Token token = TokenHelper.getToken(connection.getClientInfo(), client);
-                        connection.setToken(token);
-                        return TokenHelper.getTokenWithUrl(token);
-                    });
-        } catch (FailsafeException e) {
-            if (e.getCause() != null) {
-                throw new SQLException(e.getCause().getMessage(), e.getCause());
-            }
-            throw new SQLException(e);
-        }
+    protected Response getResponse(Request request) throws IOException {
+        long startTime = System.currentTimeMillis();
+        // use queryClient to fetch metadata or to execute the query
+        Response response = queryClient.newCall(request).execute();
+        long endTime = System.currentTimeMillis();
+        log.info("Total time taken to get response for url {} is {} ms", request.url(), endTime - startTime);
+        return response;
     }
-
-    private int getMaxRetries(Properties properties) {
-        try {
-            return Integer.parseInt(properties.getProperty(Constants.MAX_RETRIES, DEFAULT_MAX_RETRY_STR));
-        } catch (NumberFormatException e) {
-            return DEFAULT_MAX_RETRY;
-        }
-    }
-
-    private static OkHttpClient updateClientWithSocketFactory(OkHttpClient client, boolean isSocksProxyDisabled) {
-        if (isSocksProxyDisabled) {
-            return client.newBuilder()
-                    .socketFactory(new SFDefaultSocketFactoryWrapper(true))
-                    .build();
-        }
-        return client;
-    }
-
 }

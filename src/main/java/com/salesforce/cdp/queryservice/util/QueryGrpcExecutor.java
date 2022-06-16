@@ -21,45 +21,38 @@ import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
 import com.salesforce.a360.queryservice.grpc.v1.QueryServiceGrpc;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.interceptors.GrpcInterceptor;
-import com.salesforce.cdp.queryservice.model.Token;
+import com.salesforce.cdp.queryservice.interceptors.GrpcRetryInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import lombok.extern.slf4j.Slf4j;
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.FailsafeException;
-import net.jodah.failsafe.RetryPolicy;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class QueryGrpcExecutor {
+public class QueryGrpcExecutor extends QueryTokenExecutor {
 
-    // TODO: check unused imports
-    private static final Integer DEFAULT_MAX_RETRY = 3;
-    private static final String DEFAULT_MAX_RETRY_STR = DEFAULT_MAX_RETRY.toString();
     private static final ManagedChannel DEFAULT_CHANNEL;
-    // TODO: need client too here for the token
+
+    // TODO: check if we need to pass tenantUrl or albUrl per env.?
+    private static final String url = "localhost";
+    private static final int port = 7020;
+    private static final int timeoutInMin = 5;
 
     static {
-        // TODO:
-        // set timeouts - idle timeout, total timeout, keepalive timeout
-        // set retry handling
-        // check url for diff env.
-        DEFAULT_CHANNEL = ManagedChannelBuilder.forAddress("localhost", 7020)
-                .maxRetryAttempts(3) // use this instead of retryinterceptor?
+        // TODO: set timeouts - idle timeout, total timeout, keepalive timeout
+        DEFAULT_CHANNEL = ManagedChannelBuilder.forAddress(url, port)
+//                .intercept(new GrpcRetryInterceptor())
 //                .idleTimeout()
 //                .keepAliveTimeout()
                 .usePlaintext() // TODO: ssl?
                 .build();
     }
 
-    private final QueryServiceConnection connection;
     private final ManagedChannel channel;
 
     public QueryGrpcExecutor(QueryServiceConnection connection) {
@@ -67,22 +60,19 @@ public class QueryGrpcExecutor {
     }
 
     public QueryGrpcExecutor(QueryServiceConnection connection, ManagedChannel channel) {
-        this.connection = connection;
+        super(connection);
         this.channel = channel;
     }
 
-    public Iterator<AnsiSqlQueryStreamResponse> executeQuery(String sql, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
-        // TODO: check limit, offset, orderby not used.
-        // TODO: test retry
+    public Iterator<AnsiSqlQueryStreamResponse> executeQuery(String sql) throws IOException, SQLException {
         log.info("Preparing to execute query {}", sql);
-       // Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl(); // TODO: extend queryExecutor?
+         Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
+         StringBuilder tenantUrl = (new StringBuilder("https://")).append((String)tokenWithTenantUrl.get("tenantUrl"));
 
         QueryServiceGrpc.QueryServiceBlockingStub stub = QueryServiceGrpc.newBlockingStub(channel);
         Properties properties = connection.getClientInfo();
-        // TODO: move timeout to config
-        Iterator<AnsiSqlQueryStreamResponse> responseIterator = stub.withDeadlineAfter(5, TimeUnit.MINUTES).withInterceptors(new GrpcInterceptor("authToken", properties)).ansiSqlQueryStream(AnsiSqlQueryStreamRequest.newBuilder().setQuery(sql).setTenantId("a360/falcondev/4e5a4e98240a46ec891a6425429318bd").build());
-        // channel shutdown? - check qs for best practices
-
-        return responseIterator;
+        // TODO: check here on how to use tenantUrl on channel
+        // TODO: hardcoded tenantId would go away.
+        return stub.withDeadlineAfter(timeoutInMin, TimeUnit.MINUTES).withInterceptors(new GrpcInterceptor("authToken", properties)).ansiSqlQueryStream(AnsiSqlQueryStreamRequest.newBuilder().setQuery(sql).setTenantId("a360/falcondev/4e5a4e98240a46ec891a6425429318bd").build());
     }
 }
