@@ -41,6 +41,7 @@ public class QueryServiceConnection implements Connection {
     private boolean isCursorBasedPaginationReq = true;
     private final boolean isSocksProxyDisabled;
     private boolean enableStreamFlow = false;
+    private String tenantUrl;
 
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
         this.properties = properties; // fixme: do deepCopy and modify the props
@@ -132,6 +133,11 @@ public class QueryServiceConnection implements Connection {
     }
 
     public boolean isEnableStreamFlow() {
+        return enableStreamFlow;
+    }
+
+    public boolean updateStreamFlow(boolean flag) {
+        enableStreamFlow = flag;
         return enableStreamFlow;
     }
 
@@ -343,6 +349,7 @@ public class QueryServiceConnection implements Connection {
         if (isClosed()) {
             return false;
         }
+
         try (PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY)) {
             return statement.execute();
         }
@@ -430,5 +437,13 @@ public class QueryServiceConnection implements Connection {
 
     public Token getToken() {
         return token;
+    }
+
+    public String getTenantUrl() {
+        return tenantUrl;
+    }
+
+    public void setTenantUrl(String tenantUrl) {
+        this.tenantUrl = tenantUrl;
     }
 }

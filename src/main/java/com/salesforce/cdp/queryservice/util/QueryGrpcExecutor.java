@@ -23,6 +23,7 @@ import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.interceptors.GrpcInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
@@ -39,21 +40,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class QueryGrpcExecutor extends QueryTokenExecutor {
 
-    private static final ManagedChannel DEFAULT_CHANNEL;
-
-    // TODO: check if we need to pass tenantUrl or albUrl per env.?
-    private static final String url = "localhost";
+    private static final ManagedChannel DEFAULT_CHANNEL = null;
+    // TODO: port and timeout change
     private static final int port = 7020;
     private static final int timeoutInMin = 5;
-
-    static {
-        // TODO: set timeouts - idle timeout, total timeout, keepalive timeout
-        DEFAULT_CHANNEL = ManagedChannelBuilder.forAddress(url, port)
-//                .idleTimeout()
-//                .keepAliveTimeout()
-                .usePlaintext() // TODO: ssl?
-                .build();
-    }
 
     private final ManagedChannel channel;
 
@@ -63,14 +53,28 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
 
     public QueryGrpcExecutor(QueryServiceConnection connection, ManagedChannel channel) {
         super(connection);
-        this.channel = channel;
+        this.channel = getChannel(channel, connection.getTenantUrl());
+    }
+
+    private ManagedChannel getChannel(ManagedChannel channel, String tenantUrl) {
+        if(channel == null && tenantUrl!=null) {
+            // TODO: set timeouts - idle timeout, total timeout, keepalive timeout
+            channel = ManagedChannelBuilder.forAddress(tenantUrl, port)
+//                .idleTimeout()
+//                .keepAliveTimeout()
+                    .usePlaintext() // TODO: ssl?
+                    .build();
+        } else {
+            connection.updateStreamFlow(false);
+        }
+
+        return channel;
     }
 
     public Iterator<AnsiSqlQueryStreamResponse> executeQueryWithRetry(String sql) throws IOException, SQLException {
         // TODO: retry case wise.
         RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
-                .handle(StatusRuntimeException.class)
-//                .handleIf((res, ex) -> {System.out.print(res); return true;})
+                .handleIf(this::ifRetryableGrpcCode)
                 .onRetry(e -> log.warn("Failure #{}. Retrying.", e.getAttemptCount()))
                 .onRetriesExceeded(e -> log.warn("Failed to connect. Max retries exceeded."))
                 .withMaxRetries(DEFAULT_MAX_RETRY);
@@ -92,15 +96,20 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
         }
     }
 
+    private boolean ifRetryableGrpcCode(Object failure) {
+        if(failure instanceof StatusRuntimeException) {
+            final Status.Code code = ((StatusRuntimeException) failure).getStatus().getCode();
+            return (Utils.getGrpcRetryStatusCodes().contains(code));
+        }
+        return false;
+    }
+
     private Iterator<AnsiSqlQueryStreamResponse> executeQuery(String sql) throws IOException, SQLException {
         log.info("Preparing to execute query {}", sql);
          Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
-         StringBuilder tenantUrl = (new StringBuilder("https://")).append((String)tokenWithTenantUrl.get("tenantUrl"));
-
         QueryServiceGrpc.QueryServiceBlockingStub stub = QueryServiceGrpc.newBlockingStub(channel);
         Properties properties = connection.getClientInfo();
-        // TODO: check here on how to use tenantUrl on channel
-        // TODO: hardcoded tenantId would go away.
+        // TODO: hardcoded tenantId would go away
         return stub.withDeadlineAfter(timeoutInMin, TimeUnit.MINUTES).withInterceptors(new GrpcInterceptor("authToken", properties)).ansiSqlQueryStream(AnsiSqlQueryStreamRequest.newBuilder().setQuery(sql).setTenantId("a360/falcondev/4e5a4e98240a46ec891a6425429318bd").build());
     }
 }

@@ -69,6 +69,16 @@ public class QueryTokenExecutor {
 
         // this makes query executor not reuse across requests
         this.client = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
+
+        // set TenantUrl in connection. This is mandatory in gRPC flow.
+        if(connection.isEnableStreamFlow()) {
+            try {
+                Map<String, String> token = getTokenWithTenantUrl();
+                connection.setTenantUrl(token.get(Constants.TENANT_URL));
+            } catch (SQLException e) {
+                log.error("Unable to get tenantUrl. Error - ", e);
+            }
+        }
     }
 
     @Deprecated
