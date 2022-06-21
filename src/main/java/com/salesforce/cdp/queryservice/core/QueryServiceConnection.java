@@ -350,8 +350,18 @@ public class QueryServiceConnection implements Connection {
             return false;
         }
 
-        try (PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY)) {
+        try {
+            PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY);
             return statement.execute();
+        } catch (Exception e) {
+            if(isEnableStreamFlow()) {
+                // use http v2 api if hyper gRPC call is failing
+                updateStreamFlow(false);
+                try(PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY)) {
+                    return statement.execute();
+                }
+            }
+            throw e;
         }
     }
 
