@@ -49,6 +49,9 @@ public class QueryServiceResultSet implements ResultSet {
     protected ResultSetMetaData resultSetMetaData;
     private SimpleDateFormat dateFormatterWithTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+    private final String dateSimple = "yyyy-MM-dd";
+    private final String dateISOStandard = "yyyy-MM-dd'T'HH:mm:ss";
+    private final String dateWithTime = "yyyy-MM-dd HH:mm:ss.SSS";
     protected QueryServiceAbstractStatement statement;
     private int currentPageNum = 1;
 
@@ -804,12 +807,14 @@ public class QueryServiceResultSet implements ResultSet {
 
     @Override
     public Date getDate(int columnIndex, Calendar cal) throws SQLException {
+        log.info("QSRS: Inside 22");
         errorOutIfClosed();
         String columnNameByIndex = getColumnNameByIndex(columnIndex);
         return getDate(columnNameByIndex, cal);
     }
 
-    @Override
+    //Actual Method
+    /*@Override
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
         errorOutIfClosed();
         Object value = getObject(columnLabel);
@@ -831,10 +836,48 @@ public class QueryServiceResultSet implements ResultSet {
         catch (IllegalArgumentException | ParseException e) {
             throw new SQLException("Invalid date from server: " + value, e);
         }
+    }*/
+
+    //Modified method which gives correct result
+    @Override
+    public Date getDate(String columnLabel, Calendar cal) throws SQLException {
+        log.info("QSRS: Inside 4");
+        errorOutIfClosed();
+        Object value = getObject(columnLabel);
+        if (wasNull() || StringUtils.EMPTY.equals(value)) {
+            wasNull.set(true);
+            return null;
+        }
+        Date result = null;
+        String[] formats = new String[] {dateWithTime, dateISOStandard, dateSimple};
+        try {
+            String valueString = value.toString();
+            for (String format: formats) {
+                SimpleDateFormat sdFormat = new SimpleDateFormat(format);
+                sdFormat.setTimeZone(cal.getTimeZone());
+                try {
+                    cal.setTime(sdFormat.parse(valueString));
+                    log.info("QSRS: parsed date {}", valueString);
+                    log.info("QSRS: parsed format {}", format);
+                    result = new Date(cal.getTimeInMillis());
+                    log.info("QSRS: parsed result {}", result);
+                    return result;
+                } catch (ParseException e) {
+                    log.info("QSRS: caught exp {}", e.getMessage());
+                    log.warn("QSRS: Date format does not match the formatter, trying another format", e);
+                }
+            }
+        }
+        catch (IllegalArgumentException e) {
+            throw new SQLException("Invalid date from server: " + value, e);
+        }
+        log.info("QSRS: reached end");
+        return result;
     }
 
     @Override
     public Time getTime(int columnIndex, Calendar cal) throws SQLException {
+        log.info("QSRS: Inside 21");
         errorOutIfClosed();
         String columnNameByIndex = getColumnNameByIndex(columnIndex);
         return getTime(columnNameByIndex, cal);
@@ -842,11 +885,13 @@ public class QueryServiceResultSet implements ResultSet {
 
     @Override
     public Time getTime(String columnLabel, Calendar cal) throws SQLException {
+        log.info("QSRS: Inside 20");
         errorOutIfClosed();
         Date date = getDate(columnLabel, cal);
         if (wasNull()){
             return null;
         }
+        //
         return new Time(date.getTime());
     }
 
@@ -854,6 +899,7 @@ public class QueryServiceResultSet implements ResultSet {
     public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
         errorOutIfClosed();
         String columnNameByIndex = getColumnNameByIndex(columnIndex);
+        log.info("Inside timestamp 11");
         return getTimestamp(columnNameByIndex, cal);
     }
 
@@ -861,10 +907,14 @@ public class QueryServiceResultSet implements ResultSet {
     public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
         errorOutIfClosed();
         Date date = getDate(columnLabel, cal);
+        log.info("Inside timestamp 12");
         if (wasNull()){
+            log.info("Inside timestamp null");
             return null;
         }
-        return new Timestamp(date.getTime());
+        Timestamp ts = new Timestamp(date.getTime());
+        log.info("Inside timestamp 13 {}", ts);
+        return ts;
     }
 
     @Override
