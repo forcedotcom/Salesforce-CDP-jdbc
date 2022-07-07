@@ -33,6 +33,10 @@ public class GrpcInterceptor implements ClientInterceptor {
         headers.put(
             Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER), authToken);
 
+        // TODO: hardcoded tenantId would go away
+        headers.put(
+                Key.of("ctx-tenant-id", Metadata.ASCII_STRING_MARSHALLER), "a360/falcondev/4e5a4e98240a46ec891a6425429318bd");
+
         if (properties.containsKey(Constants.USER_AGENT)) {
           headers.put(Key.of(Constants.USER_AGENT, Metadata.ASCII_STRING_MARSHALLER), properties.get(Constants.USER_AGENT).toString());
         }

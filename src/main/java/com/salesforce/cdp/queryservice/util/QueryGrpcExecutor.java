@@ -57,6 +57,8 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
     }
 
     private ManagedChannel getChannel(ManagedChannel channel, String tenantUrl) {
+//        // TODO: temp
+//        tenantUrl = "localhost";
         if(channel == null && tenantUrl!=null) {
             // TODO: set timeouts - idle timeout, total timeout, keepalive timeout
             channel = ManagedChannelBuilder.forAddress(tenantUrl, port)
@@ -72,7 +74,6 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
     }
 
     public Iterator<AnsiSqlQueryStreamResponse> executeQueryWithRetry(String sql) throws IOException, SQLException {
-        // TODO: retry case wise.
         RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
                 .handleIf(this::ifRetryableGrpcCode)
                 .onRetry(e -> log.warn("Failure #{}. Retrying.", e.getAttemptCount()))
@@ -109,7 +110,6 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
          Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
         QueryServiceGrpc.QueryServiceBlockingStub stub = QueryServiceGrpc.newBlockingStub(channel);
         Properties properties = connection.getClientInfo();
-        // TODO: hardcoded tenantId would go away
-        return stub.withDeadlineAfter(timeoutInMin, TimeUnit.MINUTES).withInterceptors(new GrpcInterceptor("authToken", properties)).ansiSqlQueryStream(AnsiSqlQueryStreamRequest.newBuilder().setQuery(sql).setTenantId("a360/falcondev/4e5a4e98240a46ec891a6425429318bd").build());
+        return stub.withDeadlineAfter(timeoutInMin, TimeUnit.MINUTES).withInterceptors(new GrpcInterceptor("authToken", properties)).ansiSqlQueryStream(AnsiSqlQueryStreamRequest.newBuilder().setQuery(sql).build());
     }
 }
