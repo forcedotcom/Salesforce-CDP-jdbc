@@ -47,7 +47,9 @@ public class QueryServiceResultSet implements ResultSet {
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicBoolean wasNull = new AtomicBoolean();
     protected ResultSetMetaData resultSetMetaData;
-    private SimpleDateFormat dateFormatterWithTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    //private SimpleDateFormat dateFormatterWithTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    //To fix the Invalid Date format issue
+    private SimpleDateFormat dateFormatterWithTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
     protected QueryServiceAbstractStatement statement;
     private int currentPageNum = 1;

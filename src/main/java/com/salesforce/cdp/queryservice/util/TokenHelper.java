@@ -22,6 +22,9 @@ import com.google.common.primitives.Bytes;
 import com.salesforce.cdp.queryservice.model.CoreTokenRenewResponse;
 import com.salesforce.cdp.queryservice.model.Token;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
@@ -34,14 +37,18 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static com.salesforce.cdp.queryservice.util.Messages.FAILED_LOGIN;
-import static com.salesforce.cdp.queryservice.util.Messages.FAILED_LOGIN_2;
-import static com.salesforce.cdp.queryservice.util.Messages.RENEW_TOKEN;
-import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_EXCHANGE_FAILURE;
-import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_FETCH_FAILURE;
+import static com.salesforce.cdp.queryservice.util.Messages.*;
 
 @Slf4j
 public class TokenHelper {
@@ -68,8 +75,12 @@ public class TokenHelper {
             token = tokenCache.getIfPresent(properties.getProperty(Constants.CORETOKEN));
         }
         if (token == null) {
-            if(properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD)) {
+            if(properties.containsKey(Constants.USER_NAME) && !properties.getProperty(Constants.USER_NAME).isEmpty()
+                    && properties.containsKey(Constants.PD) && !properties.getProperty(Constants.PD).isEmpty()) {
                 return retrieveTokenWithPasswordGrant(properties, client);
+            } else if (properties.containsKey(Constants.USER_NAME) && !properties.getProperty(Constants.USER_NAME).isEmpty()
+                    && properties.containsKey(Constants.PRIVATE_KEY)) {
+                return retrieveTokenWithJWTBearerGrant(properties, client);
             }
             Token newToken = exchangeToken(properties.getProperty(Constants.LOGIN_URL), properties.getProperty(Constants.CORETOKEN), client);
             tokenCache.put(properties.getProperty(Constants.CORETOKEN), newToken);
@@ -116,7 +127,6 @@ public class TokenHelper {
                                           passwordBytes,
                                           token_url, client);
 
-
             // Then get rid of the secrets from memory
             // todo: since it is handled in finally, should we remove this?
             fillArray(passwordBytes, (byte) 0);
@@ -131,6 +141,56 @@ public class TokenHelper {
         } finally {
             fillArray(passwordBytes, (byte) 0);
             fillArray(clientSecret, (byte)0);
+        }
+    }
+
+    private static Token retrieveTokenWithJWTBearerGrant(Properties properties, OkHttpClient client) throws TokenException {
+        if (properties.getProperty(Constants.USER_NAME) == null || properties.getProperty(Constants.USER_NAME).isEmpty()) {
+            throw new TokenException("Username cannot be null/empty for key-pair authentication");
+        }
+
+        if (properties.getProperty(Constants.PRIVATE_KEY) == null || properties.getProperty(Constants.PRIVATE_KEY).isEmpty()) {
+            throw new TokenException("Private key cannot be null/empty for key-pair authentication");
+        }
+
+        if (properties.getProperty(Constants.CLIENT_ID) == null || properties.getProperty(Constants.CLIENT_ID).isEmpty()) {
+            throw new TokenException("Client Id cannot be null/empty for key-pair authentication");
+        }
+
+        String token_url = properties.getProperty(Constants.LOGIN_URL) + Constants.CORE_TOKEN_URL;
+        CoreTokenRenewResponse coreTokenRenewResponse = null;
+        try {
+            String audience = getAudienceForJWTAssertion(properties.getProperty(Constants.LOGIN_URL));
+
+            // And handle the initial login *without* immutables. This ensures that nothing
+            // is allocated in memory that cannot be cleared on demand, and thus we aren't
+            // at the garbage collectors mercy.
+            Response response = key_pair_auth_login(Constants.TOKEN_GRANT_TYPE_JWT_BEARER,
+                    properties.getProperty(Constants.CLIENT_ID),
+                    properties.getProperty(Constants.USER_NAME),
+                    properties.getProperty(Constants.PRIVATE_KEY),
+                    audience, token_url, client);
+
+            // And exchange the Key/Pair flow authtoken for a scoped bearer token.
+            coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class, false);
+            return exchangeToken(coreTokenRenewResponse.getInstance_url(), coreTokenRenewResponse.getAccess_token(), client);
+        } catch(SQLException sqlException) {
+          log.error("Caught exception while setting audience for JWT assertion", sqlException);
+          throw new TokenException(TOKEN_FETCH_FAILURE, sqlException);
+        } catch (IOException e) {
+            log.error("Caught exception while retrieving the token", e);
+            throw new TokenException(TOKEN_FETCH_FAILURE, e);
+        }
+    }
+
+    private static String getAudienceForJWTAssertion(String serviceRootUrl) throws SQLException {
+        String serverUrl = serviceRootUrl.toLowerCase();
+        if (serverUrl.endsWith(Constants.NA45_SERVER_URL) || serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
+            return Constants.DEV_TEST_SERVER_AUD;
+        } else if (serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
+            return Constants.PROD_SERVER_AUD;
+        } else {
+            throw new SQLException("specified url: " + serviceRootUrl + " didn't match any existing envs");
         }
     }
 
@@ -275,5 +335,71 @@ public class TokenHelper {
         } finally {
             fillArray(body, (byte)0);
         }
+    }
+
+    private static Response key_pair_auth_login(
+            String grantType, String clientId,
+            String userName, String privateKey, String audience, String tokenUrl, OkHttpClient client
+    ) throws TokenException {
+        byte[] grantTypeSegment = (Constants.GRANT_TYPE_NAME + Constants.TOKEN_ASSIGNMENT + grantType)
+                .getBytes(StandardCharsets.UTF_8);
+        byte[] jwsSegment = (Constants.ASSERTION + Constants.TOKEN_ASSIGNMENT +
+                createJwt(clientId, userName, privateKey, audience)).getBytes(StandardCharsets.UTF_8);
+        byte[] separator = Constants.TOKEN_SEPARATOR.getBytes(StandardCharsets.UTF_8);
+
+        byte[] body = Bytes.concat(
+                grantTypeSegment, separator, jwsSegment
+        );
+        try {
+            RequestBody requestBody = RequestBody.create(body, MediaType.parse(Constants.URL_ENCODED_CONTENT));
+            Map<String, String> headers = Collections.singletonMap(Constants.CONTENT_TYPE, Constants.URL_ENCODED_CONTENT);
+            Request request = HttpHelper.buildRequest(Constants.POST, tokenUrl, requestBody, headers);
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                log.error("login with user credentials failed with status code {}", response.code());
+                HttpHelper.handleErrorResponse(response, Constants.ERROR_DESCRIPTION);
+            }
+            return response;
+        } catch (IOException e) {
+            log.error("login with user credentials failed", e);
+            throw new TokenException(FAILED_LOGIN, e);
+        } finally {
+            fillArray(grantTypeSegment, (byte)0);
+            fillArray(jwsSegment, (byte)0);
+            fillArray(separator, (byte)0);
+            fillArray(body, (byte)0);
+        }
+    }
+
+    private static String createJwt(String clientId, String userName, String privateKey, String audience) throws TokenException {
+        Instant now = Instant.now();
+        String jwtToken = null;
+        try {
+            RSAPrivateKey rsaPrivateKey = getPrivateKey(privateKey);
+            jwtToken = Jwts.builder()
+                    .setIssuer(clientId)
+                    .setSubject(userName)
+                    .setAudience(audience)
+                    .setIssuedAt(Date.from(now))
+                    .setExpiration(Date.from(now.plus(2l, ChronoUnit.MINUTES)))
+                    .signWith(rsaPrivateKey, SignatureAlgorithm.RS256)
+                    .compact();
+        } catch (Exception e) {
+            log.error("JWT assertion creation failed", e);
+            throw new TokenException(JWT_CREATION_FAILURE, e);
+        }
+
+        return jwtToken;
+    }
+
+    private static RSAPrivateKey getPrivateKey(String rsaPrivateKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        rsaPrivateKey = rsaPrivateKey.replace(Constants.BEGIN_PRIVATE_KEY, "");
+        rsaPrivateKey = rsaPrivateKey.replace(Constants.END_PRIVATE_KEY, "");
+        rsaPrivateKey = rsaPrivateKey.replaceAll("\\s", "");
+
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(rsaPrivateKey));
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        RSAPrivateKey privateKey = (RSAPrivateKey)kf.generatePrivate(keySpec);
+        return privateKey;
     }
 }
