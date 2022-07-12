@@ -823,7 +823,6 @@ public class QueryServiceResultSet implements ResultSet {
             wasNull.set(true);
             return null;
         }
-        Date result = null;
         String[] formats = new String[] {dateWithMsTz, dateISOStandard, dateWithSeconds, dateSimple};
         try {
             String valueString = value.toString();
@@ -832,8 +831,7 @@ public class QueryServiceResultSet implements ResultSet {
                 sdFormat.setTimeZone(cal.getTimeZone());
                 try {
                     cal.setTime(sdFormat.parse(valueString));
-                    result = new Date(cal.getTimeInMillis());
-                    return result;
+                    return new Date(cal.getTimeInMillis());
                 } catch (ParseException e) {
                     log.info("QSRS: caught exp {}", e.getMessage());
                     log.warn("QSRS: Date format does not match the formatter, trying another format", e);
@@ -843,7 +841,7 @@ public class QueryServiceResultSet implements ResultSet {
         catch (IllegalArgumentException e) {
             throw new SQLException("Invalid date from server: " + value, e);
         }
-        return result;
+        return null;
     }
 
     @Override
