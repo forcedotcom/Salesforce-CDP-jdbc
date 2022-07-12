@@ -47,10 +47,13 @@ public class QueryServiceResultSet implements ResultSet {
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicBoolean wasNull = new AtomicBoolean();
     protected ResultSetMetaData resultSetMetaData;
-    //private SimpleDateFormat dateFormatterWithTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
     //To fix the Invalid Date format issue
-    private SimpleDateFormat dateFormatterWithTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
-    private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+    private final String dateSimple = "yyyy-MM-dd";
+    private final String dateISOStandard = "yyyy-MM-dd'T'HH:mm:ss";
+    private final String dateWithSeconds = "yyyy-MM-dd HH:mm:ss";
+    private final String dateWithMsTz = "yyyy-MM-dd HH:mm:ss.SSS Z";
+    
     protected QueryServiceAbstractStatement statement;
     private int currentPageNum = 1;
 
@@ -811,6 +814,7 @@ public class QueryServiceResultSet implements ResultSet {
         return getDate(columnNameByIndex, cal);
     }
 
+    //Handle multiple date formats one by one
     @Override
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
         errorOutIfClosed();
@@ -819,20 +823,27 @@ public class QueryServiceResultSet implements ResultSet {
             wasNull.set(true);
             return null;
         }
-        dateFormatter.setTimeZone(cal.getTimeZone());
-        dateFormatterWithTime.setTimeZone(cal.getTimeZone());
+        Date result = null;
+        String[] formats = new String[] {dateWithMsTz, dateISOStandard, dateWithSeconds, dateSimple};
         try {
             String valueString = value.toString();
-            if (valueString.length() == 10) {
-                cal.setTime(dateFormatter.parse(value.toString()));
-            } else {
-                cal.setTime(dateFormatterWithTime.parse(value.toString()));
+            for (String format: formats) {
+                SimpleDateFormat sdFormat = new SimpleDateFormat(format);
+                sdFormat.setTimeZone(cal.getTimeZone());
+                try {
+                    cal.setTime(sdFormat.parse(valueString));
+                    result = new Date(cal.getTimeInMillis());
+                    return result;
+                } catch (ParseException e) {
+                    log.info("QSRS: caught exp {}", e.getMessage());
+                    log.warn("QSRS: Date format does not match the formatter, trying another format", e);
+                }
             }
-            return new Date(cal.getTimeInMillis());
         }
-        catch (IllegalArgumentException | ParseException e) {
+        catch (IllegalArgumentException e) {
             throw new SQLException("Invalid date from server: " + value, e);
         }
+        return result;
     }
 
     @Override
