@@ -41,9 +41,10 @@ import java.util.concurrent.TimeUnit;
 public class QueryGrpcExecutor extends QueryTokenExecutor {
 
     private static final ManagedChannel DEFAULT_CHANNEL = null;
-    // TODO: port and timeout change
-    private static final int port = 7020;
+    private static final int port = 443;
     private static final int timeoutInMin = 5;
+    // No retry on hyper for now. Fallback to v2 call if receive even one failure from hyper.
+    private static final int GRPC_MAX_RETRY = 0;
 
     private final ManagedChannel channel;
 
@@ -57,13 +58,8 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
     }
 
     private ManagedChannel getChannel(ManagedChannel channel, String tenantUrl) {
-//        // TODO: temp
-//        tenantUrl = "localhost";
         if(channel == null && tenantUrl!=null) {
-            // TODO: set timeouts - idle timeout, total timeout, keepalive timeout
             channel = ManagedChannelBuilder.forAddress(tenantUrl, port)
-//                .idleTimeout()
-//                .keepAliveTimeout()
                     .usePlaintext() // TODO: ssl?
                     .build();
         } else {
@@ -78,7 +74,7 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
                 .handleIf(this::ifRetryableGrpcCode)
                 .onRetry(e -> log.warn("Failure #{}. Retrying.", e.getAttemptCount()))
                 .onRetriesExceeded(e -> log.warn("Failed to connect. Max retries exceeded."))
-                .withMaxRetries(DEFAULT_MAX_RETRY);
+                .withMaxRetries(GRPC_MAX_RETRY);
         try {
             return Failsafe.with(retryPolicy)
                     .get(() -> {
@@ -110,6 +106,6 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
          Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
         QueryServiceGrpc.QueryServiceBlockingStub stub = QueryServiceGrpc.newBlockingStub(channel);
         Properties properties = connection.getClientInfo();
-        return stub.withDeadlineAfter(timeoutInMin, TimeUnit.MINUTES).withInterceptors(new GrpcInterceptor("authToken", properties)).ansiSqlQueryStream(AnsiSqlQueryStreamRequest.newBuilder().setQuery(sql).build());
+        return stub.withDeadlineAfter(timeoutInMin, TimeUnit.MINUTES).withInterceptors(new GrpcInterceptor(tokenWithTenantUrl, properties)).ansiSqlQueryStream(AnsiSqlQueryStreamRequest.newBuilder().setQuery(sql).build());
     }
 }

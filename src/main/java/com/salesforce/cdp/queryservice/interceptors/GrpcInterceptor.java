@@ -10,15 +10,16 @@ import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
 import io.grpc.MethodDescriptor;
 
+import java.util.Map;
 import java.util.Properties;
 
 public class GrpcInterceptor implements ClientInterceptor {
 
-  private final String authToken;
+  private final Map<String, String> authHeaders;
   private final Properties properties;
 
-  public GrpcInterceptor(String authToken, Properties properties) {
-    this.authToken = authToken;
+  public GrpcInterceptor(Map<String, String> authHeaders, Properties properties) {
+    this.authHeaders = authHeaders;
     this.properties = properties;
   }
 
@@ -31,11 +32,7 @@ public class GrpcInterceptor implements ClientInterceptor {
       @Override
       public void start(final Listener<RespT> responseListener, final Metadata headers) {
         headers.put(
-            Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER), authToken);
-
-        // TODO: hardcoded tenantId would go away
-        headers.put(
-                Key.of("ctx-tenant-id", Metadata.ASCII_STRING_MARSHALLER), "a360/falcondev/4e5a4e98240a46ec891a6425429318bd");
+            Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER), authHeaders.get(Constants.ACCESS_TOKEN));
 
         if (properties.containsKey(Constants.USER_AGENT)) {
           headers.put(Key.of(Constants.USER_AGENT, Metadata.ASCII_STRING_MARSHALLER), properties.get(Constants.USER_AGENT).toString());
