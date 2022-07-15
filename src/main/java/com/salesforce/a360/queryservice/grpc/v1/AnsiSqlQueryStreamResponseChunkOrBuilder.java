@@ -8,26 +8,26 @@ public interface AnsiSqlQueryStreamResponseChunkOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>repeated .google.protobuf.ListValue data = 1;</code>
+   * <code>repeated .google.protobuf.ListValue rows = 1;</code>
    */
   java.util.List<com.google.protobuf.ListValue> 
-      getDataList();
+      getRowsList();
   /**
-   * <code>repeated .google.protobuf.ListValue data = 1;</code>
+   * <code>repeated .google.protobuf.ListValue rows = 1;</code>
    */
-  com.google.protobuf.ListValue getData(int index);
+  com.google.protobuf.ListValue getRows(int index);
   /**
-   * <code>repeated .google.protobuf.ListValue data = 1;</code>
+   * <code>repeated .google.protobuf.ListValue rows = 1;</code>
    */
-  int getDataCount();
+  int getRowsCount();
   /**
-   * <code>repeated .google.protobuf.ListValue data = 1;</code>
+   * <code>repeated .google.protobuf.ListValue rows = 1;</code>
    */
   java.util.List<? extends com.google.protobuf.ListValueOrBuilder> 
-      getDataOrBuilderList();
+      getRowsOrBuilderList();
   /**
-   * <code>repeated .google.protobuf.ListValue data = 1;</code>
+   * <code>repeated .google.protobuf.ListValue rows = 1;</code>
    */
-  com.google.protobuf.ListValueOrBuilder getDataOrBuilder(
+  com.google.protobuf.ListValueOrBuilder getRowsOrBuilder(
       int index);
 }

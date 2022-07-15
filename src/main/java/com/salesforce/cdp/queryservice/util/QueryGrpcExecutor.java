@@ -25,11 +25,17 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.NettyChannelBuilder;
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.SslContext;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.FailsafeException;
 import net.jodah.failsafe.RetryPolicy;
+import org.apache.http.ssl.SSLContextBuilder;
 
+import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -59,9 +65,7 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
 
     private ManagedChannel getChannel(ManagedChannel channel, String tenantUrl) {
         if(channel == null && tenantUrl!=null) {
-            channel = ManagedChannelBuilder.forAddress(tenantUrl, port)
-                    .usePlaintext() // TODO: ssl?
-                    .build();
+            channel = ManagedChannelBuilder.forAddress(tenantUrl, port).build();
         } else {
             connection.updateStreamFlow(false);
         }

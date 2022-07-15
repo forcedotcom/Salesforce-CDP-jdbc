@@ -114,15 +114,15 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryRequest_descriptor;
+    return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryRequest_descriptor;
   }
 
   @Override
   protected FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryRequest_fieldAccessorTable
+    return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest.class, com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest.Builder.class);
+            AnsiSqlQueryRequest.class, Builder.class);
   }
 
   public static final int QUERY_FIELD_NUMBER = 1;
@@ -372,10 +372,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest)) {
+    if (!(obj instanceof AnsiSqlQueryRequest)) {
       return super.equals(obj);
     }
-    com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest other = (com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest) obj;
+    AnsiSqlQueryRequest other = (AnsiSqlQueryRequest) obj;
 
     if (!getQuery()
         .equals(other.getQuery())) return false;
@@ -419,69 +419,69 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parseFrom(
+  public static AnsiSqlQueryRequest parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parseFrom(
+  public static AnsiSqlQueryRequest parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parseFrom(
+  public static AnsiSqlQueryRequest parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parseFrom(
+  public static AnsiSqlQueryRequest parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parseFrom(byte[] data)
+  public static AnsiSqlQueryRequest parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parseFrom(
+  public static AnsiSqlQueryRequest parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parseFrom(java.io.InputStream input)
+  public static AnsiSqlQueryRequest parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parseFrom(
+  public static AnsiSqlQueryRequest parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parseDelimitedFrom(java.io.InputStream input)
+  public static AnsiSqlQueryRequest parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parseDelimitedFrom(
+  public static AnsiSqlQueryRequest parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parseFrom(
+  public static AnsiSqlQueryRequest parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parseFrom(
+  public static AnsiSqlQueryRequest parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -494,7 +494,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest prototype) {
+  public static Builder newBuilder(AnsiSqlQueryRequest prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @Override
@@ -515,18 +515,18 @@ private static final long serialVersionUID = 0L;
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:salesforce.cdp.queryservice.v1.AnsiSqlQueryRequest)
-      com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequestOrBuilder {
+      AnsiSqlQueryRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryRequest_descriptor;
+      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryRequest_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryRequest_fieldAccessorTable
+      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest.class, com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest.Builder.class);
+              AnsiSqlQueryRequest.class, Builder.class);
     }
 
     // Construct using com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest.newBuilder()
@@ -565,17 +565,17 @@ private static final long serialVersionUID = 0L;
     @Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryRequest_descriptor;
+      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryRequest_descriptor;
     }
 
     @Override
-    public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest getDefaultInstanceForType() {
-      return getDefaultInstance();
+    public AnsiSqlQueryRequest getDefaultInstanceForType() {
+      return AnsiSqlQueryRequest.getDefaultInstance();
     }
 
     @Override
-    public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest build() {
-      com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest result = buildPartial();
+    public AnsiSqlQueryRequest build() {
+      AnsiSqlQueryRequest result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -583,8 +583,8 @@ private static final long serialVersionUID = 0L;
     }
 
     @Override
-    public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest buildPartial() {
-      com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest result = new com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest(this);
+    public AnsiSqlQueryRequest buildPartial() {
+      AnsiSqlQueryRequest result = new AnsiSqlQueryRequest(this);
       int from_bitField0_ = bitField0_;
       result.query_ = query_;
       result.limit_ = limit_;
@@ -634,16 +634,16 @@ private static final long serialVersionUID = 0L;
     }
     @Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest) {
-        return mergeFrom((com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest)other);
+      if (other instanceof AnsiSqlQueryRequest) {
+        return mergeFrom((AnsiSqlQueryRequest)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest other) {
-      if (other == getDefaultInstance()) return this;
+    public Builder mergeFrom(AnsiSqlQueryRequest other) {
+      if (other == AnsiSqlQueryRequest.getDefaultInstance()) return this;
       if (!other.getQuery().isEmpty()) {
         query_ = other.query_;
         onChanged();
@@ -687,11 +687,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest parsedMessage = null;
+      AnsiSqlQueryRequest parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest) e.getUnfinishedMessage();
+        parsedMessage = (AnsiSqlQueryRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -1118,12 +1118,12 @@ private static final long serialVersionUID = 0L;
   }
 
   // @@protoc_insertion_point(class_scope:salesforce.cdp.queryservice.v1.AnsiSqlQueryRequest)
-  private static final com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest DEFAULT_INSTANCE;
+  private static final AnsiSqlQueryRequest DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest();
+    DEFAULT_INSTANCE = new AnsiSqlQueryRequest();
   }
 
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest getDefaultInstance() {
+  public static AnsiSqlQueryRequest getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -1148,7 +1148,7 @@ private static final long serialVersionUID = 0L;
   }
 
   @Override
-  public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryRequest getDefaultInstanceForType() {
+  public AnsiSqlQueryRequest getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

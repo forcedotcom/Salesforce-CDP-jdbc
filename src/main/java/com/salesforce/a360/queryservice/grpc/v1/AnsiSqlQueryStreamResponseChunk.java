@@ -16,7 +16,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private AnsiSqlQueryStreamResponseChunk() {
-    data_ = java.util.Collections.emptyList();
+    rows_ = java.util.Collections.emptyList();
   }
 
   @Override
@@ -52,10 +52,10 @@ private static final long serialVersionUID = 0L;
             break;
           case 10: {
             if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              data_ = new java.util.ArrayList<com.google.protobuf.ListValue>();
+              rows_ = new java.util.ArrayList<com.google.protobuf.ListValue>();
               mutable_bitField0_ |= 0x00000001;
             }
-            data_.add(
+            rows_.add(
                 input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry));
             break;
           }
@@ -75,7 +75,7 @@ private static final long serialVersionUID = 0L;
           e).setUnfinishedMessage(this);
     } finally {
       if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        data_ = java.util.Collections.unmodifiableList(data_);
+        rows_ = java.util.Collections.unmodifiableList(rows_);
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -83,55 +83,55 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_descriptor;
+    return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_descriptor;
   }
 
   @Override
   protected FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_fieldAccessorTable
+    return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk.class, com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk.Builder.class);
+            AnsiSqlQueryStreamResponseChunk.class, Builder.class);
   }
 
-  public static final int DATA_FIELD_NUMBER = 1;
-  private java.util.List<com.google.protobuf.ListValue> data_;
+  public static final int ROWS_FIELD_NUMBER = 1;
+  private java.util.List<com.google.protobuf.ListValue> rows_;
   /**
-   * <code>repeated .google.protobuf.ListValue data = 1;</code>
+   * <code>repeated .google.protobuf.ListValue rows = 1;</code>
    */
   @Override
-  public java.util.List<com.google.protobuf.ListValue> getDataList() {
-    return data_;
+  public java.util.List<com.google.protobuf.ListValue> getRowsList() {
+    return rows_;
   }
   /**
-   * <code>repeated .google.protobuf.ListValue data = 1;</code>
+   * <code>repeated .google.protobuf.ListValue rows = 1;</code>
    */
   @Override
   public java.util.List<? extends com.google.protobuf.ListValueOrBuilder> 
-      getDataOrBuilderList() {
-    return data_;
+      getRowsOrBuilderList() {
+    return rows_;
   }
   /**
-   * <code>repeated .google.protobuf.ListValue data = 1;</code>
+   * <code>repeated .google.protobuf.ListValue rows = 1;</code>
    */
   @Override
-  public int getDataCount() {
-    return data_.size();
+  public int getRowsCount() {
+    return rows_.size();
   }
   /**
-   * <code>repeated .google.protobuf.ListValue data = 1;</code>
+   * <code>repeated .google.protobuf.ListValue rows = 1;</code>
    */
   @Override
-  public com.google.protobuf.ListValue getData(int index) {
-    return data_.get(index);
+  public com.google.protobuf.ListValue getRows(int index) {
+    return rows_.get(index);
   }
   /**
-   * <code>repeated .google.protobuf.ListValue data = 1;</code>
+   * <code>repeated .google.protobuf.ListValue rows = 1;</code>
    */
   @Override
-  public com.google.protobuf.ListValueOrBuilder getDataOrBuilder(
+  public com.google.protobuf.ListValueOrBuilder getRowsOrBuilder(
       int index) {
-    return data_.get(index);
+    return rows_.get(index);
   }
 
   private byte memoizedIsInitialized = -1;
@@ -148,8 +148,8 @@ private static final long serialVersionUID = 0L;
   @Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    for (int i = 0; i < data_.size(); i++) {
-      output.writeMessage(1, data_.get(i));
+    for (int i = 0; i < rows_.size(); i++) {
+      output.writeMessage(1, rows_.get(i));
     }
     unknownFields.writeTo(output);
   }
@@ -160,9 +160,9 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    for (int i = 0; i < data_.size(); i++) {
+    for (int i = 0; i < rows_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(1, data_.get(i));
+        .computeMessageSize(1, rows_.get(i));
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -174,13 +174,13 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk)) {
+    if (!(obj instanceof AnsiSqlQueryStreamResponseChunk)) {
       return super.equals(obj);
     }
-    com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk other = (com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk) obj;
+    AnsiSqlQueryStreamResponseChunk other = (AnsiSqlQueryStreamResponseChunk) obj;
 
-    if (!getDataList()
-        .equals(other.getDataList())) return false;
+    if (!getRowsList()
+        .equals(other.getRowsList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -192,78 +192,78 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    if (getDataCount() > 0) {
-      hash = (37 * hash) + DATA_FIELD_NUMBER;
-      hash = (53 * hash) + getDataList().hashCode();
+    if (getRowsCount() > 0) {
+      hash = (37 * hash) + ROWS_FIELD_NUMBER;
+      hash = (53 * hash) + getRowsList().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
   }
 
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parseFrom(
+  public static AnsiSqlQueryStreamResponseChunk parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parseFrom(
+  public static AnsiSqlQueryStreamResponseChunk parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parseFrom(
+  public static AnsiSqlQueryStreamResponseChunk parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parseFrom(
+  public static AnsiSqlQueryStreamResponseChunk parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parseFrom(byte[] data)
+  public static AnsiSqlQueryStreamResponseChunk parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parseFrom(
+  public static AnsiSqlQueryStreamResponseChunk parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parseFrom(java.io.InputStream input)
+  public static AnsiSqlQueryStreamResponseChunk parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parseFrom(
+  public static AnsiSqlQueryStreamResponseChunk parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parseDelimitedFrom(java.io.InputStream input)
+  public static AnsiSqlQueryStreamResponseChunk parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parseDelimitedFrom(
+  public static AnsiSqlQueryStreamResponseChunk parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parseFrom(
+  public static AnsiSqlQueryStreamResponseChunk parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parseFrom(
+  public static AnsiSqlQueryStreamResponseChunk parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -276,7 +276,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk prototype) {
+  public static Builder newBuilder(AnsiSqlQueryStreamResponseChunk prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @Override
@@ -297,18 +297,18 @@ private static final long serialVersionUID = 0L;
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamResponseChunk)
-      com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunkOrBuilder {
+      AnsiSqlQueryStreamResponseChunkOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_descriptor;
+      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_fieldAccessorTable
+      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk.class, com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk.Builder.class);
+              AnsiSqlQueryStreamResponseChunk.class, Builder.class);
     }
 
     // Construct using com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk.newBuilder()
@@ -324,17 +324,17 @@ private static final long serialVersionUID = 0L;
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3
               .alwaysUseFieldBuilders) {
-        getDataFieldBuilder();
+        getRowsFieldBuilder();
       }
     }
     @Override
     public Builder clear() {
       super.clear();
-      if (dataBuilder_ == null) {
-        data_ = java.util.Collections.emptyList();
+      if (rowsBuilder_ == null) {
+        rows_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
       } else {
-        dataBuilder_.clear();
+        rowsBuilder_.clear();
       }
       return this;
     }
@@ -342,17 +342,17 @@ private static final long serialVersionUID = 0L;
     @Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_descriptor;
+      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_descriptor;
     }
 
     @Override
-    public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk getDefaultInstanceForType() {
-      return getDefaultInstance();
+    public AnsiSqlQueryStreamResponseChunk getDefaultInstanceForType() {
+      return AnsiSqlQueryStreamResponseChunk.getDefaultInstance();
     }
 
     @Override
-    public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk build() {
-      com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk result = buildPartial();
+    public AnsiSqlQueryStreamResponseChunk build() {
+      AnsiSqlQueryStreamResponseChunk result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -360,17 +360,17 @@ private static final long serialVersionUID = 0L;
     }
 
     @Override
-    public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk buildPartial() {
-      com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk result = new com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk(this);
+    public AnsiSqlQueryStreamResponseChunk buildPartial() {
+      AnsiSqlQueryStreamResponseChunk result = new AnsiSqlQueryStreamResponseChunk(this);
       int from_bitField0_ = bitField0_;
-      if (dataBuilder_ == null) {
+      if (rowsBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
-          data_ = java.util.Collections.unmodifiableList(data_);
+          rows_ = java.util.Collections.unmodifiableList(rows_);
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.data_ = data_;
+        result.rows_ = rows_;
       } else {
-        result.data_ = dataBuilder_.build();
+        result.rows_ = rowsBuilder_.build();
       }
       onBuilt();
       return result;
@@ -410,39 +410,39 @@ private static final long serialVersionUID = 0L;
     }
     @Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk) {
-        return mergeFrom((com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk)other);
+      if (other instanceof AnsiSqlQueryStreamResponseChunk) {
+        return mergeFrom((AnsiSqlQueryStreamResponseChunk)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk other) {
-      if (other == getDefaultInstance()) return this;
-      if (dataBuilder_ == null) {
-        if (!other.data_.isEmpty()) {
-          if (data_.isEmpty()) {
-            data_ = other.data_;
+    public Builder mergeFrom(AnsiSqlQueryStreamResponseChunk other) {
+      if (other == AnsiSqlQueryStreamResponseChunk.getDefaultInstance()) return this;
+      if (rowsBuilder_ == null) {
+        if (!other.rows_.isEmpty()) {
+          if (rows_.isEmpty()) {
+            rows_ = other.rows_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureDataIsMutable();
-            data_.addAll(other.data_);
+            ensureRowsIsMutable();
+            rows_.addAll(other.rows_);
           }
           onChanged();
         }
       } else {
-        if (!other.data_.isEmpty()) {
-          if (dataBuilder_.isEmpty()) {
-            dataBuilder_.dispose();
-            dataBuilder_ = null;
-            data_ = other.data_;
+        if (!other.rows_.isEmpty()) {
+          if (rowsBuilder_.isEmpty()) {
+            rowsBuilder_.dispose();
+            rowsBuilder_ = null;
+            rows_ = other.rows_;
             bitField0_ = (bitField0_ & ~0x00000001);
-            dataBuilder_ = 
+            rowsBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getDataFieldBuilder() : null;
+                 getRowsFieldBuilder() : null;
           } else {
-            dataBuilder_.addAllMessages(other.data_);
+            rowsBuilder_.addAllMessages(other.rows_);
           }
         }
       }
@@ -461,11 +461,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk parsedMessage = null;
+      AnsiSqlQueryStreamResponseChunk parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk) e.getUnfinishedMessage();
+        parsedMessage = (AnsiSqlQueryStreamResponseChunk) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -476,244 +476,244 @@ private static final long serialVersionUID = 0L;
     }
     private int bitField0_;
 
-    private java.util.List<com.google.protobuf.ListValue> data_ =
+    private java.util.List<com.google.protobuf.ListValue> rows_ =
       java.util.Collections.emptyList();
-    private void ensureDataIsMutable() {
+    private void ensureRowsIsMutable() {
       if (!((bitField0_ & 0x00000001) != 0)) {
-        data_ = new java.util.ArrayList<com.google.protobuf.ListValue>(data_);
+        rows_ = new java.util.ArrayList<com.google.protobuf.ListValue>(rows_);
         bitField0_ |= 0x00000001;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        com.google.protobuf.ListValue, com.google.protobuf.ListValue.Builder, com.google.protobuf.ListValueOrBuilder> dataBuilder_;
+        com.google.protobuf.ListValue, com.google.protobuf.ListValue.Builder, com.google.protobuf.ListValueOrBuilder> rowsBuilder_;
 
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public java.util.List<com.google.protobuf.ListValue> getDataList() {
-      if (dataBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(data_);
+    public java.util.List<com.google.protobuf.ListValue> getRowsList() {
+      if (rowsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(rows_);
       } else {
-        return dataBuilder_.getMessageList();
+        return rowsBuilder_.getMessageList();
       }
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public int getDataCount() {
-      if (dataBuilder_ == null) {
-        return data_.size();
+    public int getRowsCount() {
+      if (rowsBuilder_ == null) {
+        return rows_.size();
       } else {
-        return dataBuilder_.getCount();
+        return rowsBuilder_.getCount();
       }
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public com.google.protobuf.ListValue getData(int index) {
-      if (dataBuilder_ == null) {
-        return data_.get(index);
+    public com.google.protobuf.ListValue getRows(int index) {
+      if (rowsBuilder_ == null) {
+        return rows_.get(index);
       } else {
-        return dataBuilder_.getMessage(index);
+        return rowsBuilder_.getMessage(index);
       }
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public Builder setData(
+    public Builder setRows(
         int index, com.google.protobuf.ListValue value) {
-      if (dataBuilder_ == null) {
+      if (rowsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureDataIsMutable();
-        data_.set(index, value);
+        ensureRowsIsMutable();
+        rows_.set(index, value);
         onChanged();
       } else {
-        dataBuilder_.setMessage(index, value);
+        rowsBuilder_.setMessage(index, value);
       }
       return this;
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public Builder setData(
+    public Builder setRows(
         int index, com.google.protobuf.ListValue.Builder builderForValue) {
-      if (dataBuilder_ == null) {
-        ensureDataIsMutable();
-        data_.set(index, builderForValue.build());
+      if (rowsBuilder_ == null) {
+        ensureRowsIsMutable();
+        rows_.set(index, builderForValue.build());
         onChanged();
       } else {
-        dataBuilder_.setMessage(index, builderForValue.build());
+        rowsBuilder_.setMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public Builder addData(com.google.protobuf.ListValue value) {
-      if (dataBuilder_ == null) {
+    public Builder addRows(com.google.protobuf.ListValue value) {
+      if (rowsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureDataIsMutable();
-        data_.add(value);
+        ensureRowsIsMutable();
+        rows_.add(value);
         onChanged();
       } else {
-        dataBuilder_.addMessage(value);
+        rowsBuilder_.addMessage(value);
       }
       return this;
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public Builder addData(
+    public Builder addRows(
         int index, com.google.protobuf.ListValue value) {
-      if (dataBuilder_ == null) {
+      if (rowsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureDataIsMutable();
-        data_.add(index, value);
+        ensureRowsIsMutable();
+        rows_.add(index, value);
         onChanged();
       } else {
-        dataBuilder_.addMessage(index, value);
+        rowsBuilder_.addMessage(index, value);
       }
       return this;
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public Builder addData(
+    public Builder addRows(
         com.google.protobuf.ListValue.Builder builderForValue) {
-      if (dataBuilder_ == null) {
-        ensureDataIsMutable();
-        data_.add(builderForValue.build());
+      if (rowsBuilder_ == null) {
+        ensureRowsIsMutable();
+        rows_.add(builderForValue.build());
         onChanged();
       } else {
-        dataBuilder_.addMessage(builderForValue.build());
+        rowsBuilder_.addMessage(builderForValue.build());
       }
       return this;
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public Builder addData(
+    public Builder addRows(
         int index, com.google.protobuf.ListValue.Builder builderForValue) {
-      if (dataBuilder_ == null) {
-        ensureDataIsMutable();
-        data_.add(index, builderForValue.build());
+      if (rowsBuilder_ == null) {
+        ensureRowsIsMutable();
+        rows_.add(index, builderForValue.build());
         onChanged();
       } else {
-        dataBuilder_.addMessage(index, builderForValue.build());
+        rowsBuilder_.addMessage(index, builderForValue.build());
       }
       return this;
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public Builder addAllData(
+    public Builder addAllRows(
         Iterable<? extends com.google.protobuf.ListValue> values) {
-      if (dataBuilder_ == null) {
-        ensureDataIsMutable();
+      if (rowsBuilder_ == null) {
+        ensureRowsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, data_);
+            values, rows_);
         onChanged();
       } else {
-        dataBuilder_.addAllMessages(values);
+        rowsBuilder_.addAllMessages(values);
       }
       return this;
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public Builder clearData() {
-      if (dataBuilder_ == null) {
-        data_ = java.util.Collections.emptyList();
+    public Builder clearRows() {
+      if (rowsBuilder_ == null) {
+        rows_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
       } else {
-        dataBuilder_.clear();
+        rowsBuilder_.clear();
       }
       return this;
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public Builder removeData(int index) {
-      if (dataBuilder_ == null) {
-        ensureDataIsMutable();
-        data_.remove(index);
+    public Builder removeRows(int index) {
+      if (rowsBuilder_ == null) {
+        ensureRowsIsMutable();
+        rows_.remove(index);
         onChanged();
       } else {
-        dataBuilder_.remove(index);
+        rowsBuilder_.remove(index);
       }
       return this;
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public com.google.protobuf.ListValue.Builder getDataBuilder(
+    public com.google.protobuf.ListValue.Builder getRowsBuilder(
         int index) {
-      return getDataFieldBuilder().getBuilder(index);
+      return getRowsFieldBuilder().getBuilder(index);
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public com.google.protobuf.ListValueOrBuilder getDataOrBuilder(
+    public com.google.protobuf.ListValueOrBuilder getRowsOrBuilder(
         int index) {
-      if (dataBuilder_ == null) {
-        return data_.get(index);  } else {
-        return dataBuilder_.getMessageOrBuilder(index);
+      if (rowsBuilder_ == null) {
+        return rows_.get(index);  } else {
+        return rowsBuilder_.getMessageOrBuilder(index);
       }
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
     public java.util.List<? extends com.google.protobuf.ListValueOrBuilder> 
-         getDataOrBuilderList() {
-      if (dataBuilder_ != null) {
-        return dataBuilder_.getMessageOrBuilderList();
+         getRowsOrBuilderList() {
+      if (rowsBuilder_ != null) {
+        return rowsBuilder_.getMessageOrBuilderList();
       } else {
-        return java.util.Collections.unmodifiableList(data_);
+        return java.util.Collections.unmodifiableList(rows_);
       }
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public com.google.protobuf.ListValue.Builder addDataBuilder() {
-      return getDataFieldBuilder().addBuilder(
+    public com.google.protobuf.ListValue.Builder addRowsBuilder() {
+      return getRowsFieldBuilder().addBuilder(
           com.google.protobuf.ListValue.getDefaultInstance());
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
-    public com.google.protobuf.ListValue.Builder addDataBuilder(
+    public com.google.protobuf.ListValue.Builder addRowsBuilder(
         int index) {
-      return getDataFieldBuilder().addBuilder(
+      return getRowsFieldBuilder().addBuilder(
           index, com.google.protobuf.ListValue.getDefaultInstance());
     }
     /**
-     * <code>repeated .google.protobuf.ListValue data = 1;</code>
+     * <code>repeated .google.protobuf.ListValue rows = 1;</code>
      */
     public java.util.List<com.google.protobuf.ListValue.Builder> 
-         getDataBuilderList() {
-      return getDataFieldBuilder().getBuilderList();
+         getRowsBuilderList() {
+      return getRowsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilderV3<
         com.google.protobuf.ListValue, com.google.protobuf.ListValue.Builder, com.google.protobuf.ListValueOrBuilder> 
-        getDataFieldBuilder() {
-      if (dataBuilder_ == null) {
-        dataBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+        getRowsFieldBuilder() {
+      if (rowsBuilder_ == null) {
+        rowsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             com.google.protobuf.ListValue, com.google.protobuf.ListValue.Builder, com.google.protobuf.ListValueOrBuilder>(
-                data_,
+                rows_,
                 ((bitField0_ & 0x00000001) != 0),
                 getParentForChildren(),
                 isClean());
-        data_ = null;
+        rows_ = null;
       }
-      return dataBuilder_;
+      return rowsBuilder_;
     }
     @Override
     public final Builder setUnknownFields(
@@ -732,12 +732,12 @@ private static final long serialVersionUID = 0L;
   }
 
   // @@protoc_insertion_point(class_scope:salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamResponseChunk)
-  private static final com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk DEFAULT_INSTANCE;
+  private static final AnsiSqlQueryStreamResponseChunk DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk();
+    DEFAULT_INSTANCE = new AnsiSqlQueryStreamResponseChunk();
   }
 
-  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk getDefaultInstance() {
+  public static AnsiSqlQueryStreamResponseChunk getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -762,7 +762,7 @@ private static final long serialVersionUID = 0L;
   }
 
   @Override
-  public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk getDefaultInstanceForType() {
+  public AnsiSqlQueryStreamResponseChunk getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

@@ -8,19 +8,19 @@ public interface AnsiSqlQueryStreamResponseOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>.google.protobuf.Struct metadata = 1;</code>
+   * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamMetadata metadata = 1;</code>
    * @return Whether the metadata field is set.
    */
   boolean hasMetadata();
   /**
-   * <code>.google.protobuf.Struct metadata = 1;</code>
+   * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamMetadata metadata = 1;</code>
    * @return The metadata.
    */
-  com.google.protobuf.Struct getMetadata();
+  AnsiSqlQueryStreamMetadata getMetadata();
   /**
-   * <code>.google.protobuf.Struct metadata = 1;</code>
+   * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamMetadata metadata = 1;</code>
    */
-  com.google.protobuf.StructOrBuilder getMetadataOrBuilder();
+  AnsiSqlQueryStreamMetadataOrBuilder getMetadataOrBuilder();
 
   /**
    * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamResponseChunk response_chunk = 2;</code>
@@ -31,11 +31,11 @@ public interface AnsiSqlQueryStreamResponseOrBuilder extends
    * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamResponseChunk response_chunk = 2;</code>
    * @return The responseChunk.
    */
-  com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk getResponseChunk();
+  AnsiSqlQueryStreamResponseChunk getResponseChunk();
   /**
    * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamResponseChunk response_chunk = 2;</code>
    */
-  com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunkOrBuilder getResponseChunkOrBuilder();
+  AnsiSqlQueryStreamResponseChunkOrBuilder getResponseChunkOrBuilder();
 
-  public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse.ResultCase getResultCase();
+  public AnsiSqlQueryStreamResponse.ResultCase getResultCase();
 }

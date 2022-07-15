@@ -4,26 +4,25 @@
 package com.salesforce.a360.queryservice.grpc.v1;
 
 /**
- * Protobuf type {@code salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamRequest}
+ * Protobuf type {@code salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamMetadata}
  */
-public final class AnsiSqlQueryStreamRequest extends
+public final class AnsiSqlQueryStreamMetadata extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamRequest)
-    AnsiSqlQueryStreamRequestOrBuilder {
+    // @@protoc_insertion_point(message_implements:salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamMetadata)
+    AnsiSqlQueryStreamMetadataOrBuilder {
 private static final long serialVersionUID = 0L;
-  // Use AnsiSqlQueryStreamRequest.newBuilder() to construct.
-  private AnsiSqlQueryStreamRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use AnsiSqlQueryStreamMetadata.newBuilder() to construct.
+  private AnsiSqlQueryStreamMetadata(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  private AnsiSqlQueryStreamRequest() {
-    query_ = "";
+  private AnsiSqlQueryStreamMetadata() {
   }
 
   @Override
   @SuppressWarnings({"unused"})
   protected Object newInstance(
       UnusedPrivateParameter unused) {
-    return new AnsiSqlQueryStreamRequest();
+    return new AnsiSqlQueryStreamMetadata();
   }
 
   @Override
@@ -31,7 +30,7 @@ private static final long serialVersionUID = 0L;
   getUnknownFields() {
     return this.unknownFields;
   }
-  private AnsiSqlQueryStreamRequest(
+  private AnsiSqlQueryStreamMetadata(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -50,9 +49,16 @@ private static final long serialVersionUID = 0L;
             done = true;
             break;
           case 10: {
-            String s = input.readStringRequireUtf8();
+            com.google.protobuf.Struct.Builder subBuilder = null;
+            if (metadata_ != null) {
+              subBuilder = metadata_.toBuilder();
+            }
+            metadata_ = input.readMessage(com.google.protobuf.Struct.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(metadata_);
+              metadata_ = subBuilder.buildPartial();
+            }
 
-            query_ = s;
             break;
           }
           default: {
@@ -76,53 +82,41 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamRequest_descriptor;
+    return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamMetadata_descriptor;
   }
 
   @Override
   protected FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamRequest_fieldAccessorTable
+    return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamMetadata_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            AnsiSqlQueryStreamRequest.class, Builder.class);
+            AnsiSqlQueryStreamMetadata.class, Builder.class);
   }
 
-  public static final int QUERY_FIELD_NUMBER = 1;
-  private volatile Object query_;
+  public static final int METADATA_FIELD_NUMBER = 1;
+  private com.google.protobuf.Struct metadata_;
   /**
-   * <code>string query = 1;</code>
-   * @return The query.
+   * <code>.google.protobuf.Struct metadata = 1;</code>
+   * @return Whether the metadata field is set.
    */
   @Override
-  public String getQuery() {
-    Object ref = query_;
-    if (ref instanceof String) {
-      return (String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      String s = bs.toStringUtf8();
-      query_ = s;
-      return s;
-    }
+  public boolean hasMetadata() {
+    return metadata_ != null;
   }
   /**
-   * <code>string query = 1;</code>
-   * @return The bytes for query.
+   * <code>.google.protobuf.Struct metadata = 1;</code>
+   * @return The metadata.
    */
   @Override
-  public com.google.protobuf.ByteString
-      getQueryBytes() {
-    Object ref = query_;
-    if (ref instanceof String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (String) ref);
-      query_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
+  public com.google.protobuf.Struct getMetadata() {
+    return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
+  }
+  /**
+   * <code>.google.protobuf.Struct metadata = 1;</code>
+   */
+  @Override
+  public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
+    return getMetadata();
   }
 
   private byte memoizedIsInitialized = -1;
@@ -139,8 +133,8 @@ private static final long serialVersionUID = 0L;
   @Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (!getQueryBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, query_);
+    if (metadata_ != null) {
+      output.writeMessage(1, getMetadata());
     }
     unknownFields.writeTo(output);
   }
@@ -151,8 +145,9 @@ private static final long serialVersionUID = 0L;
     if (size != -1) return size;
 
     size = 0;
-    if (!getQueryBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, query_);
+    if (metadata_ != null) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(1, getMetadata());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -164,13 +159,16 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof AnsiSqlQueryStreamRequest)) {
+    if (!(obj instanceof AnsiSqlQueryStreamMetadata)) {
       return super.equals(obj);
     }
-    AnsiSqlQueryStreamRequest other = (AnsiSqlQueryStreamRequest) obj;
+    AnsiSqlQueryStreamMetadata other = (AnsiSqlQueryStreamMetadata) obj;
 
-    if (!getQuery()
-        .equals(other.getQuery())) return false;
+    if (hasMetadata() != other.hasMetadata()) return false;
+    if (hasMetadata()) {
+      if (!getMetadata()
+          .equals(other.getMetadata())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -182,76 +180,78 @@ private static final long serialVersionUID = 0L;
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    hash = (37 * hash) + QUERY_FIELD_NUMBER;
-    hash = (53 * hash) + getQuery().hashCode();
+    if (hasMetadata()) {
+      hash = (37 * hash) + METADATA_FIELD_NUMBER;
+      hash = (53 * hash) + getMetadata().hashCode();
+    }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
   }
 
-  public static AnsiSqlQueryStreamRequest parseFrom(
+  public static AnsiSqlQueryStreamMetadata parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static AnsiSqlQueryStreamRequest parseFrom(
+  public static AnsiSqlQueryStreamMetadata parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static AnsiSqlQueryStreamRequest parseFrom(
+  public static AnsiSqlQueryStreamMetadata parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static AnsiSqlQueryStreamRequest parseFrom(
+  public static AnsiSqlQueryStreamMetadata parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static AnsiSqlQueryStreamRequest parseFrom(byte[] data)
+  public static AnsiSqlQueryStreamMetadata parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static AnsiSqlQueryStreamRequest parseFrom(
+  public static AnsiSqlQueryStreamMetadata parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static AnsiSqlQueryStreamRequest parseFrom(java.io.InputStream input)
+  public static AnsiSqlQueryStreamMetadata parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static AnsiSqlQueryStreamRequest parseFrom(
+  public static AnsiSqlQueryStreamMetadata parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static AnsiSqlQueryStreamRequest parseDelimitedFrom(java.io.InputStream input)
+  public static AnsiSqlQueryStreamMetadata parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static AnsiSqlQueryStreamRequest parseDelimitedFrom(
+  public static AnsiSqlQueryStreamMetadata parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static AnsiSqlQueryStreamRequest parseFrom(
+  public static AnsiSqlQueryStreamMetadata parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static AnsiSqlQueryStreamRequest parseFrom(
+  public static AnsiSqlQueryStreamMetadata parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -264,7 +264,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(AnsiSqlQueryStreamRequest prototype) {
+  public static Builder newBuilder(AnsiSqlQueryStreamMetadata prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   @Override
@@ -280,26 +280,26 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamRequest}
+   * Protobuf type {@code salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamMetadata}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamRequest)
-      AnsiSqlQueryStreamRequestOrBuilder {
+      // @@protoc_insertion_point(builder_implements:salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamMetadata)
+      AnsiSqlQueryStreamMetadataOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamRequest_descriptor;
+      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamMetadata_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamRequest_fieldAccessorTable
+      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamMetadata_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              AnsiSqlQueryStreamRequest.class, Builder.class);
+              AnsiSqlQueryStreamMetadata.class, Builder.class);
     }
 
-    // Construct using com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamRequest.newBuilder()
+    // Construct using com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamMetadata.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -317,25 +317,29 @@ private static final long serialVersionUID = 0L;
     @Override
     public Builder clear() {
       super.clear();
-      query_ = "";
-
+      if (metadataBuilder_ == null) {
+        metadata_ = null;
+      } else {
+        metadata_ = null;
+        metadataBuilder_ = null;
+      }
       return this;
     }
 
     @Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamRequest_descriptor;
+      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamMetadata_descriptor;
     }
 
     @Override
-    public AnsiSqlQueryStreamRequest getDefaultInstanceForType() {
-      return AnsiSqlQueryStreamRequest.getDefaultInstance();
+    public AnsiSqlQueryStreamMetadata getDefaultInstanceForType() {
+      return AnsiSqlQueryStreamMetadata.getDefaultInstance();
     }
 
     @Override
-    public AnsiSqlQueryStreamRequest build() {
-      AnsiSqlQueryStreamRequest result = buildPartial();
+    public AnsiSqlQueryStreamMetadata build() {
+      AnsiSqlQueryStreamMetadata result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -343,9 +347,13 @@ private static final long serialVersionUID = 0L;
     }
 
     @Override
-    public AnsiSqlQueryStreamRequest buildPartial() {
-      AnsiSqlQueryStreamRequest result = new AnsiSqlQueryStreamRequest(this);
-      result.query_ = query_;
+    public AnsiSqlQueryStreamMetadata buildPartial() {
+      AnsiSqlQueryStreamMetadata result = new AnsiSqlQueryStreamMetadata(this);
+      if (metadataBuilder_ == null) {
+        result.metadata_ = metadata_;
+      } else {
+        result.metadata_ = metadataBuilder_.build();
+      }
       onBuilt();
       return result;
     }
@@ -384,19 +392,18 @@ private static final long serialVersionUID = 0L;
     }
     @Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof AnsiSqlQueryStreamRequest) {
-        return mergeFrom((AnsiSqlQueryStreamRequest)other);
+      if (other instanceof AnsiSqlQueryStreamMetadata) {
+        return mergeFrom((AnsiSqlQueryStreamMetadata)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(AnsiSqlQueryStreamRequest other) {
-      if (other == AnsiSqlQueryStreamRequest.getDefaultInstance()) return this;
-      if (!other.getQuery().isEmpty()) {
-        query_ = other.query_;
-        onChanged();
+    public Builder mergeFrom(AnsiSqlQueryStreamMetadata other) {
+      if (other == AnsiSqlQueryStreamMetadata.getDefaultInstance()) return this;
+      if (other.hasMetadata()) {
+        mergeMetadata(other.getMetadata());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -413,11 +420,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      AnsiSqlQueryStreamRequest parsedMessage = null;
+      AnsiSqlQueryStreamMetadata parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (AnsiSqlQueryStreamRequest) e.getUnfinishedMessage();
+        parsedMessage = (AnsiSqlQueryStreamMetadata) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -427,80 +434,123 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private Object query_ = "";
+    private com.google.protobuf.Struct metadata_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> metadataBuilder_;
     /**
-     * <code>string query = 1;</code>
-     * @return The query.
+     * <code>.google.protobuf.Struct metadata = 1;</code>
+     * @return Whether the metadata field is set.
      */
-    public String getQuery() {
-      Object ref = query_;
-      if (!(ref instanceof String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        query_ = s;
-        return s;
+    public boolean hasMetadata() {
+      return metadataBuilder_ != null || metadata_ != null;
+    }
+    /**
+     * <code>.google.protobuf.Struct metadata = 1;</code>
+     * @return The metadata.
+     */
+    public com.google.protobuf.Struct getMetadata() {
+      if (metadataBuilder_ == null) {
+        return metadata_ == null ? com.google.protobuf.Struct.getDefaultInstance() : metadata_;
       } else {
-        return (String) ref;
+        return metadataBuilder_.getMessage();
       }
     }
     /**
-     * <code>string query = 1;</code>
-     * @return The bytes for query.
+     * <code>.google.protobuf.Struct metadata = 1;</code>
      */
-    public com.google.protobuf.ByteString
-        getQueryBytes() {
-      Object ref = query_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
-        query_ = b;
-        return b;
+    public Builder setMetadata(com.google.protobuf.Struct value) {
+      if (metadataBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        metadata_ = value;
+        onChanged();
       } else {
-        return (com.google.protobuf.ByteString) ref;
+        metadataBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.google.protobuf.Struct metadata = 1;</code>
+     */
+    public Builder setMetadata(
+        com.google.protobuf.Struct.Builder builderForValue) {
+      if (metadataBuilder_ == null) {
+        metadata_ = builderForValue.build();
+        onChanged();
+      } else {
+        metadataBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.google.protobuf.Struct metadata = 1;</code>
+     */
+    public Builder mergeMetadata(com.google.protobuf.Struct value) {
+      if (metadataBuilder_ == null) {
+        if (metadata_ != null) {
+          metadata_ =
+            com.google.protobuf.Struct.newBuilder(metadata_).mergeFrom(value).buildPartial();
+        } else {
+          metadata_ = value;
+        }
+        onChanged();
+      } else {
+        metadataBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.google.protobuf.Struct metadata = 1;</code>
+     */
+    public Builder clearMetadata() {
+      if (metadataBuilder_ == null) {
+        metadata_ = null;
+        onChanged();
+      } else {
+        metadata_ = null;
+        metadataBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <code>.google.protobuf.Struct metadata = 1;</code>
+     */
+    public com.google.protobuf.Struct.Builder getMetadataBuilder() {
+      
+      onChanged();
+      return getMetadataFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.google.protobuf.Struct metadata = 1;</code>
+     */
+    public com.google.protobuf.StructOrBuilder getMetadataOrBuilder() {
+      if (metadataBuilder_ != null) {
+        return metadataBuilder_.getMessageOrBuilder();
+      } else {
+        return metadata_ == null ?
+            com.google.protobuf.Struct.getDefaultInstance() : metadata_;
       }
     }
     /**
-     * <code>string query = 1;</code>
-     * @param value The query to set.
-     * @return This builder for chaining.
+     * <code>.google.protobuf.Struct metadata = 1;</code>
      */
-    public Builder setQuery(
-        String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      query_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string query = 1;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearQuery() {
-      
-      query_ = getDefaultInstance().getQuery();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string query = 1;</code>
-     * @param value The bytes for query to set.
-     * @return This builder for chaining.
-     */
-    public Builder setQueryBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      query_ = value;
-      onChanged();
-      return this;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder> 
+        getMetadataFieldBuilder() {
+      if (metadataBuilder_ == null) {
+        metadataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Struct, com.google.protobuf.Struct.Builder, com.google.protobuf.StructOrBuilder>(
+                getMetadata(),
+                getParentForChildren(),
+                isClean());
+        metadata_ = null;
+      }
+      return metadataBuilder_;
     }
     @Override
     public final Builder setUnknownFields(
@@ -515,41 +565,41 @@ private static final long serialVersionUID = 0L;
     }
 
 
-    // @@protoc_insertion_point(builder_scope:salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamRequest)
+    // @@protoc_insertion_point(builder_scope:salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamMetadata)
   }
 
-  // @@protoc_insertion_point(class_scope:salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamRequest)
-  private static final AnsiSqlQueryStreamRequest DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamMetadata)
+  private static final AnsiSqlQueryStreamMetadata DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new AnsiSqlQueryStreamRequest();
+    DEFAULT_INSTANCE = new AnsiSqlQueryStreamMetadata();
   }
 
-  public static AnsiSqlQueryStreamRequest getDefaultInstance() {
+  public static AnsiSqlQueryStreamMetadata getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<AnsiSqlQueryStreamRequest>
-      PARSER = new com.google.protobuf.AbstractParser<AnsiSqlQueryStreamRequest>() {
+  private static final com.google.protobuf.Parser<AnsiSqlQueryStreamMetadata>
+      PARSER = new com.google.protobuf.AbstractParser<AnsiSqlQueryStreamMetadata>() {
     @Override
-    public AnsiSqlQueryStreamRequest parsePartialFrom(
+    public AnsiSqlQueryStreamMetadata parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new AnsiSqlQueryStreamRequest(input, extensionRegistry);
+      return new AnsiSqlQueryStreamMetadata(input, extensionRegistry);
     }
   };
 
-  public static com.google.protobuf.Parser<AnsiSqlQueryStreamRequest> parser() {
+  public static com.google.protobuf.Parser<AnsiSqlQueryStreamMetadata> parser() {
     return PARSER;
   }
 
   @Override
-  public com.google.protobuf.Parser<AnsiSqlQueryStreamRequest> getParserForType() {
+  public com.google.protobuf.Parser<AnsiSqlQueryStreamMetadata> getParserForType() {
     return PARSER;
   }
 
   @Override
-  public AnsiSqlQueryStreamRequest getDefaultInstanceForType() {
+  public AnsiSqlQueryStreamMetadata getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

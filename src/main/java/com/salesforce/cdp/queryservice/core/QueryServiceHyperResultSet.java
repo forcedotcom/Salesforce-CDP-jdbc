@@ -140,7 +140,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
 
     protected void updateState(AnsiSqlQueryStreamResponse nextChunk) throws SQLException {
         try {
-            this.data = nextChunk == null ? null : nextChunk.getResponseChunk().getDataList();
+            this.data = nextChunk == null ? null : nextChunk.getResponseChunk().getRowsList();
             this.currentRow = 0;
         } catch (Exception e) {
             log.error("Error while getting the data from resultset {}", this, e);

@@ -50,6 +50,11 @@ public final class QueryServiceProto {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponse_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamMetadata_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamMetadata_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -83,31 +88,33 @@ public final class QueryServiceProto {
       "\022\021\n\trow_count\030\001 \001(\005\022\014\n\004done\030\002 \001(\010\022\020\n\010que" +
       "ry_id\030\003 \001(\t\022\022\n\nstart_time\030\004 \001(\t\022\020\n\010end_t" +
       "ime\030\005 \001(\t\022)\n\010metadata\030\006 \001(\0132\027.google.pro" +
-      "tobuf.Struct\022\014\n\004data\030\007 \003(\t\"<\n\031AnsiSqlQue" +
-      "ryStreamRequest\022\r\n\005query\030\001 \001(\t\022\020\n\010tenant" +
-      "Id\030\002 \001(\t\"\256\001\n\032AnsiSqlQueryStreamResponse\022" +
-      "+\n\010metadata\030\001 \001(\0132\027.google.protobuf.Stru" +
-      "ctH\000\022Y\n\016response_chunk\030\002 \001(\0132?.salesforc" +
-      "e.cdp.queryservice.v1.AnsiSqlQueryStream" +
-      "ResponseChunkH\000B\010\n\006result\"K\n\037AnsiSqlQuer" +
-      "yStreamResponseChunk\022(\n\004data\030\001 \003(\0132\032.goo" +
-      "gle.protobuf.ListValue2\274\004\n\014QueryService\022" +
-      "{\n\014AnsiSqlQuery\0223.salesforce.cdp.queryse" +
-      "rvice.v1.AnsiSqlQueryRequest\0324.salesforc" +
-      "e.cdp.queryservice.v1.AnsiSqlQueryRespon" +
-      "se\"\000\022\210\001\n\025AnsiSqlQueryStreaming\0223.salesfo" +
-      "rce.cdp.queryservice.v1.AnsiSqlQueryRequ" +
-      "est\0326.salesforce.cdp.queryservice.v1.Ans" +
-      "iSqlQueryResponseV2\"\0000\001\022\217\001\n\022AnsiSqlQuery" +
-      "Stream\0229.salesforce.cdp.queryservice.v1." +
-      "AnsiSqlQueryStreamRequest\032:.salesforce.c" +
-      "dp.queryservice.v1.AnsiSqlQueryStreamRes" +
-      "ponse\"\0000\001\022\221\001\n\022AniSqlExtractQuery\022:.sales" +
-      "force.cdp.queryservice.v1.AnsiSqlExtract" +
-      "QueryRequest\032;.salesforce.cdp.queryservi" +
-      "ce.v1.AnsiSqlExtractQueryResponse\"\0000\001B?\n" +
-      "(com.salesforce.a360.queryservice.grpc.v" +
-      "1B\021QueryServiceProtoP\001b\006proto3"
+      "tobuf.Struct\022\014\n\004data\030\007 \003(\t\"*\n\031AnsiSqlQue" +
+      "ryStreamRequest\022\r\n\005query\030\001 \001(\t\"\321\001\n\032AnsiS" +
+      "qlQueryStreamResponse\022N\n\010metadata\030\001 \001(\0132" +
+      ":.salesforce.cdp.queryservice.v1.AnsiSql" +
+      "QueryStreamMetadataH\000\022Y\n\016response_chunk\030" +
+      "\002 \001(\0132?.salesforce.cdp.queryservice.v1.A" +
+      "nsiSqlQueryStreamResponseChunkH\000B\010\n\006resu" +
+      "lt\"G\n\032AnsiSqlQueryStreamMetadata\022)\n\010meta" +
+      "data\030\001 \001(\0132\027.google.protobuf.Struct\"K\n\037A" +
+      "nsiSqlQueryStreamResponseChunk\022(\n\004rows\030\001" +
+      " \003(\0132\032.google.protobuf.ListValue2\274\004\n\014Que" +
+      "ryService\022{\n\014AnsiSqlQuery\0223.salesforce.c" +
+      "dp.queryservice.v1.AnsiSqlQueryRequest\0324" +
+      ".salesforce.cdp.queryservice.v1.AnsiSqlQ" +
+      "ueryResponse\"\000\022\210\001\n\025AnsiSqlQueryStreaming" +
+      "\0223.salesforce.cdp.queryservice.v1.AnsiSq" +
+      "lQueryRequest\0326.salesforce.cdp.queryserv" +
+      "ice.v1.AnsiSqlQueryResponseV2\"\0000\001\022\217\001\n\022An" +
+      "siSqlQueryStream\0229.salesforce.cdp.querys" +
+      "ervice.v1.AnsiSqlQueryStreamRequest\032:.sa" +
+      "lesforce.cdp.queryservice.v1.AnsiSqlQuer" +
+      "yStreamResponse\"\0000\001\022\221\001\n\022AniSqlExtractQue" +
+      "ry\022:.salesforce.cdp.queryservice.v1.Ansi" +
+      "SqlExtractQueryRequest\032;.salesforce.cdp." +
+      "queryservice.v1.AnsiSqlExtractQueryRespo" +
+      "nse\"\0000\001B?\n(com.salesforce.a360.queryserv" +
+      "ice.grpc.v1B\021QueryServiceProtoP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -150,19 +157,25 @@ public final class QueryServiceProto {
     internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamRequest_descriptor,
-        new String[] { "Query", "TenantId", });
+        new String[] { "Query", });
     internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponse_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponse_descriptor,
         new String[] { "Metadata", "ResponseChunk", "Result", });
-    internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_descriptor =
+    internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamMetadata_descriptor =
       getDescriptor().getMessageTypes().get(7);
+    internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamMetadata_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamMetadata_descriptor,
+        new String[] { "Metadata", });
+    internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_descriptor =
+      getDescriptor().getMessageTypes().get(8);
     internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_salesforce_cdp_queryservice_v1_AnsiSqlQueryStreamResponseChunk_descriptor,
-        new String[] { "Data", });
+        new String[] { "Rows", });
     com.google.protobuf.AnyProto.getDescriptor();
     com.google.protobuf.StructProto.getDescriptor();
   }

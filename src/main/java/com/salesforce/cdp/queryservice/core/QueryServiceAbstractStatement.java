@@ -143,7 +143,7 @@ public abstract class QueryServiceAbstractStatement {
         try {
             if(queryServiceResponse.hasNext()) {
                 // first batch is metadata
-                QueryServiceResultSetMetaData resultSetMetaData = createColumnNames(queryServiceResponse.next().getMetadata());
+                QueryServiceResultSetMetaData resultSetMetaData = createColumnNames(queryServiceResponse.next().getMetadata().getMetadata());
                 return new QueryServiceHyperResultSet(queryServiceResponse, resultSetMetaData, this);
             }
             throw new SQLException(queryServiceResponse.toString());

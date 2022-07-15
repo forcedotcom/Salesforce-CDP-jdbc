@@ -18,16 +18,4 @@ public interface AnsiSqlQueryStreamRequestOrBuilder extends
    */
   com.google.protobuf.ByteString
       getQueryBytes();
-
-  /**
-   * <code>string tenantId = 2;</code>
-   * @return The tenantId.
-   */
-  String getTenantId();
-  /**
-   * <code>string tenantId = 2;</code>
-   * @return The bytes for tenantId.
-   */
-  com.google.protobuf.ByteString
-      getTenantIdBytes();
 }
