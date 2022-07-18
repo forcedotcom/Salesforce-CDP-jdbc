@@ -18,6 +18,7 @@ package com.salesforce.cdp.queryservice.core;
 
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
+import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryResponse;
 import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
 import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
 import com.salesforce.cdp.queryservice.model.Type;
@@ -27,6 +28,7 @@ import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
 import com.salesforce.cdp.queryservice.util.QueryGrpcExecutor;
+import com.salesforce.cdp.queryservice.util.QueryRainbowExecutor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 
@@ -55,6 +57,8 @@ public abstract class QueryServiceAbstractStatement {
 
     private QueryGrpcExecutor queryGrpcExecutor;
 
+    private QueryRainbowExecutor queryRainbowExecutor;
+
     private static final String KEY_TYPE = "type";
     private static final String KEY_TYPE_CODE = "typeCode";
     private static final String KEY_PLACE_IN_ORDER = "placeInOrder";
@@ -67,6 +71,7 @@ public abstract class QueryServiceAbstractStatement {
         this.resultSetConcurrency = resultSetConcurrency;
         this.queryExecutor = createQueryExecutor();
         this.queryGrpcExecutor = createQueryGrpcExecutor();
+        this.queryRainbowExecutor = createQueryRainbowExecutor();
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {
@@ -79,8 +84,11 @@ public abstract class QueryServiceAbstractStatement {
             boolean requireManagedPagination = isTableauQuery() && !isCursorBasedPaginationReq;
             Optional<Integer> limit = requireManagedPagination ? Optional.of(Constants.MAX_LIMIT) : Optional.empty();
             Optional<String> orderby = requireManagedPagination ? Optional.of("1 ASC") : Optional.empty();
-
-            if(isEnableStreamFlow) {
+            if(connection.isRainbowConnection()){
+                    Iterator<AnsiSqlExtractQueryResponse> response = queryRainbowExecutor.executeQuery(sql);
+                    return createResultSetFromRainbowResponse(response);
+            }
+            else if(isEnableStreamFlow) {
                 Iterator<AnsiSqlQueryStreamResponse> response = queryGrpcExecutor.executeQueryWithRetry(sql);
                 return createResultSetFromResponse(response);
             } else {
@@ -118,7 +126,14 @@ public abstract class QueryServiceAbstractStatement {
         String userAgent = connection.getClientInfo(Constants.USER_AGENT);
         return Constants.TABLEAU_USER_AGENT_VALUE.equals(userAgent);
     }
-
+    private ResultSet createResultSetFromRainbowResponse(Iterator<AnsiSqlExtractQueryResponse> response) throws SQLException {
+        try{
+            return new RainbowQueryResultSet(response,this);
+        }
+        catch (Exception e){
+            throw new SQLException(QUERY_EXCEPTION);
+        }
+    }
     private ResultSet createResultSetFromResponse(QueryServiceResponse queryServiceResponse, boolean isCursorBasedPaginationReq) throws SQLException {
         ArrowUtil arrowUtil = new ArrowUtil();
         paginationRequired = !queryServiceResponse.isDone();
@@ -226,5 +241,9 @@ public abstract class QueryServiceAbstractStatement {
 
     protected QueryGrpcExecutor createQueryGrpcExecutor() {
         return new QueryGrpcExecutor(connection);
+    }
+
+    protected QueryRainbowExecutor createQueryRainbowExecutor(){
+        return new QueryRainbowExecutor(connection);
     }
 }

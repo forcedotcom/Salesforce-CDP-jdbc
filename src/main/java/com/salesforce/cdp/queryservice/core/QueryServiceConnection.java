@@ -41,6 +41,7 @@ public class QueryServiceConnection implements Connection {
     private boolean isCursorBasedPaginationReq = true;
     private final boolean isSocksProxyDisabled;
     private boolean enableStreamFlow = false;
+    private boolean rainbowConnection = false;
     private String tenantUrl;
 
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
@@ -51,6 +52,9 @@ public class QueryServiceConnection implements Connection {
 
         // default `enableArrowStream` is false
         enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
+
+        //Rainbow connection by default false
+        rainbowConnection = Boolean.parseBoolean(properties.getProperty(Constants.RAINBOW_CLIENT,Constants.FALSE_STR));
 
         // default `isCursorBasedPaginationReq` is true
         isCursorBasedPaginationReq = Boolean.parseBoolean(this.properties.getProperty(Constants.CURSOR_BASED_PAGINATION, Constants.TRUE_STR));
@@ -455,5 +459,9 @@ public class QueryServiceConnection implements Connection {
 
     public void setTenantUrl(String tenantUrl) {
         this.tenantUrl = tenantUrl;
+    }
+
+    public boolean isRainbowConnection() {
+        return rainbowConnection;
     }
 }
