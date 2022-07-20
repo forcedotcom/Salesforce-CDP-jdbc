@@ -39,10 +39,8 @@ public class Utils {
     ));
 
     private static final Set<Status.Code> grpcRetryStatusCodes = Collections.unmodifiableSet(Sets.newHashSet(
-            Status.Code.INTERNAL,
             Status.Code.ABORTED,
             Status.Code.DEADLINE_EXCEEDED,
-            Status.Code.UNKNOWN,
             Status.Code.RESOURCE_EXHAUSTED,
             Status.Code.UNAVAILABLE
     ));

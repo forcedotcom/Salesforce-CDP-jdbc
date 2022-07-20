@@ -354,6 +354,7 @@ public class QueryServiceConnection implements Connection {
             PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY);
             return statement.execute();
         } catch (Exception e) {
+            log.error("Exception while connecting to server", e);
             if(isEnableStreamFlow()) {
                 // use http v2 api if hyper gRPC call is failing
                 updateStreamFlow(false);

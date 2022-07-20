@@ -23,6 +23,8 @@ import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
 import com.salesforce.cdp.queryservice.model.Type;
 import com.salesforce.cdp.queryservice.util.ArrowUtil;
 import com.salesforce.cdp.queryservice.util.Constants;
+
+import static com.salesforce.cdp.queryservice.util.Messages.METADATA_EXCEPTION;
 import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
@@ -146,8 +148,11 @@ public abstract class QueryServiceAbstractStatement {
                 QueryServiceResultSetMetaData resultSetMetaData = createColumnNames(queryServiceResponse.next().getMetadata().getMetadata());
                 return new QueryServiceHyperResultSet(queryServiceResponse, resultSetMetaData, this);
             }
-            throw new SQLException(queryServiceResponse.toString());
+
+            // If no metadata and no exception, throw exception
+            throw new SQLException(METADATA_EXCEPTION);
         } catch (Exception e) {
+            log.error("Exception in executing query ", e);
             throw new SQLException(e.getMessage());
         }
     }
@@ -199,7 +204,8 @@ public abstract class QueryServiceAbstractStatement {
                     columnNameToPosition.put(columnName, (int)metadataValue.get(KEY_PLACE_IN_ORDER).getNumberValue());
                 }
             } catch (Exception e) {
-                throw new SQLException(QUERY_EXCEPTION);
+                log.debug("Exception while parsing metadata struct");
+                throw new SQLException(METADATA_EXCEPTION);
             }
         }
 

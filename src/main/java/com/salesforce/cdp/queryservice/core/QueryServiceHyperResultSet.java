@@ -162,6 +162,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
         try {
             return responseIterator.hasNext();
         } catch (Exception e) {
+            log.error("Exception while fetching next chunk ", e);
             throw new SQLException(e.getMessage());
         }
     }
