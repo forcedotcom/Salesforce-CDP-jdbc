@@ -25,17 +25,10 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.netty.GrpcSslContexts;
-import io.grpc.netty.NettyChannelBuilder;
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.SslContext;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.FailsafeException;
 import net.jodah.failsafe.RetryPolicy;
-import org.apache.http.ssl.SSLContextBuilder;
-
-import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -46,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class QueryGrpcExecutor extends QueryTokenExecutor {
 
-    private static final ManagedChannel DEFAULT_CHANNEL = null;
+    private static ManagedChannel DEFAULT_CHANNEL = null;
     private static final int port = 443;
     private static final int timeoutInMin = 5;
     // No retry on hyper for now. Fallback to v2 call if receive even one failure from hyper.
@@ -58,18 +51,27 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
         this(connection, DEFAULT_CHANNEL);
     }
 
-    public QueryGrpcExecutor(QueryServiceConnection connection, ManagedChannel channel) {
+    public QueryGrpcExecutor(QueryServiceConnection connection, ManagedChannel newChannel) {
         super(connection);
-        this.channel = getChannel(channel, connection.getTenantUrl());
+        if(newChannel == null) {
+            newChannel = getChannel(connection.getTenantUrl());
+        }
+        this.channel = newChannel;
+        if(DEFAULT_CHANNEL == null) {
+            DEFAULT_CHANNEL = channel;
+        }
     }
 
-    private ManagedChannel getChannel(ManagedChannel channel, String tenantUrl) {
-        if(channel == null && tenantUrl!=null) {
-            channel = ManagedChannelBuilder.forAddress(tenantUrl, port).build();
-        } else {
-            connection.updateStreamFlow(false);
+    private ManagedChannel getChannel(String tenantUrl) {
+        if(tenantUrl!=null) {
+            try {
+                return ManagedChannelBuilder.forAddress(tenantUrl, port).build();
+            } catch (Exception ex) {
+                log.error("encountered exception in grpc connection builder ", ex);
+            }
         }
 
+        connection.updateStreamFlow(false);
         return channel;
     }
 
@@ -106,7 +108,7 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
     }
 
     private Iterator<AnsiSqlQueryStreamResponse> executeQuery(String sql) throws IOException, SQLException {
-        log.info("Preparing to execute query {}", sql);
+        log.info("Preparing to execute query with gRPC executor {}", sql);
          Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
         QueryServiceGrpc.QueryServiceBlockingStub stub = QueryServiceGrpc.newBlockingStub(channel);
         Properties properties = connection.getClientInfo();
