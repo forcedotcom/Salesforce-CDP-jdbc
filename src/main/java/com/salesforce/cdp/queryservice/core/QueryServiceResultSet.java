@@ -44,15 +44,20 @@ public class QueryServiceResultSet implements ResultSet {
 
     private final AtomicBoolean closed = new AtomicBoolean();
     protected ResultSetMetaData resultSetMetaData;
-    private SimpleDateFormat dateFormatterWithTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-    // TODO: With timeZone, without timezone
-    private SimpleDateFormat dateFormatterTrino = new SimpleDateFormat("MMM d, yyyy, HH:mm:ss a");
+
+    //To fix the Invalid Date format issue
+    private final String dateSimple = "yyyy-MM-dd";
+    private final String dateISOStandard = "yyyy-MM-dd'T'HH:mm:ss";
+    private final String dateWithSeconds = "yyyy-MM-dd HH:mm:ss";
+    private final String dateWithMsTz = "yyyy-MM-dd HH:mm:ss.SSS Z";
+    private final String dateTrinoWithTz = "MMM d, yyyy, HH:mm:ss a";
+    private final String dateTrinoWithoutTz = "MMM d, yyyy, HH:mm:ss";
 
     protected List<Object> data;
     protected int currentRow = -1;
     protected int currentPageNum = 1;
     protected final AtomicBoolean wasNull = new AtomicBoolean();
+
     protected QueryServiceAbstractStatement statement;
 
     // TODO: test if there is any issue with adding this
@@ -815,6 +820,7 @@ public class QueryServiceResultSet implements ResultSet {
         return getDate(columnNameByIndex, cal);
     }
 
+    //Handle multiple date formats one by one
     @Override
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
         errorOutIfClosed();
@@ -823,23 +829,27 @@ public class QueryServiceResultSet implements ResultSet {
             wasNull.set(true);
             return null;
         }
-        dateFormatter.setTimeZone(cal.getTimeZone());
-        dateFormatterWithTime.setTimeZone(cal.getTimeZone());
-        dateFormatterTrino.setTimeZone(cal.getTimeZone());
+
+        // TODO: better way to handle formats
+        String[] formats = new String[] {dateWithMsTz, dateISOStandard, dateWithSeconds, dateSimple, dateTrinoWithTz, dateTrinoWithoutTz};
         try {
             String valueString = value.toString();
-            if (valueString.length() == 10) {
-                cal.setTime(dateFormatter.parse(valueString));
-            } else if(valueString.contains(",")) {
-                cal.setTime(dateFormatterTrino.parse(valueString));
-            } else {
-                cal.setTime(dateFormatterWithTime.parse(valueString));
+            for (String format: formats) {
+                SimpleDateFormat sdFormat = new SimpleDateFormat(format);
+                sdFormat.setTimeZone(cal.getTimeZone());
+                try {
+                    cal.setTime(sdFormat.parse(valueString));
+                    return new Date(cal.getTimeInMillis());
+                } catch (ParseException e) {
+                    log.info("QSRS: caught exp {}", e.getMessage());
+                    log.warn("QSRS: Date format does not match the formatter, trying another format", e);
+                }
             }
-            return new Date(cal.getTimeInMillis());
         }
-        catch (IllegalArgumentException | ParseException e) {
+        catch (IllegalArgumentException e) {
             throw new SQLException("Invalid date from server: " + value, e);
         }
+        return null;
     }
 
     @Override
