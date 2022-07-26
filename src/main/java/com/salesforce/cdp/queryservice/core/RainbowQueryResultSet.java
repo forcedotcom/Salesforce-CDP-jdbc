@@ -40,11 +40,11 @@ public class RainbowQueryResultSet extends  QueryServiceResultSet{
 
             if (currentRow == -1 && isNextChunkPresent()) {
                 getNextChunk();
-            } else {
+            } else if(data !=null) {
                 currentRow++;
             }
 
-            if (currentRow < data.size()) {
+            if (data!=null && currentRow < data.size()) {
                 return true;
             }
 

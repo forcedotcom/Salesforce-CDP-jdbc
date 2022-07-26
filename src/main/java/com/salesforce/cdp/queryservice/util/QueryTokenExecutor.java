@@ -71,7 +71,7 @@ public class QueryTokenExecutor {
         this.client = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
 
         // set TenantUrl in connection. This is mandatory in gRPC flow.
-        if(connection.isEnableStreamFlow()) {
+        if(connection.isEnableStreamFlow() || connection.isRainbowConnection()) {
             try {
                 Map<String, String> token = getTokenWithTenantUrl();
                 connection.setTenantUrl(token.get(Constants.TENANT_URL));
