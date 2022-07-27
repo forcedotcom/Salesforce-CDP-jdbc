@@ -1,7 +1,6 @@
 package com.salesforce.cdp.queryservice.util;
 
 import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryResponse;
-import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +16,7 @@ public class RainbowDataStream extends InputStream {
         this.streamIterator = responseIterator;
         curIndex =0;
     }
+
     @Override
     public int read() throws IOException {
         if(arrowMessage == null || arrowMessage.length <= curIndex ) {
@@ -27,13 +27,14 @@ public class RainbowDataStream extends InputStream {
                 return Constants.END_OF_STREAM;
             }
         }
-       return arrowMessage[curIndex++];
+       return  ((int) arrowMessage[curIndex++]) & 0xFF;
     }
 
     private int getNextChunk() {
         AnsiSqlExtractQueryResponse response = streamIterator.next();
         if(response !=null && response.getData() !=null ){
-            arrowMessage = response.getData().toByteArray();
+            arrowMessage=new byte[response.getData().size()];
+            response.getData().copyTo(arrowMessage,0);
         }
         if(arrowMessage.length != 0){
             return Constants.START_OF_STREAM;
