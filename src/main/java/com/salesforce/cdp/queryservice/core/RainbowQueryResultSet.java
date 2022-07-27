@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
@@ -139,6 +140,15 @@ public class RainbowQueryResultSet extends  QueryServiceResultSet{
             closeDataStream();
             throw new SQLException(e.getMessage());
         }
+    }
+
+    @Override
+    public ResultSetMetaData getMetaData() throws SQLException {
+        errorOutIfClosed();
+        ResultSetMetaData metaData = arrowUtil.getMetadata();
+        if(this.resultSetMetaData ==null)
+            this.resultSetMetaData = arrowUtil.getMetadata();
+        return this.resultSetMetaData;
     }
 
     @Override

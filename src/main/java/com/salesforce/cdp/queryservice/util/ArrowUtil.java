@@ -1,5 +1,6 @@
 package com.salesforce.cdp.queryservice.util;
 
+import com.salesforce.cdp.queryservice.core.QueryServiceResultSetMetaData;
 import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.BigIntVector;
@@ -20,6 +21,9 @@ import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.ipc.ArrowReader;
 import org.apache.arrow.vector.ipc.ArrowStreamReader;
 import org.apache.arrow.vector.types.Types;
+import org.apache.arrow.vector.types.pojo.ArrowType;
+import org.apache.arrow.vector.types.pojo.Field;
+import org.apache.arrow.vector.types.pojo.Schema;
 import org.apache.arrow.vector.util.Text;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +32,7 @@ import java.io.InputStream;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -41,6 +46,7 @@ import java.util.Map;
  * This class contains the utilities for processing the arrow stream.
  */
 public class ArrowUtil {
+
 
 	private ArrowStreamReader arrowStreamReader;
 	private RootAllocator streamRootAllocator;
@@ -114,9 +120,31 @@ public class ArrowUtil {
     public void createArrowReaderForStream(InputStream inputStream){
 		if(arrowStreamReader == null){
 			 streamRootAllocator = new RootAllocator(Long.MAX_VALUE);
-			arrowStreamReader =new ArrowStreamReader(Channels.newChannel(inputStream), streamRootAllocator );
+			arrowStreamReader =new ArrowStreamReader(inputStream, streamRootAllocator );
 		}
 	}
+
+	public ResultSetMetaData getMetadata() throws SQLException {
+		if(this.arrowStreamReader == null)
+			return null;
+		try {
+			VectorSchemaRoot schemaRoot = arrowStreamReader.getVectorSchemaRoot();
+			List<String> columnNames =new ArrayList<>();
+			List<String> columnTypes=new ArrayList<>();
+			Map<String, Integer> columnNameToPosition= new HashMap<>();
+			int i=1;
+			for(FieldVector field:schemaRoot.getFieldVectors()){
+				columnNames.add(field.getName());
+				columnTypes.add(ArrowTypeHelper.getJdbcType(field.getMinorType()));
+				columnNameToPosition.put(field.getName(), i++);
+			}
+			ResultSetMetaData metaData = new QueryServiceResultSetMetaData(columnNames,columnTypes,null,columnNameToPosition);
+			return metaData;
+		} catch (IOException | SQLException e) {
+			throw new SQLException("Error while getting metadata");
+		}
+	}
+
 	public List<Object> getRowsFromRainbowResponse() throws SQLException {
 		if(arrowStreamReader == null){
 			throw new SQLException("Arrow Reader not created for RainbowStream ");
