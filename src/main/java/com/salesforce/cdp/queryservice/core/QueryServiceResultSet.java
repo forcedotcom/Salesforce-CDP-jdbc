@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.DateUtils;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -28,16 +29,12 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
 
 @Slf4j
 public class QueryServiceResultSet implements ResultSet {
@@ -50,8 +47,7 @@ public class QueryServiceResultSet implements ResultSet {
     private final String dateISOStandard = "yyyy-MM-dd'T'HH:mm:ss";
     private final String dateWithSeconds = "yyyy-MM-dd HH:mm:ss";
     private final String dateWithMsTz = "yyyy-MM-dd HH:mm:ss.SSS Z";
-    private final String dateTrinoWithTz = "MMM d, yyyy, HH:mm:ss a";
-    private final String dateTrinoWithoutTz = "MMM d, yyyy, HH:mm:ss";
+    private final String dateIn12HourFormat = "MMM d, yyyy, HH:mm:ss a";
 
     protected List<Object> data;
     protected int currentRow = -1;
@@ -60,7 +56,6 @@ public class QueryServiceResultSet implements ResultSet {
 
     protected QueryServiceAbstractStatement statement;
 
-    // TODO: test if there is any issue with adding this
     public QueryServiceResultSet() {}
 
     // NOTE: This constructor is used for metadata table, hence only data and resultSetMetadata is set.
@@ -820,7 +815,7 @@ public class QueryServiceResultSet implements ResultSet {
         return getDate(columnNameByIndex, cal);
     }
 
-    //Handle multiple date formats one by one
+    //Handle multiple date formats
     @Override
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
         errorOutIfClosed();
@@ -830,26 +825,15 @@ public class QueryServiceResultSet implements ResultSet {
             return null;
         }
 
-        // TODO: better way to handle formats
-        String[] formats = new String[] {dateWithMsTz, dateISOStandard, dateWithSeconds, dateSimple, dateTrinoWithTz, dateTrinoWithoutTz};
+        String[] formats = new String[] {dateWithMsTz, dateISOStandard, dateWithSeconds, dateSimple, dateIn12HourFormat};
         try {
             String valueString = value.toString();
-            for (String format: formats) {
-                SimpleDateFormat sdFormat = new SimpleDateFormat(format);
-                sdFormat.setTimeZone(cal.getTimeZone());
-                try {
-                    cal.setTime(sdFormat.parse(valueString));
-                    return new Date(cal.getTimeInMillis());
-                } catch (ParseException e) {
-                    log.info("QSRS: caught exp {}", e.getMessage());
-                    log.warn("QSRS: Date format does not match the formatter, trying another format", e);
-                }
-            }
+            java.util.Date date = DateUtils.parseDate(valueString, formats);
+            return new java.sql.Date(date.getTime());
         }
         catch (IllegalArgumentException e) {
             throw new SQLException("Invalid date from server: " + value, e);
         }
-        return null;
     }
 
     @Override
