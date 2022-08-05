@@ -93,7 +93,11 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
     }
 
     private Object getValue(Object row, int columnIndex) throws SQLException {
-        return valueToObject(((ListValue) row).getValues(columnIndex));
+        ListValue listValueRow = (ListValue) row;
+        if(columnIndex >= listValueRow.getValuesCount()) {
+            return null;
+        }
+        return valueToObject(listValueRow.getValues(columnIndex));
     }
 
     private static Object valueToObject(Value value) {
