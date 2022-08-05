@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class QueryServiceConnection implements Connection {
 
-    private static final String TEST_CONNECT_QUERY = "select 1";
+    private static final String TEST_CONNECT_QUERY = "select 1 as col1";
 
     private AtomicBoolean closed = new AtomicBoolean(false);
     private Properties properties;

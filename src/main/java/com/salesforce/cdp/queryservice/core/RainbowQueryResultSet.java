@@ -5,6 +5,7 @@ import com.google.protobuf.Value;
 import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryResponse;
 import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
 import com.salesforce.cdp.queryservice.util.ArrowUtil;
+import com.salesforce.cdp.queryservice.util.ExtractArrowUtil;
 import com.salesforce.cdp.queryservice.util.RainbowDataStream;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -21,19 +23,15 @@ public class RainbowQueryResultSet extends  QueryServiceResultSet{
     List<Object> data ;
     private RainbowDataStream dataStream;
     private Iterator<AnsiSqlExtractQueryResponse> streamIterator;
-    private ArrowUtil arrowUtil;
+    private ExtractArrowUtil arrowUtil;
 
-    public RainbowQueryResultSet(Iterator<AnsiSqlExtractQueryResponse> response,  QueryServiceAbstractStatement statement) {
+    public RainbowQueryResultSet(Iterator<AnsiSqlExtractQueryResponse> response,  QueryServiceAbstractStatement statement) throws SQLException {
         streamIterator = response;
-        arrowUtil = new ArrowUtil();
         dataStream = new RainbowDataStream(response);
-        initialiseArrowReader();
+        arrowUtil = new ExtractArrowUtil(dataStream);
         this.statement = statement;
     }
 
-    private void initialiseArrowReader() {
-        arrowUtil.createArrowReaderForStream(dataStream);
-    }
     @Override
     public boolean next() throws SQLException {
         try {
@@ -95,31 +93,20 @@ public class RainbowQueryResultSet extends  QueryServiceResultSet{
 
     @Override
     public Object getObject(String columnLabel) throws SQLException {
-        throw new SQLException("Not Implemented");
+        errorOutIfClosed();
+        int columnIndex = getColumnIndexByName(columnLabel);
+        return getObject(columnIndex);
     }
 
     @Override
     protected Object getValue(Object row, String columnLabel) throws SQLException {
-      throw new SQLException("Not Implemented");
+        errorOutIfClosed();
+        int columnIndex = getColumnIndexByName(columnLabel);
+        return getValue(row,columnIndex);
     }
 
     private Object getValue(Object row, int columnIndex) throws SQLException {
-        return valueToObject(((ListValue) row).getValues(columnIndex));
-    }
-
-    private static Object valueToObject(Value value) {
-        switch (value.getKindCase()) {
-            case NULL_VALUE:
-                return null;
-            case NUMBER_VALUE:
-                return value.getNumberValue();
-            case STRING_VALUE:
-                return value.getStringValue();
-            case BOOL_VALUE:
-                return value.getBoolValue();
-            default:
-                throw new IllegalArgumentException(String.format("Unsupported protobuf value %s", value));
-        }
+        return ((ArrayList)row).get(columnIndex-1);
     }
 
     private int getColumnIndexByName(String columnName) throws SQLException {

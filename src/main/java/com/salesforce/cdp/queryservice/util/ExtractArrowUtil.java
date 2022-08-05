@@ -18,35 +18,41 @@ import org.apache.arrow.vector.TimeStampNanoVector;
 import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
-import org.apache.arrow.vector.ipc.ArrowReader;
 import org.apache.arrow.vector.ipc.ArrowStreamReader;
 import org.apache.arrow.vector.types.Types;
-import org.apache.arrow.vector.types.pojo.ArrowType;
-import org.apache.arrow.vector.types.pojo.Field;
-import org.apache.arrow.vector.types.pojo.Schema;
 import org.apache.arrow.vector.util.Text;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.Channel;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 /**
  * This class contains the utilities for processing the arrow stream.
  */
-public class ArrowUtil {
+public class ExtractArrowUtil extends  ArrowUtil {
 
+
+	private ArrowStreamReader arrowStreamReader;
+	private RootAllocator streamRootAllocator;
+	private VectorSchemaRoot vectorSchemaRoot;
+
+	public ExtractArrowUtil(InputStream inputStream) throws SQLException {
+		super();
+		initialiseArrowReaderForStream(inputStream);
+		try {
+			vectorSchemaRoot = arrowStreamReader.getVectorSchemaRoot();
+		} catch (IOException e) {
+			throw new SQLException("Error while getting VectorSchemaRoot");
+		}
+	}
 
 	/**
 	 * Converts the arrow stream in to List<Map<String,Object>> so that it can then be converted into result set format.
@@ -116,45 +122,83 @@ public class ArrowUtil {
 		return  data;
 	}
 
-	Object getFieldValue(FieldVector fieldVector, int index) throws SQLException {
-		Types.MinorType type = Types.getMinorTypeForArrowType(fieldVector.getField().getType());
 
-		if(fieldVector.isNull(index)) {
-			return null;
+    public void initialiseArrowReaderForStream(InputStream inputStream){
+		if(arrowStreamReader == null){
+			 streamRootAllocator = new RootAllocator(Long.MAX_VALUE);
+			arrowStreamReader =new ArrowStreamReader(inputStream, streamRootAllocator );
 		}
-
-		if (type == Types.MinorType.VARCHAR) {
-			Text value = ((VarCharVector) fieldVector).getObject(index);
-			if (value != null) return value.toString();
-			return null;
-		} else if (type == Types.MinorType.INT) {
-			return ((IntVector) fieldVector).get(index);
-		} else if (type == Types.MinorType.TINYINT) {
-			return ((TinyIntVector) fieldVector).get(index);
-		} else if (type == Types.MinorType.SMALLINT) {
-			return ((SmallIntVector) fieldVector).get(index);
-		} else if (type == Types.MinorType.DECIMAL) {
-			return ((DecimalVector) fieldVector).getObject(index);
-		} else if (type == Types.MinorType.FLOAT4) {
-			return ((Float4Vector) fieldVector).getObject(index);
-		} else if (type == Types.MinorType.FLOAT8) {
-			return ((Float8Vector) fieldVector).getObject(index);
-		} else if (type == Types.MinorType.BIGINT) {
-			return ((BigIntVector) fieldVector).get(index);
-		} else if (type == Types.MinorType.BIT) {
-			return (int) ((BitVector) fieldVector).get(index) == 1;
-		} else if(type ==Types.MinorType.DATEDAY){
-			return ((DateDayVector)fieldVector).getObject(index);
-		}else if(type ==Types.MinorType.TIMENANO){
-			return ((TimeNanoVector)fieldVector).getObject(index);
-		}else if(type == Types.MinorType.TIMESTAMPNANOTZ){
-			long epochNano =((TimeStampNanoTZVector)fieldVector).getObject(index);
-			String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(new java.util.Date (epochNano/1000000));
-			return date;
-		}else if(type == Types.MinorType.TIMESTAMPNANO){
-			return ((TimeStampNanoVector)fieldVector).getObject(index);
-		}
-		throw new SQLException(MessageFormat.format("Unknown arrow type {0}", type.name()));
 	}
 
+	public ResultSetMetaData getMetadata() throws SQLException {
+		if(this.arrowStreamReader == null)
+			return null;
+		try {
+			VectorSchemaRoot schemaRoot = arrowStreamReader.getVectorSchemaRoot();
+			List<String> columnNames =new ArrayList<>();
+			List<String> columnTypes=new ArrayList<>();
+			Map<String, Integer> columnNameToPosition= new HashMap<>();
+			int i=1;
+			for(FieldVector field:schemaRoot.getFieldVectors()){
+				columnNames.add(field.getName());
+				columnTypes.add(ArrowTypeHelper.getJdbcType(field.getMinorType()));
+				columnNameToPosition.put(field.getName(), i++);
+			}
+			ResultSetMetaData metaData = new QueryServiceResultSetMetaData(columnNames,columnTypes,null,columnNameToPosition);
+			return metaData;
+		} catch (IOException | SQLException e) {
+			throw new SQLException("Error while getting metadata");
+		}
+	}
+
+	public List<Object> getRowsFromRainbowResponse() throws SQLException {
+		if(arrowStreamReader == null){
+			throw new SQLException("Arrow Reader not created for RainbowStream ");
+		}
+		List<FieldVector> fieldVectors = null;
+		List<Object> data = new ArrayList<>();
+		try{
+			fieldVectors = vectorSchemaRoot.getFieldVectors();
+			if (arrowStreamReader.loadNextBatch()) {
+				int rowCount = fieldVectors.get(0).getValueCount();
+				for(int i=0;i<rowCount;++i) {
+						List<Object> row = new ArrayList<>();
+						for(FieldVector fieldVector : fieldVectors) {
+							Object fieldValue = this.getFieldValue(fieldVector,i);
+							row.add(fieldValue);
+						}
+						data.add(row);
+			}
+		}}catch(Exception e){
+			if(fieldVectors != null){
+				for(FieldVector fieldVector : fieldVectors) {
+					if(fieldVector !=  null) {
+						fieldVector.close();
+					}
+				}
+				fieldVectors = null;
+			}
+			if(streamRootAllocator != null) {
+				streamRootAllocator.close();
+				streamRootAllocator = null;
+			}
+		}
+		return data;
+	}
+
+	public void closeReader() {
+			List<FieldVector> vectors =  vectorSchemaRoot.getFieldVectors();
+			if(vectors != null){
+				for(FieldVector fieldVector : vectors) {
+					if(fieldVector !=  null) {
+						fieldVector.close();
+					}
+				}
+				vectors = null;
+			}
+			if(streamRootAllocator != null) {
+				streamRootAllocator.close();
+				streamRootAllocator = null;
+			}
+	}
 }
