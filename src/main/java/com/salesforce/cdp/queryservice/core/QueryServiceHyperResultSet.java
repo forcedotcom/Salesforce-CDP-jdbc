@@ -20,6 +20,7 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -69,6 +70,21 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
         // Closing as this is move forward only cursor.
         log.info("Resultset {} does not have any more rows. Total {} pages retrieved", this, currentPageNum);
         return false;
+    }
+
+    @Override
+    public long getLong(String columnLabel) throws SQLException {
+        errorOutIfClosed();
+        Object value = getObject(columnLabel);
+        if (wasNull() || StringUtils.isBlank(value.toString())) {
+            wasNull.set(true);
+            return 0L;
+        }
+
+        if(value instanceof Double) {
+            return ((Double) value).longValue();
+        }
+        return Long.parseLong(value.toString());
     }
 
     @Override
@@ -144,7 +160,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
 
     protected void updateState(AnsiSqlQueryStreamResponse nextChunk) throws SQLException {
         try {
-            this.data = nextChunk == null ? null : nextChunk.getResponseChunk().getRowsList();
+            this.data = nextChunk == null ? new ArrayList<>() : nextChunk.getResponseChunk().getRowsList();
             this.currentRow = 0;
         } catch (Exception e) {
             log.error("Error while getting the data from resultset {}", this, e);
