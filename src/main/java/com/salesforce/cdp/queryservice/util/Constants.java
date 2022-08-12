@@ -62,6 +62,7 @@ public class Constants {
     // HTTP Client Constants
     public static final String AUTHORIZATION = "Authorization";
     public static final String USER_AGENT = "User-Agent";
+    public static final String USER_AGENT_GRPC = "User-Agent-Grpc";
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String USER_AGENT_VALUE = "cdp/jdbc";
     public static final String TABLEAU_USER_AGENT_VALUE = "Tableau/Audiences360";
