@@ -18,18 +18,17 @@ private static final long serialVersionUID = 0L;
   private AnsiSqlExtractQueryRequest() {
     query_ = "";
     params_ = java.util.Collections.emptyList();
-    tenantId_ = "";
     dataSpace_ = "";
   }
 
-  @Override
+  @java.lang.Override
   @SuppressWarnings({"unused"})
-  protected Object newInstance(
+  protected java.lang.Object newInstance(
       UnusedPrivateParameter unused) {
     return new AnsiSqlExtractQueryRequest();
   }
 
-  @Override
+  @java.lang.Override
   public final com.google.protobuf.UnknownFieldSet
   getUnknownFields() {
     return this.unknownFields;
@@ -40,7 +39,7 @@ private static final long serialVersionUID = 0L;
       throws com.google.protobuf.InvalidProtocolBufferException {
     this();
     if (extensionRegistry == null) {
-      throw new NullPointerException();
+      throw new java.lang.NullPointerException();
     }
     int mutable_bitField0_ = 0;
     com.google.protobuf.UnknownFieldSet.Builder unknownFields =
@@ -54,7 +53,7 @@ private static final long serialVersionUID = 0L;
             done = true;
             break;
           case 10: {
-            String s = input.readStringRequireUtf8();
+            java.lang.String s = input.readStringRequireUtf8();
 
             query_ = s;
             break;
@@ -68,14 +67,8 @@ private static final long serialVersionUID = 0L;
                 input.readMessage(com.google.protobuf.Any.parser(), extensionRegistry));
             break;
           }
-          case 26: {
-            String s = input.readStringRequireUtf8();
-
-            tenantId_ = s;
-            break;
-          }
           case 34: {
-            String s = input.readStringRequireUtf8();
+            java.lang.String s = input.readStringRequireUtf8();
 
             dataSpace_ = s;
             break;
@@ -104,32 +97,32 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlExtractQueryRequest_descriptor;
+    return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlExtractQueryRequest_descriptor;
   }
 
-  @Override
-  protected FieldAccessorTable
+  @java.lang.Override
+  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlExtractQueryRequest_fieldAccessorTable
+    return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlExtractQueryRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            AnsiSqlExtractQueryRequest.class, Builder.class);
+            com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest.class, com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest.Builder.class);
   }
 
   public static final int QUERY_FIELD_NUMBER = 1;
-  private volatile Object query_;
+  private volatile java.lang.Object query_;
   /**
    * <code>string query = 1;</code>
    * @return The query.
    */
-  @Override
-  public String getQuery() {
-    Object ref = query_;
-    if (ref instanceof String) {
-      return (String) ref;
+  @java.lang.Override
+  public java.lang.String getQuery() {
+    java.lang.Object ref = query_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
-      String s = bs.toStringUtf8();
+      java.lang.String s = bs.toStringUtf8();
       query_ = s;
       return s;
     }
@@ -138,14 +131,14 @@ private static final long serialVersionUID = 0L;
    * <code>string query = 1;</code>
    * @return The bytes for query.
    */
-  @Override
+  @java.lang.Override
   public com.google.protobuf.ByteString
       getQueryBytes() {
-    Object ref = query_;
-    if (ref instanceof String) {
+    java.lang.Object ref = query_;
+    if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
-              (String) ref);
+              (java.lang.String) ref);
       query_ = b;
       return b;
     } else {
@@ -158,14 +151,14 @@ private static final long serialVersionUID = 0L;
   /**
    * <code>repeated .google.protobuf.Any params = 2;</code>
    */
-  @Override
+  @java.lang.Override
   public java.util.List<com.google.protobuf.Any> getParamsList() {
     return params_;
   }
   /**
    * <code>repeated .google.protobuf.Any params = 2;</code>
    */
-  @Override
+  @java.lang.Override
   public java.util.List<? extends com.google.protobuf.AnyOrBuilder> 
       getParamsOrBuilderList() {
     return params_;
@@ -173,79 +166,41 @@ private static final long serialVersionUID = 0L;
   /**
    * <code>repeated .google.protobuf.Any params = 2;</code>
    */
-  @Override
+  @java.lang.Override
   public int getParamsCount() {
     return params_.size();
   }
   /**
    * <code>repeated .google.protobuf.Any params = 2;</code>
    */
-  @Override
+  @java.lang.Override
   public com.google.protobuf.Any getParams(int index) {
     return params_.get(index);
   }
   /**
    * <code>repeated .google.protobuf.Any params = 2;</code>
    */
-  @Override
+  @java.lang.Override
   public com.google.protobuf.AnyOrBuilder getParamsOrBuilder(
       int index) {
     return params_.get(index);
   }
 
-  public static final int TENANT_ID_FIELD_NUMBER = 3;
-  private volatile Object tenantId_;
-  /**
-   * <code>string tenant_id = 3;</code>
-   * @return The tenantId.
-   */
-  @Override
-  public String getTenantId() {
-    Object ref = tenantId_;
-    if (ref instanceof String) {
-      return (String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      String s = bs.toStringUtf8();
-      tenantId_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string tenant_id = 3;</code>
-   * @return The bytes for tenantId.
-   */
-  @Override
-  public com.google.protobuf.ByteString
-      getTenantIdBytes() {
-    Object ref = tenantId_;
-    if (ref instanceof String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (String) ref);
-      tenantId_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
   public static final int DATA_SPACE_FIELD_NUMBER = 4;
-  private volatile Object dataSpace_;
+  private volatile java.lang.Object dataSpace_;
   /**
    * <code>string data_space = 4;</code>
    * @return The dataSpace.
    */
-  @Override
-  public String getDataSpace() {
-    Object ref = dataSpace_;
-    if (ref instanceof String) {
-      return (String) ref;
+  @java.lang.Override
+  public java.lang.String getDataSpace() {
+    java.lang.Object ref = dataSpace_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
-      String s = bs.toStringUtf8();
+      java.lang.String s = bs.toStringUtf8();
       dataSpace_ = s;
       return s;
     }
@@ -254,14 +209,14 @@ private static final long serialVersionUID = 0L;
    * <code>string data_space = 4;</code>
    * @return The bytes for dataSpace.
    */
-  @Override
+  @java.lang.Override
   public com.google.protobuf.ByteString
       getDataSpaceBytes() {
-    Object ref = dataSpace_;
-    if (ref instanceof String) {
+    java.lang.Object ref = dataSpace_;
+    if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
-              (String) ref);
+              (java.lang.String) ref);
       dataSpace_ = b;
       return b;
     } else {
@@ -270,7 +225,7 @@ private static final long serialVersionUID = 0L;
   }
 
   private byte memoizedIsInitialized = -1;
-  @Override
+  @java.lang.Override
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
@@ -280,7 +235,7 @@ private static final long serialVersionUID = 0L;
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
     if (!getQueryBytes().isEmpty()) {
@@ -289,16 +244,13 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < params_.size(); i++) {
       output.writeMessage(2, params_.get(i));
     }
-    if (!getTenantIdBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, tenantId_);
-    }
     if (!getDataSpaceBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 4, dataSpace_);
     }
     unknownFields.writeTo(output);
   }
 
-  @Override
+  @java.lang.Override
   public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) return size;
@@ -311,9 +263,6 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(2, params_.get(i));
     }
-    if (!getTenantIdBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, tenantId_);
-    }
     if (!getDataSpaceBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, dataSpace_);
     }
@@ -322,29 +271,27 @@ private static final long serialVersionUID = 0L;
     return size;
   }
 
-  @Override
-  public boolean equals(final Object obj) {
+  @java.lang.Override
+  public boolean equals(final java.lang.Object obj) {
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof AnsiSqlExtractQueryRequest)) {
+    if (!(obj instanceof com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest)) {
       return super.equals(obj);
     }
-    AnsiSqlExtractQueryRequest other = (AnsiSqlExtractQueryRequest) obj;
+    com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest other = (com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest) obj;
 
     if (!getQuery()
         .equals(other.getQuery())) return false;
     if (!getParamsList()
         .equals(other.getParamsList())) return false;
-    if (!getTenantId()
-        .equals(other.getTenantId())) return false;
     if (!getDataSpace()
         .equals(other.getDataSpace())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
 
-  @Override
+  @java.lang.Override
   public int hashCode() {
     if (memoizedHashCode != 0) {
       return memoizedHashCode;
@@ -357,8 +304,6 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + PARAMS_FIELD_NUMBER;
       hash = (53 * hash) + getParamsList().hashCode();
     }
-    hash = (37 * hash) + TENANT_ID_FIELD_NUMBER;
-    hash = (53 * hash) + getTenantId().hashCode();
     hash = (37 * hash) + DATA_SPACE_FIELD_NUMBER;
     hash = (53 * hash) + getDataSpace().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
@@ -366,69 +311,69 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static AnsiSqlExtractQueryRequest parseFrom(
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static AnsiSqlExtractQueryRequest parseFrom(
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static AnsiSqlExtractQueryRequest parseFrom(
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static AnsiSqlExtractQueryRequest parseFrom(
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static AnsiSqlExtractQueryRequest parseFrom(byte[] data)
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static AnsiSqlExtractQueryRequest parseFrom(
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static AnsiSqlExtractQueryRequest parseFrom(java.io.InputStream input)
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static AnsiSqlExtractQueryRequest parseFrom(
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static AnsiSqlExtractQueryRequest parseDelimitedFrom(java.io.InputStream input)
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static AnsiSqlExtractQueryRequest parseDelimitedFrom(
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static AnsiSqlExtractQueryRequest parseFrom(
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static AnsiSqlExtractQueryRequest parseFrom(
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -436,23 +381,23 @@ private static final long serialVersionUID = 0L;
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  @Override
+  @java.lang.Override
   public Builder newBuilderForType() { return newBuilder(); }
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(AnsiSqlExtractQueryRequest prototype) {
+  public static Builder newBuilder(com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
-  @Override
+  @java.lang.Override
   public Builder toBuilder() {
     return this == DEFAULT_INSTANCE
         ? new Builder() : new Builder().mergeFrom(this);
   }
 
-  @Override
+  @java.lang.Override
   protected Builder newBuilderForType(
-      BuilderParent parent) {
+      com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
@@ -462,18 +407,18 @@ private static final long serialVersionUID = 0L;
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:salesforce.cdp.queryservice.v1.AnsiSqlExtractQueryRequest)
-      AnsiSqlExtractQueryRequestOrBuilder {
+      com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlExtractQueryRequest_descriptor;
+      return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlExtractQueryRequest_descriptor;
     }
 
-    @Override
-    protected FieldAccessorTable
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlExtractQueryRequest_fieldAccessorTable
+      return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlExtractQueryRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              AnsiSqlExtractQueryRequest.class, Builder.class);
+              com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest.class, com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest.Builder.class);
     }
 
     // Construct using com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest.newBuilder()
@@ -482,7 +427,7 @@ private static final long serialVersionUID = 0L;
     }
 
     private Builder(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
@@ -492,7 +437,7 @@ private static final long serialVersionUID = 0L;
         getParamsFieldBuilder();
       }
     }
-    @Override
+    @java.lang.Override
     public Builder clear() {
       super.clear();
       query_ = "";
@@ -503,36 +448,34 @@ private static final long serialVersionUID = 0L;
       } else {
         paramsBuilder_.clear();
       }
-      tenantId_ = "";
-
       dataSpace_ = "";
 
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlExtractQueryRequest_descriptor;
+      return com.salesforce.a360.queryservice.grpc.v1.QueryServiceProto.internal_static_salesforce_cdp_queryservice_v1_AnsiSqlExtractQueryRequest_descriptor;
     }
 
-    @Override
-    public AnsiSqlExtractQueryRequest getDefaultInstanceForType() {
-      return AnsiSqlExtractQueryRequest.getDefaultInstance();
+    @java.lang.Override
+    public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest getDefaultInstanceForType() {
+      return com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest.getDefaultInstance();
     }
 
-    @Override
-    public AnsiSqlExtractQueryRequest build() {
-      AnsiSqlExtractQueryRequest result = buildPartial();
+    @java.lang.Override
+    public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest build() {
+      com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    @Override
-    public AnsiSqlExtractQueryRequest buildPartial() {
-      AnsiSqlExtractQueryRequest result = new AnsiSqlExtractQueryRequest(this);
+    @java.lang.Override
+    public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest buildPartial() {
+      com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest result = new com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest(this);
       int from_bitField0_ = bitField0_;
       result.query_ = query_;
       if (paramsBuilder_ == null) {
@@ -544,56 +487,55 @@ private static final long serialVersionUID = 0L;
       } else {
         result.params_ = paramsBuilder_.build();
       }
-      result.tenantId_ = tenantId_;
       result.dataSpace_ = dataSpace_;
       onBuilt();
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public Builder clone() {
       return super.clone();
     }
-    @Override
+    @java.lang.Override
     public Builder setField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
-        Object value) {
+        java.lang.Object value) {
       return super.setField(field, value);
     }
-    @Override
+    @java.lang.Override
     public Builder clearField(
         com.google.protobuf.Descriptors.FieldDescriptor field) {
       return super.clearField(field);
     }
-    @Override
+    @java.lang.Override
     public Builder clearOneof(
         com.google.protobuf.Descriptors.OneofDescriptor oneof) {
       return super.clearOneof(oneof);
     }
-    @Override
+    @java.lang.Override
     public Builder setRepeatedField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
-        int index, Object value) {
+        int index, java.lang.Object value) {
       return super.setRepeatedField(field, index, value);
     }
-    @Override
+    @java.lang.Override
     public Builder addRepeatedField(
         com.google.protobuf.Descriptors.FieldDescriptor field,
-        Object value) {
+        java.lang.Object value) {
       return super.addRepeatedField(field, value);
     }
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof AnsiSqlExtractQueryRequest) {
-        return mergeFrom((AnsiSqlExtractQueryRequest)other);
+      if (other instanceof com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest) {
+        return mergeFrom((com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(AnsiSqlExtractQueryRequest other) {
-      if (other == AnsiSqlExtractQueryRequest.getDefaultInstance()) return this;
+    public Builder mergeFrom(com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest other) {
+      if (other == com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest.getDefaultInstance()) return this;
       if (!other.getQuery().isEmpty()) {
         query_ = other.query_;
         onChanged();
@@ -624,10 +566,6 @@ private static final long serialVersionUID = 0L;
           }
         }
       }
-      if (!other.getTenantId().isEmpty()) {
-        tenantId_ = other.tenantId_;
-        onChanged();
-      }
       if (!other.getDataSpace().isEmpty()) {
         dataSpace_ = other.dataSpace_;
         onChanged();
@@ -637,21 +575,21 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    @Override
+    @java.lang.Override
     public final boolean isInitialized() {
       return true;
     }
 
-    @Override
+    @java.lang.Override
     public Builder mergeFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      AnsiSqlExtractQueryRequest parsedMessage = null;
+      com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (AnsiSqlExtractQueryRequest) e.getUnfinishedMessage();
+        parsedMessage = (com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -662,21 +600,21 @@ private static final long serialVersionUID = 0L;
     }
     private int bitField0_;
 
-    private Object query_ = "";
+    private java.lang.Object query_ = "";
     /**
      * <code>string query = 1;</code>
      * @return The query.
      */
-    public String getQuery() {
-      Object ref = query_;
-      if (!(ref instanceof String)) {
+    public java.lang.String getQuery() {
+      java.lang.Object ref = query_;
+      if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         query_ = s;
         return s;
       } else {
-        return (String) ref;
+        return (java.lang.String) ref;
       }
     }
     /**
@@ -685,11 +623,11 @@ private static final long serialVersionUID = 0L;
      */
     public com.google.protobuf.ByteString
         getQueryBytes() {
-      Object ref = query_;
+      java.lang.Object ref = query_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         query_ = b;
         return b;
       } else {
@@ -702,7 +640,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder setQuery(
-        String value) {
+        java.lang.String value) {
       if (value == null) {
     throw new NullPointerException();
   }
@@ -876,7 +814,7 @@ private static final long serialVersionUID = 0L;
      * <code>repeated .google.protobuf.Any params = 2;</code>
      */
     public Builder addAllParams(
-        Iterable<? extends com.google.protobuf.Any> values) {
+        java.lang.Iterable<? extends com.google.protobuf.Any> values) {
       if (paramsBuilder_ == null) {
         ensureParamsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -978,97 +916,21 @@ private static final long serialVersionUID = 0L;
       return paramsBuilder_;
     }
 
-    private Object tenantId_ = "";
-    /**
-     * <code>string tenant_id = 3;</code>
-     * @return The tenantId.
-     */
-    public String getTenantId() {
-      Object ref = tenantId_;
-      if (!(ref instanceof String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        tenantId_ = s;
-        return s;
-      } else {
-        return (String) ref;
-      }
-    }
-    /**
-     * <code>string tenant_id = 3;</code>
-     * @return The bytes for tenantId.
-     */
-    public com.google.protobuf.ByteString
-        getTenantIdBytes() {
-      Object ref = tenantId_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
-        tenantId_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string tenant_id = 3;</code>
-     * @param value The tenantId to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTenantId(
-        String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      tenantId_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string tenant_id = 3;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearTenantId() {
-      
-      tenantId_ = getDefaultInstance().getTenantId();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string tenant_id = 3;</code>
-     * @param value The bytes for tenantId to set.
-     * @return This builder for chaining.
-     */
-    public Builder setTenantIdBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      tenantId_ = value;
-      onChanged();
-      return this;
-    }
-
-    private Object dataSpace_ = "";
+    private java.lang.Object dataSpace_ = "";
     /**
      * <code>string data_space = 4;</code>
      * @return The dataSpace.
      */
-    public String getDataSpace() {
-      Object ref = dataSpace_;
-      if (!(ref instanceof String)) {
+    public java.lang.String getDataSpace() {
+      java.lang.Object ref = dataSpace_;
+      if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         dataSpace_ = s;
         return s;
       } else {
-        return (String) ref;
+        return (java.lang.String) ref;
       }
     }
     /**
@@ -1077,11 +939,11 @@ private static final long serialVersionUID = 0L;
      */
     public com.google.protobuf.ByteString
         getDataSpaceBytes() {
-      Object ref = dataSpace_;
+      java.lang.Object ref = dataSpace_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         dataSpace_ = b;
         return b;
       } else {
@@ -1094,7 +956,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder setDataSpace(
-        String value) {
+        java.lang.String value) {
       if (value == null) {
     throw new NullPointerException();
   }
@@ -1129,13 +991,13 @@ private static final long serialVersionUID = 0L;
       onChanged();
       return this;
     }
-    @Override
+    @java.lang.Override
     public final Builder setUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFields(unknownFields);
     }
 
-    @Override
+    @java.lang.Override
     public final Builder mergeUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.mergeUnknownFields(unknownFields);
@@ -1146,18 +1008,18 @@ private static final long serialVersionUID = 0L;
   }
 
   // @@protoc_insertion_point(class_scope:salesforce.cdp.queryservice.v1.AnsiSqlExtractQueryRequest)
-  private static final AnsiSqlExtractQueryRequest DEFAULT_INSTANCE;
+  private static final com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new AnsiSqlExtractQueryRequest();
+    DEFAULT_INSTANCE = new com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest();
   }
 
-  public static AnsiSqlExtractQueryRequest getDefaultInstance() {
+  public static com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
   private static final com.google.protobuf.Parser<AnsiSqlExtractQueryRequest>
       PARSER = new com.google.protobuf.AbstractParser<AnsiSqlExtractQueryRequest>() {
-    @Override
+    @java.lang.Override
     public AnsiSqlExtractQueryRequest parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1170,13 +1032,13 @@ private static final long serialVersionUID = 0L;
     return PARSER;
   }
 
-  @Override
+  @java.lang.Override
   public com.google.protobuf.Parser<AnsiSqlExtractQueryRequest> getParserForType() {
     return PARSER;
   }
 
-  @Override
-  public AnsiSqlExtractQueryRequest getDefaultInstanceForType() {
+  @java.lang.Override
+  public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlExtractQueryRequest getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

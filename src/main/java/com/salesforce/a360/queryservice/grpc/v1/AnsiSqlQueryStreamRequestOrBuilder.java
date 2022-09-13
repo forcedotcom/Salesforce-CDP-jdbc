@@ -11,11 +11,22 @@ public interface AnsiSqlQueryStreamRequestOrBuilder extends
    * <code>string query = 1;</code>
    * @return The query.
    */
-  String getQuery();
+  java.lang.String getQuery();
   /**
    * <code>string query = 1;</code>
    * @return The bytes for query.
    */
   com.google.protobuf.ByteString
       getQueryBytes();
+
+  /**
+   * <code>.salesforce.cdp.queryservice.v1.OutputFormat output_format = 2;</code>
+   * @return The enum numeric value on the wire for outputFormat.
+   */
+  int getOutputFormatValue();
+  /**
+   * <code>.salesforce.cdp.queryservice.v1.OutputFormat output_format = 2;</code>
+   * @return The outputFormat.
+   */
+  com.salesforce.a360.queryservice.grpc.v1.OutputFormat getOutputFormat();
 }
