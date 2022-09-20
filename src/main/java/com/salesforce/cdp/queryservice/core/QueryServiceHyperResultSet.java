@@ -87,10 +87,13 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
         return Long.parseLong(value.toString());
     }
 
+    /**
+     * ColumnIndex starts from 1.
+     */
     @Override
     public Object getObject(int columnIndex) throws SQLException {
         errorOutIfClosed();
-        Object value = getValue(data.get(currentRow), columnIndex);
+        Object value = getValue(data.get(currentRow), columnIndex-1);
         wasNull.set(value == null);
         return value;
     }
@@ -99,7 +102,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
     public Object getObject(String columnLabel) throws SQLException {
         errorOutIfClosed();
         int columnIndex = getColumnIndexByName(columnLabel);
-        return getObject(columnIndex);
+        return getObject(columnIndex+1);
     }
 
     @Override
