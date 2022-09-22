@@ -1,6 +1,9 @@
 package com.salesforce.cdp.queryservice.util;
 
 import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.arrow.memory.ArrowBuf;
+import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.BigIntVector;
 import org.apache.arrow.vector.BitVector;
@@ -19,10 +22,13 @@ import org.apache.arrow.vector.util.Text;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +36,7 @@ import java.util.Map;
 /**
  * This class contains the utilities for processing the arrow stream.
  */
+@Slf4j
 public class ArrowUtil {
 	/**
 	 * Converts the arrow stream in to List<Map<String,Object>> so that it can then be converted into result set format.
@@ -42,7 +49,59 @@ public class ArrowUtil {
 		byte[] bytes = Base64.getDecoder().decode(queryServiceResponse.getArrowStream());
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
 		List<FieldVector> fieldVectors = null;
-		RootAllocator allocator = new RootAllocator(Long.MAX_VALUE);
+//		BufferAllocator allocator = new RootAllocator(Long.MAX_VALUE);
+		log.info("trying arrow");
+
+		ClassLoader allocatorClassLoader = RootAllocator.class.getClassLoader();
+		//log.info("class: {}", allocatorClassLoader.toString());
+		try {
+			Enumeration paths;
+			if (allocatorClassLoader == null) {
+				log.info("system res");
+				paths = ClassLoader.getSystemResources("org/apache/arrow/memory/DefaultAllocationManagerFactory.class");
+				if(paths.hasMoreElements()) {
+					log.info("system path {}" , paths.nextElement().toString());
+				}
+
+				paths = ClassLoader.getSystemResources("io/netty/buffer/UnsafeDirectLittleEndian.class");
+				if(paths.hasMoreElements()) {
+					log.info("system path {}" , paths.nextElement().toString());
+				}
+
+				paths = ClassLoader.getSystemResources("io/netty/buffer/WrappedByteBuf.class");
+				if(paths.hasMoreElements()) {
+					log.info("system path {}" , paths.nextElement().toString());
+				}
+
+			} else {
+				log.info("res");
+				paths = allocatorClassLoader.getResources("org/apache/arrow/memory/DefaultAllocationManagerFactory.class");
+				if(paths.hasMoreElements()) {
+					String p = paths.nextElement().toString();
+					log.info("path {}" , p);
+				}
+
+				paths = allocatorClassLoader.getResources("io/netty/buffer/UnsafeDirectLittleEndian.class");
+				if(paths.hasMoreElements()) {
+					log.info("path {}" , paths.nextElement().toString());
+				}
+
+				paths = allocatorClassLoader.getResources("io/netty/buffer/WrappedByteBuf.class");
+				if(paths.hasMoreElements()) {
+					log.info("path {}" , paths.nextElement().toString());
+				}
+//				Class A = allocatorClassLoader.loadClass("io/netty/buffer/WrappedByteBuf.class");
+//				log.info(A.getName() + " : " + A.getPackageName());
+//
+//				Class B = allocatorClassLoader.loadClass("/Users/sonal.aggarwal/Library/Tableau/Drivers/Salesforce-CDP-jdbc-1.12.0-jar-with-dependencies.jar!io/netty/buffer/WrappedByteBuf.class");
+//				log.info(B.getName() + " : " + B.getPackageName());
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+
+		log.info("reached here");
+		RootAllocator allocator = new RootAllocator(128 * 1024 * 1024L);
 		List<Object> data = new ArrayList<>();
 		try (ArrowStreamReader arrowStreamReader = new ArrowStreamReader(inputStream, allocator)) {
 

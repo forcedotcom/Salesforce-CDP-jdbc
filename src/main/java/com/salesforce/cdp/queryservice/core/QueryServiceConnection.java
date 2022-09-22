@@ -50,7 +50,8 @@ public class QueryServiceConnection implements Connection {
         addClientSecretsIfRequired(serviceRootUrl, this.properties);
 
         // default `enableArrowStream` is false
-        enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
+        //enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
+        enableArrowStream = true;
 
         // default `isCursorBasedPaginationReq` is true
         isCursorBasedPaginationReq = Boolean.parseBoolean(this.properties.getProperty(Constants.CURSOR_BASED_PAGINATION, Constants.TRUE_STR));
@@ -58,7 +59,8 @@ public class QueryServiceConnection implements Connection {
         this.isSocksProxyDisabled = Boolean.parseBoolean(this.properties.getProperty(Constants.DISABLE_SOCKS_PROXY));
 
         // default `enableStreamFlow` is false
-        enableStreamFlow = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_STREAM_FLOW, Constants.FALSE_STR));
+//        enableStreamFlow = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_STREAM_FLOW, Constants.FALSE_STR));
+        enableStreamFlow = false;
 
         // use isValid to test connection
         this.isValid(20);
