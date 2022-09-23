@@ -23,7 +23,7 @@ public interface AnsiSqlQueryResponseV2OrBuilder extends
    * <code>string query_id = 3;</code>
    * @return The queryId.
    */
-  java.lang.String getQueryId();
+  String getQueryId();
   /**
    * <code>string query_id = 3;</code>
    * @return The bytes for queryId.
@@ -35,7 +35,7 @@ public interface AnsiSqlQueryResponseV2OrBuilder extends
    * <code>string start_time = 4;</code>
    * @return The startTime.
    */
-  java.lang.String getStartTime();
+  String getStartTime();
   /**
    * <code>string start_time = 4;</code>
    * @return The bytes for startTime.
@@ -47,7 +47,7 @@ public interface AnsiSqlQueryResponseV2OrBuilder extends
    * <code>string end_time = 5;</code>
    * @return The endTime.
    */
-  java.lang.String getEndTime();
+  String getEndTime();
   /**
    * <code>string end_time = 5;</code>
    * @return The bytes for endTime.
@@ -74,7 +74,7 @@ public interface AnsiSqlQueryResponseV2OrBuilder extends
    * <code>repeated string data = 7;</code>
    * @return A list containing the data.
    */
-  java.util.List<java.lang.String>
+  java.util.List<String>
       getDataList();
   /**
    * <code>repeated string data = 7;</code>
@@ -86,7 +86,7 @@ public interface AnsiSqlQueryResponseV2OrBuilder extends
    * @param index The index of the element to return.
    * @return The data at the given index.
    */
-  java.lang.String getData(int index);
+  String getData(int index);
   /**
    * <code>repeated string data = 7;</code>
    * @param index The index of the value to return.

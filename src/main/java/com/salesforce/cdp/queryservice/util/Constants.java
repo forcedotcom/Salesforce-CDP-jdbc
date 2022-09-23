@@ -131,7 +131,4 @@ public class Constants {
 
     public static final String BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----";
     public static final String END_PRIVATE_KEY = "-----END PRIVATE KEY-----";
-    public static final String RAINBOW_CLIENT = "Rainbow-Client" ;
-    public static final int END_OF_STREAM = -1;
-    public static final int START_OF_STREAM = 0;
 }

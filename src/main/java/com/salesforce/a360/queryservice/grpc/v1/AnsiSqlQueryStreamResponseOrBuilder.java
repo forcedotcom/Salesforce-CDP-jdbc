@@ -16,11 +16,11 @@ public interface AnsiSqlQueryStreamResponseOrBuilder extends
    * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamMetadata metadata = 1;</code>
    * @return The metadata.
    */
-  com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamMetadata getMetadata();
+  AnsiSqlQueryStreamMetadata getMetadata();
   /**
    * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamMetadata metadata = 1;</code>
    */
-  com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamMetadataOrBuilder getMetadataOrBuilder();
+  AnsiSqlQueryStreamMetadataOrBuilder getMetadataOrBuilder();
 
   /**
    * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamResponseChunk response_chunk = 2;</code>
@@ -31,26 +31,11 @@ public interface AnsiSqlQueryStreamResponseOrBuilder extends
    * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamResponseChunk response_chunk = 2;</code>
    * @return The responseChunk.
    */
-  com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunk getResponseChunk();
+  AnsiSqlQueryStreamResponseChunk getResponseChunk();
   /**
    * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamResponseChunk response_chunk = 2;</code>
    */
-  com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponseChunkOrBuilder getResponseChunkOrBuilder();
+  AnsiSqlQueryStreamResponseChunkOrBuilder getResponseChunkOrBuilder();
 
-  /**
-   * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamArrowResponseChunk arrow_response_chunk = 3;</code>
-   * @return Whether the arrowResponseChunk field is set.
-   */
-  boolean hasArrowResponseChunk();
-  /**
-   * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamArrowResponseChunk arrow_response_chunk = 3;</code>
-   * @return The arrowResponseChunk.
-   */
-  com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamArrowResponseChunk getArrowResponseChunk();
-  /**
-   * <code>.salesforce.cdp.queryservice.v1.AnsiSqlQueryStreamArrowResponseChunk arrow_response_chunk = 3;</code>
-   */
-  com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamArrowResponseChunkOrBuilder getArrowResponseChunkOrBuilder();
-
-  public com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse.ResultCase getResultCase();
+  public AnsiSqlQueryStreamResponse.ResultCase getResultCase();
 }

@@ -23,8 +23,11 @@ import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
 import com.salesforce.cdp.queryservice.model.Type;
 import com.salesforce.cdp.queryservice.util.ArrowUtil;
 import com.salesforce.cdp.queryservice.util.Constants;
-import com.salesforce.cdp.queryservice.util.HttpHelper;
+
+import static com.salesforce.cdp.queryservice.util.Messages.METADATA_EXCEPTION;
+import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
+import com.salesforce.cdp.queryservice.util.HttpHelper;
 import com.salesforce.cdp.queryservice.util.QueryGrpcExecutor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
@@ -32,15 +35,7 @@ import okhttp3.Response;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static com.salesforce.cdp.queryservice.util.Messages.METADATA_EXCEPTION;
-import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
+import java.util.*;
 
 @Slf4j
 public abstract class QueryServiceAbstractStatement {
@@ -87,7 +82,6 @@ public abstract class QueryServiceAbstractStatement {
             Optional<Integer> limit = requireManagedPagination ? Optional.of(Constants.MAX_LIMIT) : Optional.empty();
             Optional<String> orderby = requireManagedPagination ? Optional.of("1 ASC") : Optional.empty();
 
-            log.info("######################## isEnableStreamFlow: {}", isEnableStreamFlow);
             if(isEnableStreamFlow) {
                 Iterator<AnsiSqlQueryStreamResponse> response = queryGrpcExecutor.executeQueryWithRetry(sql);
                 return createResultSetFromResponse(response);

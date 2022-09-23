@@ -11,7 +11,7 @@ public interface AnsiSqlExtractQueryRequestOrBuilder extends
    * <code>string query = 1;</code>
    * @return The query.
    */
-  java.lang.String getQuery();
+  String getQuery();
   /**
    * <code>string query = 1;</code>
    * @return The bytes for query.
@@ -44,10 +44,22 @@ public interface AnsiSqlExtractQueryRequestOrBuilder extends
       int index);
 
   /**
+   * <code>string tenant_id = 3;</code>
+   * @return The tenantId.
+   */
+  String getTenantId();
+  /**
+   * <code>string tenant_id = 3;</code>
+   * @return The bytes for tenantId.
+   */
+  com.google.protobuf.ByteString
+      getTenantIdBytes();
+
+  /**
    * <code>string data_space = 4;</code>
    * @return The dataSpace.
    */
-  java.lang.String getDataSpace();
+  String getDataSpace();
   /**
    * <code>string data_space = 4;</code>
    * @return The bytes for dataSpace.

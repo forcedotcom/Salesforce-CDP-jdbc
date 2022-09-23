@@ -16,13 +16,13 @@
 
 package com.salesforce.cdp.queryservice.core;
 
+import com.google.protobuf.ListValue;
+import com.google.protobuf.Value;
 import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
-import com.salesforce.cdp.queryservice.util.AnsiSqlQueryStreamResponseDataStream;
-import com.salesforce.cdp.queryservice.util.ExtractArrowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
+import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -32,67 +32,44 @@ import java.util.List;
 
 @Slf4j
 public class QueryServiceHyperResultSet extends QueryServiceResultSet {
-    private final ExtractArrowUtil arrowUtil;
-    private final Iterator<AnsiSqlQueryStreamResponse> responseIterator;
 
-    protected List<Object> data;
+    protected List<ListValue> data;
+    private Iterator<AnsiSqlQueryStreamResponse> responseIterator;
     protected int currentPageNum = 0;
-    private AnsiSqlQueryStreamResponseDataStream dataStream;
 
     public QueryServiceHyperResultSet(Iterator<AnsiSqlQueryStreamResponse> responseIterator,
                                       ResultSetMetaData resultSetMetaData,
-                                      QueryServiceAbstractStatement statement) throws SQLException {
+                                      QueryServiceAbstractStatement statement) {
         this.data = data == null ? new ArrayList<>(): data;
         this.responseIterator = responseIterator;
         this.resultSetMetaData = resultSetMetaData;
         this.statement = statement;
-        this.dataStream = new AnsiSqlQueryStreamResponseDataStream(responseIterator);
-        this.arrowUtil = new ExtractArrowUtil(this.dataStream);
     }
 
     @Override
     public boolean next() throws SQLException {
-        try {
-            errorOutIfClosed();
+        errorOutIfClosed();
 
-            if (currentRow == -1 && isNextChunkPresent()) {
-                getNextChunk();
-            } else {
-                currentRow++;
-            }
+        if(currentRow == -1 && isNextChunkPresent()) {
+            getNextChunk();
+        } else {
+            currentRow++;
+        }
 
-            if (currentRow < data.size()) {
+        if (currentRow < data.size()) {
+            return true;
+        }
+
+        if(isNextChunkPresent()) {
+            getNextChunk();
+            if(data!=null && data.size()>0) {
                 return true;
             }
-
-            if (isNextChunkPresent()) {
-                getNextChunk();
-                if (data != null && data.size() > 0) {
-                    return true;
-                }
-            }
-
-            // Closing as this is move forward only cursor.
-            arrowUtil.closeReader();
-            closeDataStream();
-
-            log.info("Resultset {} does not have any more rows. Total {} pages retrieved", this, currentPageNum);
-            return false;
-        } catch (SQLException e) {
-            closeDataStream();
-            throw e;
         }
-    }
 
-    private void closeDataStream() {
-        if (dataStream != null) {
-            try {
-                dataStream.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            dataStream = null;
-        }
+        // Closing as this is move forward only cursor.
+        log.info("Resultset {} does not have any more rows. Total {} pages retrieved", this, currentPageNum);
+        return false;
     }
 
     @Override
@@ -104,7 +81,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
             return 0L;
         }
 
-        if (value instanceof Double) {
+        if(value instanceof Double) {
             return ((Double) value).longValue();
         }
         return Long.parseLong(value.toString());
@@ -114,21 +91,11 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
      * ColumnIndex starts from 1.
      */
     @Override
-    public ResultSetMetaData getMetaData() throws SQLException {
-        return this.resultSetMetaData;
-    }
-
-    @Override
     public Object getObject(int columnIndex) throws SQLException {
         errorOutIfClosed();
-        try {
-            Object value = getValue(data.get(currentRow), columnIndex-1);
-            wasNull.set(value == null);
-            return value;
-        } catch (SQLException e) {
-            closeDataStream();
-            throw new SQLException(e.getMessage());
-        }
+        Object value = getValue(data.get(currentRow), columnIndex-1);
+        wasNull.set(value == null);
+        return value;
     }
 
     @Override
@@ -140,34 +107,48 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
 
     @Override
     protected Object getValue(Object row, String columnLabel) throws SQLException {
-        errorOutIfClosed();
         int columnIndex = getColumnIndexByName(columnLabel);
         return getValue(row, columnIndex);
     }
 
     private Object getValue(Object row, int columnIndex) throws SQLException {
-        return ((ArrayList)row).get(columnIndex);
+        ListValue listValueRow = (ListValue) row;
+        if(columnIndex >= listValueRow.getValuesCount()) {
+            return null;
+        }
+        return valueToObject(listValueRow.getValues(columnIndex));
+    }
+
+    private static Object valueToObject(Value value) {
+        switch (value.getKindCase()) {
+            case NULL_VALUE:
+                return null;
+            case NUMBER_VALUE:
+                return value.getNumberValue();
+            case STRING_VALUE:
+                return value.getStringValue();
+            case BOOL_VALUE:
+                return value.getBoolValue();
+            default:
+                throw new IllegalArgumentException(String.format("Unsupported protobuf value %s", value));
+        }
     }
 
     private int getColumnIndexByName(String columnName) throws SQLException {
-        return ((QueryServiceResultSetMetaData) resultSetMetaData)
-            .getColumnNameToPosition()
-            .get(columnName);
+        return ((QueryServiceResultSetMetaData)resultSetMetaData).getColumnNameToPosition().get(columnName);
     }
 
     private void getNextChunk() throws SQLException {
         log.trace("Fetching page with number {} for resultset {}", ++currentPageNum, this);
+        AnsiSqlQueryStreamResponse nextChunk = null;
         try {
-            List<Object> rows = arrowUtil.getRowsFromStreamResponse();
-            if (rows != null && rows.size() > 0) {
-                this.data = rows;
-                currentRow=0;
-            }
+            nextChunk = responseIterator.next();
         } catch (Exception e) {
             log.error("Error while getting the data chunk {}", this, e);
-            closeDataStream();
             throw new SQLException(e.getMessage());
         }
+
+        updateState(nextChunk);
     }
 
     @Override
@@ -178,6 +159,16 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
     @Override
     protected void updateState(ResultSet resultSet) throws SQLException {
         throw new SQLException("This method is not implemented");
+    }
+
+    protected void updateState(AnsiSqlQueryStreamResponse nextChunk) throws SQLException {
+        try {
+            this.data = nextChunk == null ? new ArrayList<>() : nextChunk.getResponseChunk().getRowsList();
+            this.currentRow = 0;
+        } catch (Exception e) {
+            log.error("Error while getting the data from resultset {}", this, e);
+            throw new SQLException(e.getMessage());
+        }
     }
 
     @Override
@@ -192,7 +183,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
 
     private boolean isNextChunkPresent() throws SQLException {
         try {
-            return dataStream.hasNext();
+            return responseIterator.hasNext();
         } catch (Exception e) {
             log.error("Exception while fetching next chunk ", e);
             throw new SQLException(e.getMessage());

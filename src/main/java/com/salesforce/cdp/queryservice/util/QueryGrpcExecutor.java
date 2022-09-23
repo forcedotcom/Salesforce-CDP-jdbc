@@ -18,7 +18,6 @@ package com.salesforce.cdp.queryservice.util;
 
 import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamRequest;
 import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
-import com.salesforce.a360.queryservice.grpc.v1.OutputFormat;
 import com.salesforce.a360.queryservice.grpc.v1.QueryServiceGrpc;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.interceptors.GrpcInterceptor;
@@ -66,7 +65,6 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
     private ManagedChannel getChannel(String tenantUrl) {
         if(tenantUrl!=null) {
             try {
-                log.info("************** Tenant URL: {}, port: {}", tenantUrl, port);
                 return ManagedChannelBuilder.forAddress(tenantUrl, port).build();
             } catch (Exception ex) {
                 log.error("encountered exception in grpc connection builder ", ex);
@@ -83,7 +81,6 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
                 .onRetry(e -> log.warn("Failure #{}. Retrying.", e.getAttemptCount()))
                 .onRetriesExceeded(e -> log.warn("Failed to connect. Max retries exceeded."))
                 .withMaxRetries(GRPC_MAX_RETRY);
-        log.info("*************** SQL: {}", sql);
         try {
             return Failsafe.with(retryPolicy)
                     .get(() -> {
@@ -115,14 +112,6 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
          Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
         QueryServiceGrpc.QueryServiceBlockingStub stub = QueryServiceGrpc.newBlockingStub(channel);
         Properties properties = connection.getClientInfo();
-        return stub
-            .withDeadlineAfter(timeoutInMin, TimeUnit.MINUTES)
-            .withInterceptors(new GrpcInterceptor(tokenWithTenantUrl, properties))
-            .ansiSqlQueryStream(
-                AnsiSqlQueryStreamRequest
-                    .newBuilder()
-                    .setQuery(sql)
-                    .setOutputFormat(OutputFormat.ARROW)
-                    .build());
+        return stub.withDeadlineAfter(timeoutInMin, TimeUnit.MINUTES).withInterceptors(new GrpcInterceptor(tokenWithTenantUrl, properties)).ansiSqlQueryStream(AnsiSqlQueryStreamRequest.newBuilder().setQuery(sql).build());
     }
 }
