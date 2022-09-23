@@ -11,7 +11,7 @@ public interface AnsiSqlExtractQueryResponseOrBuilder extends
    * <code>string query_id = 1;</code>
    * @return The queryId.
    */
-  String getQueryId();
+  java.lang.String getQueryId();
   /**
    * <code>string query_id = 1;</code>
    * @return The bytes for queryId.
