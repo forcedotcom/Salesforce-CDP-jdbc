@@ -653,14 +653,28 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
+        log.info("Schema "+schemaPattern);
         MetadataResponse metadataResponse = getMetadataResponse();
         return createTableResultSet(metadataResponse, tableNamePattern);
     }
 
     @Override
     public ResultSet getSchemas() throws SQLException {
-        return new QueryServiceResultSet(Collections.EMPTY_LIST,
-                new QueryServiceResultSetMetaData(GET_SCHEMAS));
+        List<Object> data = new ArrayList<>();
+        data.add(createRowForSchema("MaleIndividuals"));
+
+        QueryServiceResultSet    resultSet = new QueryServiceResultSet(data, new QueryServiceResultSetMetaData(GET_SCHEMAS));
+
+        return resultSet;
+               /* return new QueryServiceResultSet(Collections.EMPTY_LIST,
+                new QueryServiceResultSetMetaData(GET_SCHEMAS));*/
+    }
+
+    private Object createRowForSchema(String schema1) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("TABLE_SCHEM", schema1);
+        row.put("TABLE_CATALOG", null);
+        return row;
     }
 
     @Override
@@ -916,7 +930,12 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
-        return null;
+        List<Object> data = new ArrayList<>();
+        data.add(createRowForSchema("MaleIndividuals"));
+        data.add(createRowForSchema("FemaleIndividuals"));
+        QueryServiceResultSet    resultSet = new QueryServiceResultSet(data, new QueryServiceResultSetMetaData(GET_SCHEMAS));
+
+        return resultSet;
     }
 
     @Override
