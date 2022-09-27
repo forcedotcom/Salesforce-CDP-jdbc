@@ -23,7 +23,7 @@ public interface AnsiSqlQueryResponseOrBuilder extends
    * <code>string query_id = 3;</code>
    * @return The queryId.
    */
-  String getQueryId();
+  java.lang.String getQueryId();
   /**
    * <code>string query_id = 3;</code>
    * @return The bytes for queryId.
@@ -35,7 +35,7 @@ public interface AnsiSqlQueryResponseOrBuilder extends
    * <code>string start_time = 4;</code>
    * @return The startTime.
    */
-  String getStartTime();
+  java.lang.String getStartTime();
   /**
    * <code>string start_time = 4;</code>
    * @return The bytes for startTime.
@@ -47,7 +47,7 @@ public interface AnsiSqlQueryResponseOrBuilder extends
    * <code>string end_time = 5;</code>
    * @return The endTime.
    */
-  String getEndTime();
+  java.lang.String getEndTime();
   /**
    * <code>string end_time = 5;</code>
    * @return The bytes for endTime.

@@ -113,7 +113,7 @@ public class QueryServiceResultSetMetaData implements ResultSetMetaData {
         if (columnNames == null || column > columnNames.size()) {
             return null;
         }
-        return columnNames.get(column - 1);
+        return columnNames.get(column);
     }
 
     @Override
@@ -155,7 +155,7 @@ public class QueryServiceResultSetMetaData implements ResultSetMetaData {
         if (CollectionUtils.isEmpty(columnTypes) && !CollectionUtils.isEmpty(columnNames)) {
             return "VARCHAR";
         }
-        return columnTypes.get(column - 1);
+        return columnTypes.get(column);
     }
 
     @Override
