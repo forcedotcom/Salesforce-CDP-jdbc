@@ -11,7 +11,7 @@ public interface AnsiSqlQueryRequestOrBuilder extends
    * <code>string query = 1;</code>
    * @return The query.
    */
-  java.lang.String getQuery();
+  String getQuery();
   /**
    * <code>string query = 1;</code>
    * @return The bytes for query.
@@ -35,7 +35,7 @@ public interface AnsiSqlQueryRequestOrBuilder extends
    * <code>repeated string orderbys = 4;</code>
    * @return A list containing the orderbys.
    */
-  java.util.List<java.lang.String>
+  java.util.List<String>
       getOrderbysList();
   /**
    * <code>repeated string orderbys = 4;</code>
@@ -47,7 +47,7 @@ public interface AnsiSqlQueryRequestOrBuilder extends
    * @param index The index of the element to return.
    * @return The orderbys at the given index.
    */
-  java.lang.String getOrderbys(int index);
+  String getOrderbys(int index);
   /**
    * <code>repeated string orderbys = 4;</code>
    * @param index The index of the value to return.
@@ -60,7 +60,7 @@ public interface AnsiSqlQueryRequestOrBuilder extends
    * <code>string tenant_id = 5;</code>
    * @return The tenantId.
    */
-  java.lang.String getTenantId();
+  String getTenantId();
   /**
    * <code>string tenant_id = 5;</code>
    * @return The bytes for tenantId.
@@ -72,7 +72,7 @@ public interface AnsiSqlQueryRequestOrBuilder extends
    * <code>string dataspace_name = 6;</code>
    * @return The dataspaceName.
    */
-  java.lang.String getDataspaceName();
+  String getDataspaceName();
   /**
    * <code>string dataspace_name = 6;</code>
    * @return The bytes for dataspaceName.

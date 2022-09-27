@@ -4,16 +4,12 @@ import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.BigIntVector;
 import org.apache.arrow.vector.BitVector;
-import org.apache.arrow.vector.DateDayVector;
 import org.apache.arrow.vector.DecimalVector;
 import org.apache.arrow.vector.FieldVector;
 import org.apache.arrow.vector.Float4Vector;
 import org.apache.arrow.vector.Float8Vector;
 import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.SmallIntVector;
-import org.apache.arrow.vector.TimeNanoVector;
-import org.apache.arrow.vector.TimeStampNanoTZVector;
-import org.apache.arrow.vector.TimeStampNanoVector;
 import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -102,7 +98,7 @@ public class ArrowUtil {
 		return  data;
 	}
 
-	Object getFieldValue(FieldVector fieldVector, int index) throws SQLException {
+	private Object getFieldValue(FieldVector fieldVector, int index) throws SQLException {
 		Types.MinorType type = Types.getMinorTypeForArrowType(fieldVector.getField().getType());
 
 		if(fieldVector.isNull(index)) {
@@ -129,17 +125,6 @@ public class ArrowUtil {
 			return ((BigIntVector) fieldVector).get(index);
 		} else if (type == Types.MinorType.BIT) {
 			return (int) ((BitVector) fieldVector).get(index) == 1;
-		} else if (type == Types.MinorType.DATEDAY) {
-			return ((DateDayVector)fieldVector).getObject(index);
-		} else if (type == Types.MinorType.TIMENANO) {
-			return ((TimeNanoVector) fieldVector).getObject(index);
-		} else if (type == Types.MinorType.TIMESTAMPNANOTZ) {
-			long epochNano = ((TimeStampNanoTZVector) fieldVector).getObject(index);
-			String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-					.format(new java.util.Date (epochNano/1000000));
-			return date;
-		} else if (type == Types.MinorType.TIMESTAMPNANO) {
-			return ((TimeStampNanoVector) fieldVector).getObject(index);
 		}
 		throw new SQLException(MessageFormat.format("Unknown arrow type {0}", type.name()));
 	}
