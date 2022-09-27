@@ -415,7 +415,7 @@ public class QueryServiceResultSet implements ResultSet {
             wasNull.set(true);
             return null;
         }
-        return new BigDecimal(getString(columnLabel));
+        return new BigDecimal(value);
     }
 
     @Override

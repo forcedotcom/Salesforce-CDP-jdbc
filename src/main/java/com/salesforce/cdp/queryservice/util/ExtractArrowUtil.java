@@ -1,6 +1,7 @@
 package com.salesforce.cdp.queryservice.util;
 
 import com.salesforce.cdp.queryservice.core.QueryServiceResultSetMetaData;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.FieldVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -18,8 +19,8 @@ import java.util.Map;
 /**
  * This class contains the utilities for processing the arrow stream.
  */
-public class ExtractArrowUtil extends  ArrowUtil {
-
+@Slf4j
+public class ExtractArrowUtil extends ArrowUtil {
 
   private ArrowStreamReader arrowStreamReader;
   private RootAllocator streamRootAllocator;
@@ -38,30 +39,31 @@ public class ExtractArrowUtil extends  ArrowUtil {
   public void initialiseArrowReaderForStream(InputStream inputStream){
     if(arrowStreamReader == null){
       streamRootAllocator = new RootAllocator(Long.MAX_VALUE);
-      arrowStreamReader =new ArrowStreamReader(inputStream, streamRootAllocator );
+      arrowStreamReader =new ArrowStreamReader(inputStream, streamRootAllocator);
     }
   }
 
-  public ResultSetMetaData getMetadata() throws SQLException {
-    if(this.arrowStreamReader == null)
-      return null;
-    try {
-      VectorSchemaRoot schemaRoot = arrowStreamReader.getVectorSchemaRoot();
-      List<String> columnNames =new ArrayList<>();
-      List<String> columnTypes=new ArrayList<>();
-      Map<String, Integer> columnNameToPosition= new HashMap<>();
-      int i=1;
-      for(FieldVector field:schemaRoot.getFieldVectors()){
-        columnNames.add(field.getName());
-        columnTypes.add(ArrowTypeHelper.getJdbcType(field.getMinorType()));
-        columnNameToPosition.put(field.getName(), i++);
-      }
-      ResultSetMetaData metaData = new QueryServiceResultSetMetaData(columnNames,columnTypes,null,columnNameToPosition);
-      return metaData;
-    } catch (IOException | SQLException e) {
-      throw new SQLException("Error while getting metadata");
-    }
-  }
+//  public ResultSetMetaData getMetadata() throws SQLException {
+//    log.info("where is this used?");
+//    if(this.arrowStreamReader == null)
+//      return null;
+//    try {
+//      VectorSchemaRoot schemaRoot = arrowStreamReader.getVectorSchemaRoot();
+//      List<String> columnNames =new ArrayList<>();
+//      List<String> columnTypes=new ArrayList<>();
+//      Map<String, Integer> columnNameToPosition= new HashMap<>();
+//      int i=1;
+//      for(FieldVector field:schemaRoot.getFieldVectors()){
+//        columnNames.add(field.getName());
+//        columnTypes.add(ArrowTypeHelper.getJdbcType(field.getMinorType()));
+//        columnNameToPosition.put(field.getName(), i++);
+//      }
+//      // TODO: typeIds?
+//      return new QueryServiceResultSetMetaData(columnNames, columnTypes, null, columnNameToPosition);
+//    } catch (IOException | SQLException e) {
+//      throw new SQLException("Error while getting metadata", e);
+//    }
+//  }
 
   public List<Object> getRowsFromStreamResponse() throws SQLException {
     if (arrowStreamReader == null) {
@@ -73,32 +75,35 @@ public class ExtractArrowUtil extends  ArrowUtil {
       fieldVectors = vectorSchemaRoot.getFieldVectors();
       if (arrowStreamReader.loadNextBatch()) {
         int rowCount = fieldVectors.get(0).getValueCount();
-        for(int i=0;i<rowCount;++i) {
+        for(int i=0; i<rowCount; ++i) {
           List<Object> row = new ArrayList<>();
           for(FieldVector fieldVector : fieldVectors) {
-            Object fieldValue = this.getFieldValue(fieldVector,i);
+            Object fieldValue = this.getFieldValue(fieldVector, i);
             row.add(fieldValue);
           }
           data.add(row);
         }
       }}catch(Exception e){
-      if(fieldVectors != null){
-        for(FieldVector fieldVector : fieldVectors) {
-          if(fieldVector !=  null) {
-            fieldVector.close();
-          }
-        }
-        fieldVectors = null;
-      }
-      if(streamRootAllocator != null) {
-        streamRootAllocator.close();
-        streamRootAllocator = null;
-      }
+//      if(fieldVectors != null){
+//        for(FieldVector fieldVector : fieldVectors) {
+//          if(fieldVector !=  null) {
+//            fieldVector.close();
+//          }
+//        }
+//        fieldVectors = null;
+//      }
+//      if(streamRootAllocator != null) {
+//        streamRootAllocator.close();
+//        streamRootAllocator = null;
+//      }
+      log.error("Encountered exception", e);
+      closeReader();
     }
     return data;
   }
 
   public void closeReader() {
+    // what if this close is pending? finally clause?
     List<FieldVector> vectors =  vectorSchemaRoot.getFieldVectors();
     if(vectors != null){
       for(FieldVector fieldVector : vectors) {

@@ -61,7 +61,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
                 currentRow++;
             }
 
-            if (currentRow < data.size()) {
+            if (data!=null && currentRow < data.size()) {
                 return true;
             }
 
@@ -72,10 +72,11 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
                 }
             }
 
-            // Closing as this is move forward only cursor.
+            // datastream and reader should be closed here.
             arrowUtil.closeReader();
             closeDataStream();
 
+            // Closing as this is move forward only cursor.
             log.info("Resultset {} does not have any more rows. Total {} pages retrieved", this, currentPageNum);
             return false;
         } catch (SQLException e) {
@@ -89,7 +90,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
             try {
                 dataStream.close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                log.error("Encountered exception while closing datastream ", ex);
             }
             dataStream = null;
         }
@@ -130,6 +131,18 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
             throw new SQLException(e.getMessage());
         }
     }
+
+//    @Override
+//    public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
+//        errorOutIfClosed();
+//        String value = getString(columnLabel);
+//        if (StringUtils.isBlank(value)) {
+//            wasNull.set(true);
+//            // TODO: test this
+//            return BigDecimal.ZERO;
+//        }
+//        return new BigDecimal(value);
+//    }
 
     @Override
     public Object getObject(String columnLabel) throws SQLException {

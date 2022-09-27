@@ -87,7 +87,6 @@ public abstract class QueryServiceAbstractStatement {
             Optional<Integer> limit = requireManagedPagination ? Optional.of(Constants.MAX_LIMIT) : Optional.empty();
             Optional<String> orderby = requireManagedPagination ? Optional.of("1 ASC") : Optional.empty();
 
-            log.info("######################## isEnableStreamFlow: {}", isEnableStreamFlow);
             if(isEnableStreamFlow) {
                 Iterator<AnsiSqlQueryStreamResponse> response = queryGrpcExecutor.executeQueryWithRetry(sql);
                 return createResultSetFromResponse(response);
@@ -201,6 +200,7 @@ public abstract class QueryServiceAbstractStatement {
         } else {
             log.debug("Metadata is {}", metadata);
             try {
+                // TODO: arrow type helper?
                 Map<String, Value> metadataMap = metadata.getFieldsMap();
                 for (String columnName : metadataMap.keySet()) {
                     columnNames.add(columnName);

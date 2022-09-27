@@ -1,6 +1,7 @@
 package com.salesforce.cdp.queryservice.util;
 
 import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.BigIntVector;
 import org.apache.arrow.vector.BitVector;
@@ -12,6 +13,8 @@ import org.apache.arrow.vector.Float8Vector;
 import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.SmallIntVector;
 import org.apache.arrow.vector.TimeNanoVector;
+import org.apache.arrow.vector.TimeStampMilliTZVector;
+import org.apache.arrow.vector.TimeStampMilliVector;
 import org.apache.arrow.vector.TimeStampNanoTZVector;
 import org.apache.arrow.vector.TimeStampNanoVector;
 import org.apache.arrow.vector.TinyIntVector;
@@ -34,6 +37,7 @@ import java.util.Map;
 /**
  * This class contains the utilities for processing the arrow stream.
  */
+@Slf4j
 public class ArrowUtil {
 	/**
 	 * Converts the arrow stream in to List<Map<String,Object>> so that it can then be converted into result set format.
@@ -135,11 +139,18 @@ public class ArrowUtil {
 			return ((TimeNanoVector) fieldVector).getObject(index);
 		} else if (type == Types.MinorType.TIMESTAMPNANOTZ) {
 			long epochNano = ((TimeStampNanoTZVector) fieldVector).getObject(index);
-			String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+			String date = new java.text.SimpleDateFormat(Constants.DATE_ISO_STD)
 					.format(new java.util.Date (epochNano/1000000));
 			return date;
 		} else if (type == Types.MinorType.TIMESTAMPNANO) {
 			return ((TimeStampNanoVector) fieldVector).getObject(index);
+		} else if (type == Types.MinorType.TIMESTAMPMILLITZ) {
+			long epochMillis = ((TimeStampMilliTZVector) fieldVector).getObject(index);
+			String date = new java.text.SimpleDateFormat(Constants.DATE_ISO_STD)
+					.format(new java.util.Date (epochMillis/1000));
+			return date;
+		} else if (type == Types.MinorType.TIMESTAMPMILLI) {
+			return ((TimeStampMilliVector) fieldVector).getObject(index);
 		}
 		throw new SQLException(MessageFormat.format("Unknown arrow type {0}", type.name()));
 	}

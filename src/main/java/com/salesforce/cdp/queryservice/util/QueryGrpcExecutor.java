@@ -66,7 +66,6 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
     private ManagedChannel getChannel(String tenantUrl) {
         if(tenantUrl!=null) {
             try {
-                log.info("************** Tenant URL: {}, port: {}", tenantUrl, port);
                 return ManagedChannelBuilder.forAddress(tenantUrl, port).build();
             } catch (Exception ex) {
                 log.error("encountered exception in grpc connection builder ", ex);
@@ -83,7 +82,6 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
                 .onRetry(e -> log.warn("Failure #{}. Retrying.", e.getAttemptCount()))
                 .onRetriesExceeded(e -> log.warn("Failed to connect. Max retries exceeded."))
                 .withMaxRetries(GRPC_MAX_RETRY);
-        log.info("*************** SQL: {}", sql);
         try {
             return Failsafe.with(retryPolicy)
                     .get(() -> {
