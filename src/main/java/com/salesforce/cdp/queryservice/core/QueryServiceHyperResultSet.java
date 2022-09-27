@@ -132,18 +132,6 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
         }
     }
 
-//    @Override
-//    public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-//        errorOutIfClosed();
-//        String value = getString(columnLabel);
-//        if (StringUtils.isBlank(value)) {
-//            wasNull.set(true);
-//            // TODO: test this
-//            return BigDecimal.ZERO;
-//        }
-//        return new BigDecimal(value);
-//    }
-
     @Override
     public Object getObject(String columnLabel) throws SQLException {
         errorOutIfClosed();

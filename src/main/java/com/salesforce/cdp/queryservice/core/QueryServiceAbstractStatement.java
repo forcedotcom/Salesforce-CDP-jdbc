@@ -200,7 +200,6 @@ public abstract class QueryServiceAbstractStatement {
         } else {
             log.debug("Metadata is {}", metadata);
             try {
-                // TODO: arrow type helper?
                 Map<String, Value> metadataMap = metadata.getFieldsMap();
                 for (String columnName : metadataMap.keySet()) {
                     columnNames.add(columnName);

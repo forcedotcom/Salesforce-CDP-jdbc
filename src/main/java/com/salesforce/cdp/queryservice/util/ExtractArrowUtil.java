@@ -43,28 +43,6 @@ public class ExtractArrowUtil extends ArrowUtil {
     }
   }
 
-//  public ResultSetMetaData getMetadata() throws SQLException {
-//    log.info("where is this used?");
-//    if(this.arrowStreamReader == null)
-//      return null;
-//    try {
-//      VectorSchemaRoot schemaRoot = arrowStreamReader.getVectorSchemaRoot();
-//      List<String> columnNames =new ArrayList<>();
-//      List<String> columnTypes=new ArrayList<>();
-//      Map<String, Integer> columnNameToPosition= new HashMap<>();
-//      int i=1;
-//      for(FieldVector field:schemaRoot.getFieldVectors()){
-//        columnNames.add(field.getName());
-//        columnTypes.add(ArrowTypeHelper.getJdbcType(field.getMinorType()));
-//        columnNameToPosition.put(field.getName(), i++);
-//      }
-//      // TODO: typeIds?
-//      return new QueryServiceResultSetMetaData(columnNames, columnTypes, null, columnNameToPosition);
-//    } catch (IOException | SQLException e) {
-//      throw new SQLException("Error while getting metadata", e);
-//    }
-//  }
-
   public List<Object> getRowsFromStreamResponse() throws SQLException {
     if (arrowStreamReader == null) {
       throw new SQLException("Arrow Reader not created for Stream");
@@ -84,18 +62,6 @@ public class ExtractArrowUtil extends ArrowUtil {
           data.add(row);
         }
       }}catch(Exception e){
-//      if(fieldVectors != null){
-//        for(FieldVector fieldVector : fieldVectors) {
-//          if(fieldVector !=  null) {
-//            fieldVector.close();
-//          }
-//        }
-//        fieldVectors = null;
-//      }
-//      if(streamRootAllocator != null) {
-//        streamRootAllocator.close();
-//        streamRootAllocator = null;
-//      }
       log.error("Encountered exception", e);
       closeReader();
     }
@@ -103,7 +69,6 @@ public class ExtractArrowUtil extends ArrowUtil {
   }
 
   public void closeReader() {
-    // what if this close is pending? finally clause?
     List<FieldVector> vectors =  vectorSchemaRoot.getFieldVectors();
     if(vectors != null){
       for(FieldVector fieldVector : vectors) {
