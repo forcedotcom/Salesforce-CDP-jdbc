@@ -165,28 +165,32 @@ public abstract class QueryServiceAbstractStatement {
 
     private QueryServiceResultSetMetaData createColumnNames(QueryServiceResponse queryServiceResponse) throws SQLException {
         QueryServiceResultSetMetaData resultSetMetaData;
-        List<String> columnNames = new ArrayList<>();
-        List<String> columnTypes = new ArrayList<>();
-        List<Integer> columnTypeIds = new ArrayList<>();
-        Map<String, Integer> columnNameToPosition = new HashMap<>();
 
         if (queryServiceResponse.getMetadata() == null && queryServiceResponse.getRowCount() > 0) {
             throw new SQLException(QUERY_EXCEPTION);
         } else if (queryServiceResponse.getMetadata() != null) {
             log.debug("Metadata is {}", queryServiceResponse.getMetadata());
             Map<String, Type> metadata = queryServiceResponse.getMetadata();
+            final int fieldCount = metadata.size();
+            String[] columnNames = new String[fieldCount];
+            String[] columnTypes = new String[fieldCount];
+            Integer[] columnTypeIds = new Integer[fieldCount];
+            Map<String, Integer> columnNameToPosition = new HashMap<>();
+
             for (String columnName : metadata.keySet()) {
                 final Type type = metadata.get(columnName);
-                columnNames.add(columnName);
-                columnTypes.add(type.getType());
-                columnTypeIds.add(type.getTypeCode());
-                columnNameToPosition.put(columnName, type.getPlaceInOrder());
+                final int placeInOrder = type.getPlaceInOrder();
+                columnNames[placeInOrder] = columnName;
+                columnTypes[placeInOrder] = type.getType();
+                columnTypeIds[placeInOrder] = type.getTypeCode();
+                columnNameToPosition.put(columnName, placeInOrder);
             }
-        }
 
-        resultSetMetaData = new QueryServiceResultSetMetaData(columnNames, columnTypes, columnTypeIds, columnNameToPosition);
-        log.trace("Received column names are {}", columnNames);
-        return resultSetMetaData;
+            log.trace("Received column names are {}", columnNames);
+            return new QueryServiceResultSetMetaData(Arrays.asList(columnNames), Arrays.asList(columnTypes), Arrays.asList(columnTypeIds), columnNameToPosition);
+        } else {
+            return new QueryServiceResultSetMetaData(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new HashMap<>());
+        }
     }
 
     private QueryServiceResultSetMetaData createColumnNames(Struct metadata) throws SQLException {
@@ -199,26 +203,23 @@ public abstract class QueryServiceAbstractStatement {
 
             try {
                 Map<String, Value> metadataMap = metadata.getFieldsMap();
-                int totalColumns = metadataMap.size();
-
-                String[] columnNames = new String[totalColumns];
-                String[] columnTypes = new String[totalColumns];
-                Integer[] columnTypeIds = new Integer[totalColumns];
+                int fieldCount = metadataMap.size();
+                String[] columnNames = new String[fieldCount];
+                String[] columnTypes = new String[fieldCount];
+                Integer[] columnTypeIds = new Integer[fieldCount];
                 Map<String, Integer> columnNameToPosition = new HashMap<>();
 
-                for (String columnName : metadataMap.keySet()) {
-                    final Map<String, Value> metadataValue = metadataMap.get(columnName).getStructValue().getFieldsMap();
-                    int placeInOrder = (int)metadataValue.get(KEY_PLACE_IN_ORDER).getNumberValue();
-
-                    columnNames[placeInOrder] = columnName;
-                    columnTypes[placeInOrder] = metadataValue.get(KEY_TYPE).getStringValue();
-                    columnTypeIds[placeInOrder] = ((int)metadataValue.get(KEY_TYPE_CODE).getNumberValue());
-                    columnNameToPosition.put(columnName, placeInOrder);
+                for (Map.Entry<String, Value> entry : metadataMap.entrySet()) {
+                    final String columnName = entry.getKey();
+                    final Map<String, Value> metadataValue = entry.getValue().getStructValue().getFieldsMap();
+                    int place = (int)metadataValue.get(KEY_PLACE_IN_ORDER).getNumberValue();
+                    columnNames[place] = columnName;
+                    columnTypes[place] = metadataValue.get(KEY_TYPE).getStringValue();
+                    columnTypeIds[place] = (int)metadataValue.get(KEY_TYPE_CODE).getNumberValue();
+                    columnNameToPosition.put(columnName, place);
                 }
-
-                resultSetMetaData = new QueryServiceResultSetMetaData(Arrays.asList(columnNames), Arrays.asList(columnTypes), Arrays.asList(columnTypeIds), columnNameToPosition);
                 log.trace("Received column names are {}", columnNames);
-                return resultSetMetaData;
+                return new QueryServiceResultSetMetaData(Arrays.asList(columnNames), Arrays.asList(columnTypes), Arrays.asList(columnTypeIds), columnNameToPosition);
             } catch (Exception e) {
                 log.debug("Exception while parsing metadata struct");
                 throw new SQLException(METADATA_EXCEPTION);
