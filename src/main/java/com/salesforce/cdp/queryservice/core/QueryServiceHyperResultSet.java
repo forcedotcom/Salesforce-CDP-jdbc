@@ -46,8 +46,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
         this.responseIterator = responseIterator;
         this.resultSetMetaData = resultSetMetaData;
         this.statement = statement;
-        this.dataStream = new AnsiSqlQueryStreamResponseDataStream(responseIterator);
-        this.arrowUtil = new ExtractArrowUtil(this.dataStream);
+        this.arrowUtil = new ExtractArrowUtil(responseIterator);
     }
 
     @Override
@@ -73,7 +72,6 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
             }
 
             // datastream and reader should be closed here.
-            arrowUtil.closeReader();
             closeDataStream();
 
             // Closing as this is move forward only cursor.
@@ -160,7 +158,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
         log.trace("Fetching page with number {} for resultset {}", ++currentPageNum, this);
         try {
             List<Object> rows = arrowUtil.getRowsFromStreamResponse();
-            if (rows != null && rows.size() > 0) {
+            if (rows != null) {
                 this.data = rows;
                 currentRow=0;
             }
@@ -193,7 +191,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
 
     private boolean isNextChunkPresent() throws SQLException {
         try {
-            return dataStream.hasNext();
+            return arrowUtil.isNextChunkPresent();
         } catch (Exception e) {
             log.error("Exception while fetching next chunk ", e);
             throw new SQLException(e.getMessage());
