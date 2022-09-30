@@ -17,12 +17,10 @@
 package com.salesforce.cdp.queryservice.core;
 
 import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
-import com.salesforce.cdp.queryservice.util.AnsiSqlQueryStreamResponseDataStream;
 import com.salesforce.cdp.queryservice.util.ExtractArrowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -37,7 +35,6 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
 
     protected List<Object> data;
     protected int currentPageNum = 0;
-    private AnsiSqlQueryStreamResponseDataStream dataStream;
 
     public QueryServiceHyperResultSet(Iterator<AnsiSqlQueryStreamResponse> responseIterator,
                                       ResultSetMetaData resultSetMetaData,
@@ -51,47 +48,28 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
 
     @Override
     public boolean next() throws SQLException {
-        try {
-            errorOutIfClosed();
+        errorOutIfClosed();
 
-            if (currentRow == -1 && isNextChunkPresent()) {
-                getNextChunk();
-            } else {
-                currentRow++;
-            }
+        if (currentRow == -1 && isNextChunkPresent()) {
+            getNextChunk();
+        } else {
+            currentRow++;
+        }
 
-            if (data!=null && currentRow < data.size()) {
+        if (data != null && currentRow < data.size()) {
+            return true;
+        }
+
+        if (isNextChunkPresent()) {
+            getNextChunk();
+            if (data != null && data.size() > 0) {
                 return true;
             }
-
-            if (isNextChunkPresent()) {
-                getNextChunk();
-                if (data != null && data.size() > 0) {
-                    return true;
-                }
-            }
-
-            // datastream and reader should be closed here.
-            closeDataStream();
-
-            // Closing as this is move forward only cursor.
-            log.info("Resultset {} does not have any more rows. Total {} pages retrieved", this, currentPageNum);
-            return false;
-        } catch (SQLException e) {
-            closeDataStream();
-            throw e;
         }
-    }
 
-    private void closeDataStream() {
-        if (dataStream != null) {
-            try {
-                dataStream.close();
-            } catch (IOException ex) {
-                log.error("Encountered exception while closing datastream ", ex);
-            }
-            dataStream = null;
-        }
+        // Closing as this is move forward only cursor.
+        log.info("Resultset {} does not have any more rows. Total {} pages retrieved", this, currentPageNum);
+        return false;
     }
 
     @Override
@@ -125,7 +103,6 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
             wasNull.set(value == null);
             return value;
         } catch (SQLException e) {
-            closeDataStream();
             throw new SQLException(e.getMessage());
         }
     }
@@ -145,7 +122,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
     }
 
     private Object getValue(Object row, int columnIndex) throws SQLException {
-        return ((ArrayList)row).get(columnIndex);
+        return ((ArrayList) row).get(columnIndex);
     }
 
     private int getColumnIndexByName(String columnName) throws SQLException {
@@ -160,11 +137,10 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
             List<Object> rows = arrowUtil.getRowsFromStreamResponse();
             if (rows != null) {
                 this.data = rows;
-                currentRow=0;
+                currentRow = 0;
             }
         } catch (Exception e) {
             log.error("Error while getting the data chunk {}", this, e);
-            closeDataStream();
             throw new SQLException(e.getMessage());
         }
     }

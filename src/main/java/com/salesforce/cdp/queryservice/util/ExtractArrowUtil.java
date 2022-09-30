@@ -2,7 +2,6 @@ package com.salesforce.cdp.queryservice.util;
 
 import com.google.protobuf.ByteString;
 import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
-import com.salesforce.cdp.queryservice.core.QueryServiceResultSetMetaData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.FieldVector;
@@ -12,17 +11,16 @@ import org.apache.arrow.vector.ipc.ArrowStreamReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class contains the utilities for processing the arrow stream.
  */
 @Slf4j
 public class ExtractArrowUtil extends ArrowUtil {
-
-
     private Iterator<AnsiSqlQueryStreamResponse> inputStream;
     private RootAllocator streamRootAllocator;
 

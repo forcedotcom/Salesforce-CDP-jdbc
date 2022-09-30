@@ -110,7 +110,7 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
 
     private Iterator<AnsiSqlQueryStreamResponse> executeQuery(String sql) throws IOException, SQLException {
         log.info("Preparing to execute query with gRPC executor {}", sql);
-         Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
+        Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
         QueryServiceGrpc.QueryServiceBlockingStub stub = QueryServiceGrpc.newBlockingStub(channel);
         Properties properties = connection.getClientInfo();
         return stub
