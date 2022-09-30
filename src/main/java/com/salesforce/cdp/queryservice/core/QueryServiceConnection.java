@@ -40,7 +40,7 @@ public class QueryServiceConnection implements Connection {
     private boolean enableArrowStream = false;
     private boolean isCursorBasedPaginationReq = true;
     private final boolean isSocksProxyDisabled;
-    private boolean enableStreamFlow = false;
+    private boolean enableStreamFlow = true;
     private String tenantUrl;
 
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
