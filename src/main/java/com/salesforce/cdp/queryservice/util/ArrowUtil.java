@@ -1,29 +1,44 @@
 package com.salesforce.cdp.queryservice.util;
 
+import com.salesforce.cdp.queryservice.core.QueryServiceResultSetMetaData;
 import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.BigIntVector;
 import org.apache.arrow.vector.BitVector;
+import org.apache.arrow.vector.DateDayVector;
 import org.apache.arrow.vector.DecimalVector;
 import org.apache.arrow.vector.FieldVector;
 import org.apache.arrow.vector.Float4Vector;
 import org.apache.arrow.vector.Float8Vector;
 import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.SmallIntVector;
+import org.apache.arrow.vector.TimeNanoVector;
+import org.apache.arrow.vector.TimeStampNanoTZVector;
+import org.apache.arrow.vector.TimeStampNanoVector;
 import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.ipc.ArrowReader;
 import org.apache.arrow.vector.ipc.ArrowStreamReader;
 import org.apache.arrow.vector.types.Types;
+import org.apache.arrow.vector.types.pojo.ArrowType;
+import org.apache.arrow.vector.types.pojo.Field;
+import org.apache.arrow.vector.types.pojo.Schema;
 import org.apache.arrow.vector.util.Text;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.Channel;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +46,8 @@ import java.util.Map;
  * This class contains the utilities for processing the arrow stream.
  */
 public class ArrowUtil {
+
+
 	/**
 	 * Converts the arrow stream in to List<Map<String,Object>> so that it can then be converted into result set format.
 	 * @param queryServiceResponse Response received from query service
@@ -42,6 +59,7 @@ public class ArrowUtil {
 		byte[] bytes = Base64.getDecoder().decode(queryServiceResponse.getArrowStream());
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
 		List<FieldVector> fieldVectors = null;
+
 		RootAllocator allocator = new RootAllocator(Long.MAX_VALUE);
 		List<Object> data = new ArrayList<>();
 		try (ArrowStreamReader arrowStreamReader = new ArrowStreamReader(inputStream, allocator)) {
@@ -98,7 +116,7 @@ public class ArrowUtil {
 		return  data;
 	}
 
-	private Object getFieldValue(FieldVector fieldVector, int index) throws SQLException {
+	Object getFieldValue(FieldVector fieldVector, int index) throws SQLException {
 		Types.MinorType type = Types.getMinorTypeForArrowType(fieldVector.getField().getType());
 
 		if(fieldVector.isNull(index)) {
@@ -125,7 +143,18 @@ public class ArrowUtil {
 			return ((BigIntVector) fieldVector).get(index);
 		} else if (type == Types.MinorType.BIT) {
 			return (int) ((BitVector) fieldVector).get(index) == 1;
+		} else if(type ==Types.MinorType.DATEDAY){
+			return ((DateDayVector)fieldVector).getObject(index);
+		}else if(type ==Types.MinorType.TIMENANO){
+			return ((TimeNanoVector)fieldVector).getObject(index);
+		}else if(type == Types.MinorType.TIMESTAMPNANOTZ){
+			long epochNano =((TimeStampNanoTZVector)fieldVector).getObject(index);
+			String date = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(new java.util.Date (epochNano/1000000));
+			return date;
+		}else if(type == Types.MinorType.TIMESTAMPNANO){
+			return ((TimeStampNanoVector)fieldVector).getObject(index);
 		}
 		throw new SQLException(MessageFormat.format("Unknown arrow type {0}", type.name()));
 	}
+
 }
