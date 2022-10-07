@@ -85,11 +85,13 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
         try {
             return Failsafe.with(retryPolicy)
                     .get(() -> {
+                        long startTime = System.currentTimeMillis();
                         Iterator<AnsiSqlQueryStreamResponse> response = executeQuery(sql);
                         // This checks if there is failure in first chunk itself.
                         // NOTE: failure in later chunks is not handled intentionally here.
                         // as in that case, we expect a new request from client.
                         response.hasNext();
+                        log.info("Time taken to get first chunk is {}", System.currentTimeMillis() - startTime);
                         return response;
                     });
         } catch (FailsafeException e) {
