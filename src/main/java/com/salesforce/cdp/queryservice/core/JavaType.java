@@ -25,6 +25,8 @@ public enum JavaType implements SQLType {
 
     DATE_TIME(Types.TIMESTAMP, "DATE_TIME"),
 
+    DATE(Types.DATE, "DATE"),
+
     NUMBER(Types.NUMERIC, "NUMBER");
 
     private Integer type;
