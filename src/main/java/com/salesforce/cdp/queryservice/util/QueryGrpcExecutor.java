@@ -99,7 +99,7 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
                         response.hasNext();
 
                         String traceId = getTraceIdFromGrpcResponseHeader(headers);
-                        log.info("Time taken to get first chunk for traceId {} is {}", traceId, System.currentTimeMillis() - startTime);
+                        log.info("Time taken to get first chunk for traceId {} is {} ms", traceId, System.currentTimeMillis() - startTime);
 
                         return response;
                     });
