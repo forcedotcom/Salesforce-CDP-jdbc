@@ -24,8 +24,10 @@ import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.interceptors.GrpcInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.MetadataUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.FailsafeException;
@@ -36,6 +38,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class QueryGrpcExecutor extends QueryTokenExecutor {
@@ -45,6 +48,7 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
     private static final int timeoutInMin = 5;
     // No retry on hyper for now. Fallback to v2 call if receive even one failure from hyper.
     private static final int GRPC_MAX_RETRY = 0;
+    private static final Metadata.Key<String> TRACE_ID_KEY = Metadata.Key.of(Constants.TRACE_ID, Metadata.ASCII_STRING_MARSHALLER);
 
     private final ManagedChannel channel;
 
@@ -86,12 +90,17 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
             return Failsafe.with(retryPolicy)
                     .get(() -> {
                         long startTime = System.currentTimeMillis();
-                        Iterator<AnsiSqlQueryStreamResponse> response = executeQuery(sql);
+                        AtomicReference<Metadata> headers = new AtomicReference<Metadata>();
+                        AtomicReference<Metadata> trailers = new AtomicReference<Metadata>();
+                        Iterator<AnsiSqlQueryStreamResponse> response = executeQuery(sql, headers, trailers);
                         // This checks if there is failure in first chunk itself.
                         // NOTE: failure in later chunks is not handled intentionally here.
                         // as in that case, we expect a new request from client.
                         response.hasNext();
-                        log.info("Time taken to get first chunk is {}", System.currentTimeMillis() - startTime);
+
+                        String traceId = getTraceIdFromGrpcResponseHeader(headers);
+                        log.info("Time taken to get first chunk for traceId {} is {}", traceId, System.currentTimeMillis() - startTime);
+
                         return response;
                     });
         } catch (FailsafeException e) {
@@ -110,14 +119,25 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
         return false;
     }
 
-    private Iterator<AnsiSqlQueryStreamResponse> executeQuery(String sql) throws IOException, SQLException {
+    private String getTraceIdFromGrpcResponseHeader(AtomicReference<Metadata> headers) {
+        try {
+            return headers.get().get(TRACE_ID_KEY);
+        } catch (Exception e) {
+            log.error("Exception while getting traceId from response header.", e);
+        }
+        return "";
+    }
+
+    private Iterator<AnsiSqlQueryStreamResponse> executeQuery(String sql, AtomicReference<Metadata> headers, AtomicReference<Metadata> trailers) throws IOException, SQLException {
         log.info("Preparing to execute query with gRPC executor {}", sql);
         Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
         QueryServiceGrpc.QueryServiceBlockingStub stub = QueryServiceGrpc.newBlockingStub(channel);
         Properties properties = connection.getClientInfo();
         return stub
             .withDeadlineAfter(timeoutInMin, TimeUnit.MINUTES)
-            .withInterceptors(new GrpcInterceptor(tokenWithTenantUrl, properties))
+            .withInterceptors(
+                    new GrpcInterceptor(tokenWithTenantUrl, properties),
+                    MetadataUtils.newCaptureMetadataInterceptor(headers, trailers))
             .ansiSqlQueryStream(
                 AnsiSqlQueryStreamRequest
                     .newBuilder()
