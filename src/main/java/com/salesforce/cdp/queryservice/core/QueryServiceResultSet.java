@@ -16,6 +16,7 @@
 
 package com.salesforce.cdp.queryservice.core;
 
+import com.salesforce.cdp.queryservice.util.DateTimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.BooleanUtils;
@@ -30,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -823,25 +825,8 @@ public class QueryServiceResultSet implements ResultSet {
             wasNull.set(true);
             return null;
         }
-        String[] formats = new String[] {dateWithMsTz, dateISOStandard, dateWithSeconds, dateSimple};
-        try {
-            String valueString = value.toString();
-            for (String format: formats) {
-                SimpleDateFormat sdFormat = new SimpleDateFormat(format);
-                sdFormat.setTimeZone(cal.getTimeZone());
-                try {
-                    cal.setTime(sdFormat.parse(valueString));
-                    return new Date(cal.getTimeInMillis());
-                } catch (ParseException e) {
-                    log.info("QSRS: caught exp {}", e.getMessage());
-                    log.warn("QSRS: Date format does not match the formatter, trying another format", e);
-                }
-            }
-        }
-        catch (IllegalArgumentException e) {
-            throw new SQLException("Invalid date from server: " + value, e);
-        }
-        return null;
+        String valueString = value.toString();
+        return DateTimeUtil.getDate(valueString);
     }
 
     @Override
@@ -854,11 +839,14 @@ public class QueryServiceResultSet implements ResultSet {
     @Override
     public Time getTime(String columnLabel, Calendar cal) throws SQLException {
         errorOutIfClosed();
-        Date date = getDate(columnLabel, cal);
-        if (wasNull()){
+        Object value = getObject(columnLabel);
+        if (wasNull() || StringUtils.EMPTY.equals(value)) {
+            wasNull.set(true);
             return null;
         }
-        return new Time(date.getTime());
+        String valueString = value.toString();
+        ZoneId sourceZoneId = ZoneId.of("UTC");
+        return DateTimeUtil.getTime(valueString, sourceZoneId, cal);
     }
 
     @Override
@@ -871,11 +859,14 @@ public class QueryServiceResultSet implements ResultSet {
     @Override
     public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
         errorOutIfClosed();
-        Date date = getDate(columnLabel, cal);
-        if (wasNull()){
+        Object value = getObject(columnLabel);
+        if (wasNull() || StringUtils.EMPTY.equals(value)) {
+            wasNull.set(true);
             return null;
         }
-        return new Timestamp(date.getTime());
+        String valueString = value.toString();
+        ZoneId sourceZoneId = ZoneId.of("UTC");
+        return DateTimeUtil.getTimestamp(valueString, sourceZoneId, cal);
     }
 
     @Override
