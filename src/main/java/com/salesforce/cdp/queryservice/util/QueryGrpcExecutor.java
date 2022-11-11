@@ -49,6 +49,7 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
     // No retry on hyper for now. Fallback to v2 call if receive even one failure from hyper.
     private static final int GRPC_MAX_RETRY = 0;
     private static final Metadata.Key<String> TRACE_ID_KEY = Metadata.Key.of(Constants.TRACE_ID, Metadata.ASCII_STRING_MARSHALLER);
+    private static final int MAX_MESSAGE_SIZE = 8388608; // 8mb
 
     private final ManagedChannel channel;
 
@@ -135,6 +136,7 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
         Properties properties = connection.getClientInfo();
         return stub
             .withDeadlineAfter(timeoutInMin, TimeUnit.MINUTES)
+            .withMaxInboundMessageSize(MAX_MESSAGE_SIZE)
             .withInterceptors(
                     new GrpcInterceptor(tokenWithTenantUrl, properties),
                     MetadataUtils.newCaptureMetadataInterceptor(headers, trailers))
