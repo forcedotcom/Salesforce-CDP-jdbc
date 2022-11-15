@@ -820,7 +820,7 @@ public class QueryServiceResultSet implements ResultSet {
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
         errorOutIfClosed();
         Object value = getObject(columnLabel);
-        if (wasNull() || StringUtils.EMPTY.equals(value)) {
+        if (wasNull() || value== null || StringUtils.EMPTY.equals(value)) {
             wasNull.set(true);
             return null;
         }
@@ -829,7 +829,7 @@ public class QueryServiceResultSet implements ResultSet {
         try {
             String valueString = value.toString();
             java.util.Date date = DateUtils.parseDate(valueString, formats);
-            return new java.sql.Date(date.getTime());
+            return date == null ? null: new java.sql.Date(date.getTime());
         }
         catch (IllegalArgumentException e) {
             throw new SQLException("Invalid date from server: " + value, e);
