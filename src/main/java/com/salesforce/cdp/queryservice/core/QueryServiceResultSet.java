@@ -829,7 +829,10 @@ public class QueryServiceResultSet implements ResultSet {
         try {
             String valueString = value.toString();
             java.util.Date date = DateUtils.parseDate(valueString, formats);
-            return date == null ? null: new java.sql.Date(date.getTime());
+            if(date== null) {
+                throw new SQLException("Invalid date from server: " + value);
+            }
+            return new java.sql.Date(date.getTime());
         }
         catch (IllegalArgumentException e) {
             throw new SQLException("Invalid date from server: " + value, e);
