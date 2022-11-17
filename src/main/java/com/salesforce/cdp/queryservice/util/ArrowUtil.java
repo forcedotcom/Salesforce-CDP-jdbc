@@ -147,7 +147,7 @@ public class ArrowUtil {
 		} else if (type == Types.MinorType.TIMESTAMPMILLITZ) {
 			long epochMillis = ((TimeStampMilliTZVector) fieldVector).getObject(index);
 			String date = new java.text.SimpleDateFormat(Constants.DATE_ISO_STD)
-					.format(new java.util.Date (epochMillis/1000));
+					.format(new java.util.Date (epochMillis));
 			return date;
 		} else if (type == Types.MinorType.TIMESTAMPMILLI) {
 			return ((TimeStampMilliVector) fieldVector).getObject(index);

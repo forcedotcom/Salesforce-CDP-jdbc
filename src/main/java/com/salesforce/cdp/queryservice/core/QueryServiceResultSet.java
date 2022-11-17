@@ -825,6 +825,7 @@ public class QueryServiceResultSet implements ResultSet {
             return null;
         }
 
+        // TODO: optimize date parsing. Can we avoid doing this for each row?
         String[] formats = new String[] {dateWithMsTz, dateISOStandard, dateWithSeconds, dateSimple, dateIn12HourFormat};
         try {
             String valueString = value.toString();
