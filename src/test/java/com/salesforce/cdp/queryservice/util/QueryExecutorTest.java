@@ -105,6 +105,13 @@ public class QueryExecutorTest {
                 , any(RequestBody.class), any(Map.class));
     }
 
+    @Test
+    public void testGetQueryConfig() throws IOException, SQLException {
+        queryExecutor.getQueryConfig();
+        PowerMockito.verifyStatic();
+        HttpHelper.buildRequest(eq(Constants.GET), eq("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.QUERY_CONFIG_URL), any(RequestBody.class), any(Map.class));
+    }
+
     private Token getToken() {
         Token token = new Token();
         token.setAccess_token("q1234");
