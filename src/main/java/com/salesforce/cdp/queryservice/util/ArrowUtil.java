@@ -13,6 +13,7 @@ import org.apache.arrow.vector.Float4Vector;
 import org.apache.arrow.vector.Float8Vector;
 import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.SmallIntVector;
+import org.apache.arrow.vector.TimeMilliVector;
 import org.apache.arrow.vector.TimeNanoVector;
 import org.apache.arrow.vector.TimeStampMilliTZVector;
 import org.apache.arrow.vector.TimeStampMilliVector;
@@ -138,6 +139,8 @@ public class ArrowUtil {
 			return ((DateDayVector)fieldVector).getObject(index);
 		} else if (type == Types.MinorType.DATEMILLI) {
 			return ((DateMilliVector)fieldVector).getObject(index);
+		} else if (type == Types.MinorType.TIMEMILLI) {
+			return ((TimeMilliVector) fieldVector).getObject(index);
 		} else if (type == Types.MinorType.TIMENANO) {
 			return ((TimeNanoVector) fieldVector).getObject(index);
 		} else if (type == Types.MinorType.TIMESTAMPNANOTZ) {
