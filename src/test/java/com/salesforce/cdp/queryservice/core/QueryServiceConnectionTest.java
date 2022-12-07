@@ -66,8 +66,6 @@ public class QueryServiceConnectionTest {
         assertThat(rootUrl).isEqualTo("mysample://something.my.salesforce.com");
 
         assertThat(properties.getProperty(Constants.LOGIN_URL)).isEqualTo("mysample://something.my.salesforce.com");
-        assertThat(properties.getProperty(Constants.CLIENT_ID)).isEqualTo(Constants.PROD_DEFAULT_CLIENT_ID);
-        assertThat(properties.getProperty(Constants.CLIENT_SECRET)).isEqualTo(Constants.PROD_DEFAULT_CLIENT_SECRET);
         assertThat(properties.getProperty(Constants.USER_NAME)).isEqualTo("test-user");
 
         boolean isStreamEnabled = Whitebox.getInternalState(connection, "enableArrowStream");
@@ -84,8 +82,6 @@ public class QueryServiceConnectionTest {
         assertThat(rootUrl).isEqualTo("mysample://something.na45.test1.pc-rnd.salesforce.com");
 
         assertThat(properties.getProperty(Constants.LOGIN_URL)).isEqualTo("mysample://something.na45.test1.pc-rnd.salesforce.com");
-        assertThat(properties.getProperty(Constants.CLIENT_ID)).isEqualTo(Constants.NA45_DEFAULT_CLIENT_ID);
-        assertThat(properties.getProperty(Constants.CLIENT_SECRET)).isEqualTo(Constants.NA45_DEFAULT_CLIENT_SECRET);
         assertThat(properties.getProperty(Constants.USER_NAME)).isEqualTo("test-user-12");
 
         isStreamEnabled = Whitebox.getInternalState(connection, "enableArrowStream");
@@ -104,60 +100,6 @@ public class QueryServiceConnectionTest {
         }, SQLException.class);
         assertThat(ex).isInstanceOf(SQLException.class);
         assertThat(ex.getMessage()).contains("url is specified with invalid datasource");
-    }
-
-    @Test
-    @DisplayName("Verify Addition of Client Secrets")
-    public void testAddingClientSecrets() throws Exception {
-        Properties properties = new Properties();
-        String serverUrl = "mysample://something.na46.test1.pc-rnd.salesforce.com";
-
-        properties.put(Constants.USER, "test-user-12");
-
-        assertThat(properties.size()).isEqualTo(1);
-        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
-        assertThat(properties.getProperty(Constants.USER_NAME)).isEqualTo("test-user-12");
-        assertThat(properties.getProperty(Constants.CLIENT_ID)).isEqualTo(Constants.NA46_DEFAULT_CLIENT_ID);
-        assertThat(properties.getProperty(Constants.CLIENT_SECRET)).isEqualTo(Constants.NA46_DEFAULT_CLIENT_SECRET);
-        assertThat(properties.size()).isEqualTo(4);
-
-        // case when no username is present
-        properties.clear();
-        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
-        assertThat(properties.size()).isEqualTo(0);
-
-        // case when only username is present
-        properties.clear();
-        properties.put(Constants.USER_NAME, "test-user");
-        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
-        assertThat(properties.size()).isEqualTo(3);
-
-        // case when username, clientId/clientSecret are present
-        properties.clear();
-        properties.put(Constants.USER_NAME, "test-user");
-        properties.put(Constants.CLIENT_ID, "bleh");
-        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
-        assertThat(properties.size()).isEqualTo(2);
-
-        properties.put(Constants.CLIENT_SECRET, "secret");
-        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
-        assertThat(properties.size()).isEqualTo(3);
-
-        // case when username and privateKey are present
-        properties.clear();
-        properties.put(Constants.USER_NAME, "test-user");
-        properties.put(Constants.PRIVATE_KEY, privateKey);
-        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
-        assertThat(properties.size()).isEqualTo(2);
-
-        Throwable ex = catchThrowableOfType(() -> {
-            String url = "mysample://something.na46.test1.pc-rnd.example.com";
-            Properties configs = new Properties();
-            configs.put(Constants.USER, "Test-user-12");
-            QueryServiceConnection.addClientSecretsIfRequired(url, configs);
-        }, SQLException.class);
-        assertThat(ex).isInstanceOf(SQLException.class);
-        assertThat(ex.getMessage()).contains("specified url didn't match any existing envs");
     }
 
     @Test
@@ -199,7 +141,7 @@ public class QueryServiceConnectionTest {
         String serverUrl = "jdbc:queryService-jdbc:mysample://something.my.salesforce.com/";
         Properties properties = new Properties();
         properties.put(Constants.USER_NAME, "test-user");
-        properties.put(Constants.CLIENT_ID, Constants.PROD_DEFAULT_CLIENT_ID);
+        properties.put(Constants.CLIENT_ID, "some-key);
         properties.put(Constants.PRIVATE_KEY, privateKey);
 
         QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
