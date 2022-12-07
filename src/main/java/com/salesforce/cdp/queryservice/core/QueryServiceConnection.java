@@ -45,7 +45,7 @@ public class QueryServiceConnection implements Connection {
         this.properties = properties; // fixme: do deepCopy and modify the props
         this.serviceRootUrl = getServiceRootUrl(url);
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
-        addClientSecretsIfRequired(this.properties);
+        addClientUsernameIfRequired(this.properties);
 
         // default `enableArrowStream` is false
         enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
@@ -86,7 +86,7 @@ public class QueryServiceConnection implements Connection {
      * @throws SQLException when given service url doesn't match any envs and config doesn't have exists secrets
      */
     @VisibleForTesting
-    static void addClientSecretsIfRequired(Properties properties) throws SQLException {
+    static void addClientUsernameIfRequired(Properties properties) throws SQLException {
         if (properties.containsKey(Constants.USER) && !properties.containsKey(Constants.USER_NAME)) {
             properties.put(Constants.USER_NAME, properties.get(Constants.USER));
         }
