@@ -141,7 +141,7 @@ public class QueryServiceConnectionTest {
         String serverUrl = "jdbc:queryService-jdbc:mysample://something.my.salesforce.com/";
         Properties properties = new Properties();
         properties.put(Constants.USER_NAME, "test-user");
-        properties.put(Constants.CLIENT_ID, "some-key);
+        properties.put(Constants.CLIENT_ID, "somexxxxkey");
         properties.put(Constants.PRIVATE_KEY, privateKey);
 
         QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
