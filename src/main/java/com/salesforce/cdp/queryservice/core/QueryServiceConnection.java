@@ -40,6 +40,8 @@ public class QueryServiceConnection implements Connection {
     private boolean enableArrowStream = false;
     private boolean isCursorBasedPaginationReq = true;
     private final boolean isSocksProxyDisabled;
+    private boolean enableStreamFlow = false;
+    private String tenantUrl;
 
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
         this.properties = properties; // fixme: do deepCopy and modify the props
@@ -54,6 +56,9 @@ public class QueryServiceConnection implements Connection {
         isCursorBasedPaginationReq = Boolean.parseBoolean(this.properties.getProperty(Constants.CURSOR_BASED_PAGINATION, Constants.TRUE_STR));
 
         this.isSocksProxyDisabled = Boolean.parseBoolean(this.properties.getProperty(Constants.DISABLE_SOCKS_PROXY));
+
+        // default `enableStreamFlow` is false
+        enableStreamFlow = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_STREAM_FLOW, Constants.FALSE_STR));
 
         // use isValid to test connection
         this.isValid(20);
@@ -125,6 +130,15 @@ public class QueryServiceConnection implements Connection {
 
     public boolean isSocksProxyDisabled() {
         return this.isSocksProxyDisabled;
+    }
+
+    public boolean isEnableStreamFlow() {
+        return enableStreamFlow;
+    }
+
+    public boolean updateStreamFlow(boolean flag) {
+        enableStreamFlow = flag;
+        return enableStreamFlow;
     }
 
     @Override
@@ -335,8 +349,20 @@ public class QueryServiceConnection implements Connection {
         if (isClosed()) {
             return false;
         }
-        try (PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY)) {
+
+        try {
+            PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY);
             return statement.execute();
+        } catch (Exception e) {
+            log.error("Exception while connecting to server", e);
+            if(isEnableStreamFlow()) {
+                // use http v2 api if hyper gRPC call is failing
+                updateStreamFlow(false);
+                try(PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY)) {
+                    return statement.execute();
+                }
+            }
+            throw e;
         }
     }
 
@@ -422,5 +448,13 @@ public class QueryServiceConnection implements Connection {
 
     public Token getToken() {
         return token;
+    }
+
+    public String getTenantUrl() {
+        return tenantUrl;
+    }
+
+    public void setTenantUrl(String tenantUrl) {
+        this.tenantUrl = tenantUrl;
     }
 }

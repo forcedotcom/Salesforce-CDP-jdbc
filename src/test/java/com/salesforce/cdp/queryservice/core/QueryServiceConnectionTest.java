@@ -220,4 +220,57 @@ public class QueryServiceConnectionTest {
         connection.close();
         assertThat(connection.isValid(10)).isFalse();
     }
+
+    @Test
+    @DisplayName("Verify gRPC connection setup - username/password flow")
+    public void testGrpcIsValid() throws SQLException {
+        replace(MemberMatcher.method(QueryServiceConnection.class, "isValid"))
+                .with((o, m, args) -> {return true;});
+
+        String serverUrl = "jdbc:queryService-jdbc:mysample://something.my.salesforce.com/";
+        Properties properties = new Properties();
+        properties.put(Constants.USER_NAME, "test-user");
+        properties.put(Constants.USER, "test-user-12");
+        properties.put(Constants.ENABLE_STREAM_FLOW, "true");
+
+        QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
+        doCallRealMethod().when(connection).isValid(anyInt());
+        QueryServicePreparedStatement preparedStatement = mock(QueryServicePreparedStatement.class);
+        doReturn(preparedStatement).when(connection).prepareStatement(anyString());
+        doReturn(true).when(preparedStatement).execute();
+
+        assertThat(connection.isValid(10)).isTrue();
+
+        doThrow(new SQLException()).when(preparedStatement).execute();
+        Throwable ex = catchThrowableOfType(() -> {
+            connection.isValid(10);
+        }, SQLException.class);
+        assertThat(ex).isInstanceOf(SQLException.class);
+
+        // close connection
+        connection.close();
+        assertThat(connection.isValid(10)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Verify gRPC connection setup - username/password flow with fallback")
+    public void testGrpcIsValidWithFallback() throws SQLException {
+        replace(MemberMatcher.method(QueryServiceConnection.class, "isValid"))
+                .with((o, m, args) -> {return true;});
+
+        String serverUrl = "jdbc:queryService-jdbc:mysample://something.my.salesforce.com/";
+        Properties properties = new Properties();
+        properties.put(Constants.USER_NAME, "test-user");
+        properties.put(Constants.USER, "test-user-12");
+        properties.put(Constants.ENABLE_STREAM_FLOW, "true");
+
+        QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
+        doCallRealMethod().when(connection).isValid(anyInt());
+        QueryServicePreparedStatement preparedStatement = mock(QueryServicePreparedStatement.class);
+        doReturn(preparedStatement).when(connection).prepareStatement(anyString());
+
+        // 1st time throw exception, 2nd time return true
+        doThrow(new SQLException()).doReturn(true).when(preparedStatement).execute();
+        assertThat(connection.isValid(10)).isTrue();
+    }
 }

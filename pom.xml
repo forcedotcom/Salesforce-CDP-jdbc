@@ -17,6 +17,7 @@
         <powermock.version>1.7.1</powermock.version>
         <lombok.version>1.18.22</lombok.version>
         <slf4j.version>1.7.32</slf4j.version>
+        <shadeBase>com.salesforce.cdp.queryservice.internal</shadeBase>
     </properties>
 
     <dependencies>
@@ -47,6 +48,12 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.13.4.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty</artifactId>
+            <version>1.47.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.arrow/arrow-vector -->
@@ -174,10 +181,95 @@
             <artifactId>failsafe</artifactId>
             <version>2.4.3</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>1.47.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>1.47.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.19.2</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <relocations>
+                        <relocation>
+                            <pattern>org.apache</pattern>
+                            <shadedPattern>${shadeBase}.apache</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>io.netty</pattern>
+                            <shadedPattern>${shadeBase}.io.netty</shadedPattern>
+                        </relocation>
+                    </relocations>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/LICENSE*</exclude>
+                                <exclude>META-INF/NOTICE*</exclude>
+                                <exclude>META-INF/DEPENDENCIES</exclude>
+                                <exclude>META-INF/maven/**</exclude>
+                                <exclude>META-INF/services/com.fasterxml.*</exclude>
+                                <exclude>META-INF/*.xml</exclude>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                                <exclude>.netbeans_automatic_build</exclude>
+                                <exclude>git.properties</exclude>
+                                <exclude>google-http-client.properties</exclude>
+                                <exclude>storage.v1.json</exclude> <!-- This is just a documentation file, not needed-->
+                                <exclude>pipes-fork-server-default-log4j2.xml</exclude>
+                                <exclude>dependencies.properties</exclude>
+                                <exclude>pipes-fork-server-default-log4j2.xml</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>org.apache.arrow:arrow-vector</artifact>
+                            <excludes>
+                                <!-- codegen directory is used to generate java code for arrow vector package. Excludes them since we only need class file -->
+                                <exclude>codegen/**</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <transformers>
+                        <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                        <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                        </transformer>
+                    </transformers>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.7.0</version>

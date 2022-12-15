@@ -18,6 +18,7 @@ package com.salesforce.cdp.queryservice.util;
 
 import com.google.common.collect.Sets;
 import com.salesforce.cdp.queryservice.interfaces.ExtendedHttpStatusCode;
+import io.grpc.Status;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Collections;
@@ -37,12 +38,23 @@ public class Utils {
             ExtendedHttpStatusCode.SC_BAD_REQUEST
     ));
 
+    private static final Set<Status.Code> grpcRetryStatusCodes = Collections.unmodifiableSet(Sets.newHashSet(
+            Status.Code.ABORTED,
+            Status.Code.DEADLINE_EXCEEDED,
+            Status.Code.RESOURCE_EXHAUSTED,
+            Status.Code.UNAVAILABLE
+    ));
+
     private Utils() {
         //NOOP
     }
 
     public static Set<Integer> getRetryStatusCodes() {
         return retryStatusCodes;
+    }
+
+    public static Set<Status.Code> getGrpcRetryStatusCodes() {
+        return grpcRetryStatusCodes;
     }
 
     /**
