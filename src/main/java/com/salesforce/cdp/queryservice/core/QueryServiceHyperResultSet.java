@@ -16,13 +16,11 @@
 
 package com.salesforce.cdp.queryservice.core;
 
-import com.google.protobuf.ListValue;
-import com.google.protobuf.Value;
 import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
+import com.salesforce.cdp.queryservice.util.ExtractArrowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -32,37 +30,39 @@ import java.util.List;
 
 @Slf4j
 public class QueryServiceHyperResultSet extends QueryServiceResultSet {
+    private final ExtractArrowUtil arrowUtil;
+    private final Iterator<AnsiSqlQueryStreamResponse> responseIterator;
 
-    protected List<ListValue> data;
-    private Iterator<AnsiSqlQueryStreamResponse> responseIterator;
+    protected List<Object> data;
     protected int currentPageNum = 0;
 
     public QueryServiceHyperResultSet(Iterator<AnsiSqlQueryStreamResponse> responseIterator,
                                       ResultSetMetaData resultSetMetaData,
-                                      QueryServiceAbstractStatement statement) {
+                                      QueryServiceAbstractStatement statement) throws SQLException {
         this.data = data == null ? new ArrayList<>(): data;
         this.responseIterator = responseIterator;
         this.resultSetMetaData = resultSetMetaData;
         this.statement = statement;
+        this.arrowUtil = new ExtractArrowUtil(responseIterator);
     }
 
     @Override
     public boolean next() throws SQLException {
         errorOutIfClosed();
 
-        if(currentRow == -1 && isNextChunkPresent()) {
+        if (currentRow == -1 && isNextChunkPresent()) {
             getNextChunk();
         } else {
             currentRow++;
         }
 
-        if (currentRow < data.size()) {
+        if (data != null && currentRow < data.size()) {
             return true;
         }
 
-        if(isNextChunkPresent()) {
+        if (isNextChunkPresent()) {
             getNextChunk();
-            if(data!=null && data.size()>0) {
+            if (data != null && data.size() > 0) {
                 return true;
             }
         }
@@ -81,7 +81,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
             return 0L;
         }
 
-        if(value instanceof Double) {
+        if (value instanceof Double) {
             return ((Double) value).longValue();
         }
         return Long.parseLong(value.toString());
@@ -91,11 +91,20 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
      * ColumnIndex starts from 1.
      */
     @Override
+    public ResultSetMetaData getMetaData() throws SQLException {
+        return this.resultSetMetaData;
+    }
+
+    @Override
     public Object getObject(int columnIndex) throws SQLException {
         errorOutIfClosed();
-        Object value = getValue(data.get(currentRow), columnIndex-1);
-        wasNull.set(value == null);
-        return value;
+        try {
+            Object value = getValue(data.get(currentRow), columnIndex-1);
+            wasNull.set(value == null);
+            return value;
+        } catch (SQLException e) {
+            throw new SQLException(e.getMessage());
+        }
     }
 
     @Override
@@ -107,48 +116,33 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
 
     @Override
     protected Object getValue(Object row, String columnLabel) throws SQLException {
+        errorOutIfClosed();
         int columnIndex = getColumnIndexByName(columnLabel);
         return getValue(row, columnIndex);
     }
 
     private Object getValue(Object row, int columnIndex) throws SQLException {
-        ListValue listValueRow = (ListValue) row;
-        if(columnIndex >= listValueRow.getValuesCount()) {
-            return null;
-        }
-        return valueToObject(listValueRow.getValues(columnIndex));
-    }
-
-    private static Object valueToObject(Value value) {
-        switch (value.getKindCase()) {
-            case NULL_VALUE:
-                return null;
-            case NUMBER_VALUE:
-                return value.getNumberValue();
-            case STRING_VALUE:
-                return value.getStringValue();
-            case BOOL_VALUE:
-                return value.getBoolValue();
-            default:
-                throw new IllegalArgumentException(String.format("Unsupported protobuf value %s", value));
-        }
+        return ((ArrayList) row).get(columnIndex);
     }
 
     private int getColumnIndexByName(String columnName) throws SQLException {
-        return ((QueryServiceResultSetMetaData)resultSetMetaData).getColumnNameToPosition().get(columnName);
+        return ((QueryServiceResultSetMetaData) resultSetMetaData)
+            .getColumnNameToPosition()
+            .get(columnName);
     }
 
     private void getNextChunk() throws SQLException {
         log.trace("Fetching page with number {} for resultset {}", ++currentPageNum, this);
-        AnsiSqlQueryStreamResponse nextChunk = null;
         try {
-            nextChunk = responseIterator.next();
+            List<Object> rows = arrowUtil.getRowsFromStreamResponse();
+            if (rows != null) {
+                this.data = rows;
+                currentRow = 0;
+            }
         } catch (Exception e) {
             log.error("Error while getting the data chunk {}", this, e);
             throw new SQLException(e.getMessage());
         }
-
-        updateState(nextChunk);
     }
 
     @Override
@@ -159,16 +153,6 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
     @Override
     protected void updateState(ResultSet resultSet) throws SQLException {
         throw new SQLException("This method is not implemented");
-    }
-
-    protected void updateState(AnsiSqlQueryStreamResponse nextChunk) throws SQLException {
-        try {
-            this.data = nextChunk == null ? new ArrayList<>() : nextChunk.getResponseChunk().getRowsList();
-            this.currentRow = 0;
-        } catch (Exception e) {
-            log.error("Error while getting the data from resultset {}", this, e);
-            throw new SQLException(e.getMessage());
-        }
     }
 
     @Override
@@ -183,7 +167,7 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
 
     private boolean isNextChunkPresent() throws SQLException {
         try {
-            return responseIterator.hasNext();
+            return arrowUtil.isNextChunkPresent();
         } catch (Exception e) {
             log.error("Exception while fetching next chunk ", e);
             throw new SQLException(e.getMessage());

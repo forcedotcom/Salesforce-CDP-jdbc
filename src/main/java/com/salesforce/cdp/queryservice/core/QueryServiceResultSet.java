@@ -415,7 +415,7 @@ public class QueryServiceResultSet implements ResultSet {
             wasNull.set(true);
             return null;
         }
-        return new BigDecimal(getString(columnLabel));
+        return new BigDecimal(value);
     }
 
     @Override
@@ -820,15 +820,19 @@ public class QueryServiceResultSet implements ResultSet {
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
         errorOutIfClosed();
         Object value = getObject(columnLabel);
-        if (wasNull() || StringUtils.EMPTY.equals(value)) {
+        if (wasNull() || value== null || StringUtils.EMPTY.equals(value)) {
             wasNull.set(true);
             return null;
         }
 
+        // TODO: optimize date parsing. Can we avoid doing this for each row?
         String[] formats = new String[] {dateWithMsTz, dateISOStandard, dateWithSeconds, dateSimple, dateIn12HourFormat};
         try {
             String valueString = value.toString();
             java.util.Date date = DateUtils.parseDate(valueString, formats);
+            if(date== null) {
+                throw new SQLException("Invalid date from server: " + value);
+            }
             return new java.sql.Date(date.getTime());
         }
         catch (IllegalArgumentException e) {

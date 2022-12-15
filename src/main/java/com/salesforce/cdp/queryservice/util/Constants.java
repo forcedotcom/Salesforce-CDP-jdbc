@@ -131,4 +131,7 @@ public class Constants {
 
     public static final String BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----";
     public static final String END_PRIVATE_KEY = "-----END PRIVATE KEY-----";
+    public static final int END_OF_STREAM = -1;
+    public static final int START_OF_STREAM = 0;
+    public static final String DATE_ISO_STD = "yyyy-MM-dd'T'HH:mm:ss";
 }
