@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.DateUtils;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -28,8 +29,6 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -37,15 +36,10 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.salesforce.cdp.queryservice.util.Messages.QUERY_EXCEPTION;
-
 @Slf4j
 public class QueryServiceResultSet implements ResultSet {
 
-    protected List<Object> data;
-    private int currentRow = -1;
     private final AtomicBoolean closed = new AtomicBoolean();
-    private final AtomicBoolean wasNull = new AtomicBoolean();
     protected ResultSetMetaData resultSetMetaData;
 
     //To fix the Invalid Date format issue
@@ -53,9 +47,16 @@ public class QueryServiceResultSet implements ResultSet {
     private final String dateISOStandard = "yyyy-MM-dd'T'HH:mm:ss";
     private final String dateWithSeconds = "yyyy-MM-dd HH:mm:ss";
     private final String dateWithMsTz = "yyyy-MM-dd HH:mm:ss.SSS Z";
-    
+    private final String dateIn12HourFormat = "MMM d, yyyy, HH:mm:ss a";
+
+    protected List<Object> data;
+    protected int currentRow = -1;
+    protected int currentPageNum = 1;
+    protected final AtomicBoolean wasNull = new AtomicBoolean();
+
     protected QueryServiceAbstractStatement statement;
-    private int currentPageNum = 1;
+
+    public QueryServiceResultSet() {}
 
     // NOTE: This constructor is used for metadata table, hence only data and resultSetMetadata is set.
     public QueryServiceResultSet(List<Object> data,
@@ -414,7 +415,7 @@ public class QueryServiceResultSet implements ResultSet {
             wasNull.set(true);
             return null;
         }
-        return new BigDecimal(getString(columnLabel));
+        return new BigDecimal(value);
     }
 
     @Override
@@ -814,34 +815,29 @@ public class QueryServiceResultSet implements ResultSet {
         return getDate(columnNameByIndex, cal);
     }
 
-    //Handle multiple date formats one by one
+    //Handle multiple date formats
     @Override
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
         errorOutIfClosed();
         Object value = getObject(columnLabel);
-        if (wasNull() || StringUtils.EMPTY.equals(value)) {
+        if (wasNull() || value== null || StringUtils.EMPTY.equals(value)) {
             wasNull.set(true);
             return null;
         }
-        String[] formats = new String[] {dateWithMsTz, dateISOStandard, dateWithSeconds, dateSimple};
+
+        // TODO: optimize date parsing. Can we avoid doing this for each row?
+        String[] formats = new String[] {dateWithMsTz, dateISOStandard, dateWithSeconds, dateSimple, dateIn12HourFormat};
         try {
             String valueString = value.toString();
-            for (String format: formats) {
-                SimpleDateFormat sdFormat = new SimpleDateFormat(format);
-                sdFormat.setTimeZone(cal.getTimeZone());
-                try {
-                    cal.setTime(sdFormat.parse(valueString));
-                    return new Date(cal.getTimeInMillis());
-                } catch (ParseException e) {
-                    log.info("QSRS: caught exp {}", e.getMessage());
-                    log.warn("QSRS: Date format does not match the formatter, trying another format", e);
-                }
+            java.util.Date date = DateUtils.parseDate(valueString, formats);
+            if(date== null) {
+                throw new SQLException("Invalid date from server: " + value);
             }
+            return new java.sql.Date(date.getTime());
         }
         catch (IllegalArgumentException e) {
             throw new SQLException("Invalid date from server: " + value, e);
         }
-        return null;
     }
 
     @Override
@@ -1225,7 +1221,7 @@ public class QueryServiceResultSet implements ResultSet {
         return statement != null && statement.isPaginationRequired();
     }
 
-    private void errorOutIfClosed() throws SQLException {
+    protected void errorOutIfClosed() throws SQLException {
         if (isClosed()) {
             throw new SQLException("Resultset is already closed");
         }

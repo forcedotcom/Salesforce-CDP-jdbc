@@ -54,6 +54,7 @@ public class Constants {
     // HTTP Client Constants
     public static final String AUTHORIZATION = "Authorization";
     public static final String USER_AGENT = "User-Agent";
+    public static final String USER_AGENT_GRPC = "User-Agent-Grpc";
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String USER_AGENT_VALUE = "cdp/jdbc";
     public static final String TABLEAU_USER_AGENT_VALUE = "Tableau/Audiences360";
@@ -62,6 +63,7 @@ public class Constants {
     public static final String ENABLE_ARROW_STREAM = "enable-arrow-stream";
     public static final String CURSOR_BASED_PAGINATION = "cursor-based-pagination";
     public static final String DISABLE_SOCKS_PROXY = "disableSocksProxy";
+    public static final String ENABLE_STREAM_FLOW = "enable-stream-flow";
 
     // Property Constants
     public static final String CORETOKEN = "coreToken";
@@ -121,4 +123,7 @@ public class Constants {
 
     public static final String BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----";
     public static final String END_PRIVATE_KEY = "-----END PRIVATE KEY-----";
+    public static final int END_OF_STREAM = -1;
+    public static final int START_OF_STREAM = 0;
+    public static final String DATE_ISO_STD = "yyyy-MM-dd'T'HH:mm:ss";
 }
