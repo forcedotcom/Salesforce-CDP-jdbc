@@ -6,7 +6,7 @@
 
     <groupId>com.queryService</groupId>
     <artifactId>Salesforce-CDP-jdbc</artifactId>
-    <version>1.15.0</version>
+    <version>1.16.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -202,7 +202,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.19.2</version>
+            <version>3.19.6</version>
         </dependency>
     </dependencies>
 

@@ -46,7 +46,7 @@ public class QueryServiceConnection implements Connection {
     private boolean enableArrowStream = false;
     private boolean isCursorBasedPaginationReq = true;
     private final boolean isSocksProxyDisabled;
-    private boolean enableStreamFlow = true;
+    private boolean enableStreamFlow = false;
     private String tenantUrl;
     private QueryEngineEnum queryEngineEnum;
 

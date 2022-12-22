@@ -6,12 +6,14 @@ import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.BigIntVector;
 import org.apache.arrow.vector.BitVector;
 import org.apache.arrow.vector.DateDayVector;
+import org.apache.arrow.vector.DateMilliVector;
 import org.apache.arrow.vector.DecimalVector;
 import org.apache.arrow.vector.FieldVector;
 import org.apache.arrow.vector.Float4Vector;
 import org.apache.arrow.vector.Float8Vector;
 import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.SmallIntVector;
+import org.apache.arrow.vector.TimeMilliVector;
 import org.apache.arrow.vector.TimeNanoVector;
 import org.apache.arrow.vector.TimeStampMilliTZVector;
 import org.apache.arrow.vector.TimeStampMilliVector;
@@ -135,6 +137,10 @@ public class ArrowUtil {
 			return (int) ((BitVector) fieldVector).get(index) == 1;
 		} else if (type == Types.MinorType.DATEDAY) {
 			return ((DateDayVector)fieldVector).getObject(index);
+		} else if (type == Types.MinorType.DATEMILLI) {
+			return ((DateMilliVector)fieldVector).getObject(index);
+		} else if (type == Types.MinorType.TIMEMILLI) {
+			return ((TimeMilliVector) fieldVector).getObject(index);
 		} else if (type == Types.MinorType.TIMENANO) {
 			return ((TimeNanoVector) fieldVector).getObject(index);
 		} else if (type == Types.MinorType.TIMESTAMPNANOTZ) {
