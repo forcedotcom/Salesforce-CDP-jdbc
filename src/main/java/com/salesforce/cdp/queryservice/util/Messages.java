@@ -19,4 +19,6 @@ public class Messages {
 
     public static String RENEW_TOKEN = "Failed to Renew Token. Please retry";
 
+    public static String QUERY_CONFIG_ERROR = "Failed to get config from the server";
+
 }
