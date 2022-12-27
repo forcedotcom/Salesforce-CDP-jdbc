@@ -19,6 +19,7 @@ package com.salesforce.cdp.queryservice.core;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
+import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
 import com.salesforce.cdp.queryservice.model.QueryServiceResponse;
 import com.salesforce.cdp.queryservice.model.Type;
 import com.salesforce.cdp.queryservice.util.ArrowUtil;
@@ -80,7 +81,7 @@ public abstract class QueryServiceAbstractStatement {
     public ResultSet executeQuery(String sql) throws SQLException {
         try {
             this.sql = sql;
-            boolean isEnableStreamFlow = this.connection.isEnableStreamFlow();
+            QueryEngineEnum engineEnum = this.connection.getQueryEngineEnum();
 
             boolean isCursorBasedPaginationReq = this.connection.isCursorBasedPaginationReq();
 
@@ -88,7 +89,7 @@ public abstract class QueryServiceAbstractStatement {
             Optional<Integer> limit = requireManagedPagination ? Optional.of(Constants.MAX_LIMIT) : Optional.empty();
             Optional<String> orderby = requireManagedPagination ? Optional.of("1 ASC") : Optional.empty();
 
-            if(isEnableStreamFlow) {
+            if (QueryEngineEnum.HYPER == engineEnum) {
                 Iterator<AnsiSqlQueryStreamResponse> response = queryGrpcExecutor.executeQueryWithRetry(sql);
                 return createResultSetFromResponse(response);
             } else {

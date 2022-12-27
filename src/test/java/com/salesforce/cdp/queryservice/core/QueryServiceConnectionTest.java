@@ -16,6 +16,8 @@
 
 package com.salesforce.cdp.queryservice.core;
 
+import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
+import com.salesforce.cdp.queryservice.model.QueryConfigResponse;
 import com.salesforce.cdp.queryservice.util.Constants;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -32,11 +34,9 @@ import java.util.Properties;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.doCallRealMethod;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.doThrow;
-import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
 import static org.powermock.api.support.membermodification.MemberModifier.replace;
@@ -115,13 +115,11 @@ public class QueryServiceConnectionTest {
 
         QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
         doCallRealMethod().when(connection).isValid(anyInt());
-        QueryServicePreparedStatement preparedStatement = mock(QueryServicePreparedStatement.class);
-        doReturn(preparedStatement).when(connection).prepareStatement(anyString());
-        doReturn(true).when(preparedStatement).execute();
 
+        doReturn(getQueryConfigResponseTrino()).when(connection).getQueryConfigResponse();
         assertThat(connection.isValid(10)).isTrue();
 
-        doThrow(new SQLException()).when(preparedStatement).execute();
+        doThrow(new SQLException()).when(connection).getQueryConfigResponse();
         Throwable ex = catchThrowableOfType(() -> {
             connection.isValid(10);
         }, SQLException.class);
@@ -146,13 +144,10 @@ public class QueryServiceConnectionTest {
 
         QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
         doCallRealMethod().when(connection).isValid(anyInt());
-        QueryServicePreparedStatement preparedStatement = mock(QueryServicePreparedStatement.class);
-        doReturn(preparedStatement).when(connection).prepareStatement(anyString());
-        doReturn(true).when(preparedStatement).execute();
-
+        doReturn(getQueryConfigResponseTrino()).when(connection).getQueryConfigResponse();
         assertThat(connection.isValid(10)).isTrue();
 
-        doThrow(new SQLException()).when(preparedStatement).execute();
+        doThrow(new SQLException()).when(connection).getQueryConfigResponse();
         Throwable ex = catchThrowableOfType(() -> {
             connection.isValid(10);
         }, SQLException.class);
@@ -177,13 +172,10 @@ public class QueryServiceConnectionTest {
 
         QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
         doCallRealMethod().when(connection).isValid(anyInt());
-        QueryServicePreparedStatement preparedStatement = mock(QueryServicePreparedStatement.class);
-        doReturn(preparedStatement).when(connection).prepareStatement(anyString());
-        doReturn(true).when(preparedStatement).execute();
-
+        doReturn(getQueryConfigResponseHyper()).when(connection).getQueryConfigResponse();
         assertThat(connection.isValid(10)).isTrue();
 
-        doThrow(new SQLException()).when(preparedStatement).execute();
+        doThrow(new SQLException()).when(connection).getQueryConfigResponse();
         Throwable ex = catchThrowableOfType(() -> {
             connection.isValid(10);
         }, SQLException.class);
@@ -194,25 +186,17 @@ public class QueryServiceConnectionTest {
         assertThat(connection.isValid(10)).isFalse();
     }
 
-    @Test
-    @DisplayName("Verify gRPC connection setup - username/password flow with fallback")
-    public void testGrpcIsValidWithFallback() throws SQLException {
-        replace(MemberMatcher.method(QueryServiceConnection.class, "isValid"))
-                .with((o, m, args) -> {return true;});
+    private QueryConfigResponse getQueryConfigResponseTrino() {
+        return getQueryConfigResponse(QueryEngineEnum.TRINO);
+    }
 
-        String serverUrl = "jdbc:queryService-jdbc:mysample://something.my.salesforce.com/";
-        Properties properties = new Properties();
-        properties.put(Constants.USER_NAME, "test-user");
-        properties.put(Constants.USER, "test-user-12");
-        properties.put(Constants.ENABLE_STREAM_FLOW, "true");
+    private QueryConfigResponse getQueryConfigResponseHyper() {
+        return getQueryConfigResponse(QueryEngineEnum.HYPER);
+    }
 
-        QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
-        doCallRealMethod().when(connection).isValid(anyInt());
-        QueryServicePreparedStatement preparedStatement = mock(QueryServicePreparedStatement.class);
-        doReturn(preparedStatement).when(connection).prepareStatement(anyString());
-
-        // 1st time throw exception, 2nd time return true
-        doThrow(new SQLException()).doReturn(true).when(preparedStatement).execute();
-        assertThat(connection.isValid(10)).isTrue();
+    private QueryConfigResponse getQueryConfigResponse(QueryEngineEnum queryEngineEnum) {
+        QueryConfigResponse queryConfigResponse = new QueryConfigResponse();
+        queryConfigResponse.setQueryengine(queryEngineEnum.toString());
+        return queryConfigResponse;
     }
 }

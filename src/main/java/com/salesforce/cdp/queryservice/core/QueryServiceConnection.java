@@ -17,21 +17,27 @@
 package com.salesforce.cdp.queryservice.core;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
+import com.salesforce.cdp.queryservice.model.QueryConfigResponse;
 import com.salesforce.cdp.queryservice.model.Token;
 import com.salesforce.cdp.queryservice.util.Constants;
+import com.salesforce.cdp.queryservice.util.HttpHelper;
+import com.salesforce.cdp.queryservice.util.QueryExecutor;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.salesforce.cdp.queryservice.util.Messages.QUERY_CONFIG_ERROR;
+
 @Slf4j
 public class QueryServiceConnection implements Connection {
-
-    private static final String TEST_CONNECT_QUERY = "select 1";
 
     private AtomicBoolean closed = new AtomicBoolean(false);
     private Properties properties;
@@ -42,6 +48,7 @@ public class QueryServiceConnection implements Connection {
     private final boolean isSocksProxyDisabled;
     private boolean enableStreamFlow = false;
     private String tenantUrl;
+    private QueryEngineEnum queryEngineEnum;
 
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
         this.properties = properties; // fixme: do deepCopy and modify the props
@@ -116,6 +123,10 @@ public class QueryServiceConnection implements Connection {
     public boolean updateStreamFlow(boolean flag) {
         enableStreamFlow = flag;
         return enableStreamFlow;
+    }
+
+    public QueryEngineEnum getQueryEngineEnum() {
+        return queryEngineEnum;
     }
 
     @Override
@@ -328,17 +339,12 @@ public class QueryServiceConnection implements Connection {
         }
 
         try {
-            PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY);
-            return statement.execute();
+            QueryConfigResponse configResponse = getQueryConfigResponse();
+            this.queryEngineEnum = QueryEngineEnum.fromValue(configResponse.getQueryengine());
+
+            return true;
         } catch (Exception e) {
             log.error("Exception while connecting to server", e);
-            if(isEnableStreamFlow()) {
-                // use http v2 api if hyper gRPC call is failing
-                updateStreamFlow(false);
-                try(PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY)) {
-                    return statement.execute();
-                }
-            }
             throw e;
         }
     }
@@ -433,5 +439,21 @@ public class QueryServiceConnection implements Connection {
 
     public void setTenantUrl(String tenantUrl) {
         this.tenantUrl = tenantUrl;
+    }
+
+    private QueryExecutor createQueryExecutor() {
+        return new QueryExecutor(this);
+    }
+
+    QueryConfigResponse getQueryConfigResponse() throws SQLException {
+        try {
+            QueryExecutor executor = createQueryExecutor();
+            Response response = executor.getQueryConfig();
+
+            return HttpHelper.handleSuccessResponse(response, QueryConfigResponse.class, false);
+        } catch (IOException e) {
+            log.error("Exception while getting config from query service", e);
+            throw new SQLException(QUERY_CONFIG_ERROR, e);
+        }
     }
 }
