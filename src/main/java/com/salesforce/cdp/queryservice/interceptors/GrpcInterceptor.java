@@ -35,7 +35,14 @@ public class GrpcInterceptor implements ClientInterceptor {
             Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER), authHeaders.get(Constants.ACCESS_TOKEN));
 
         if (properties.containsKey(Constants.USER_AGENT)) {
-          headers.put(Key.of(Constants.USER_AGENT_GRPC, Metadata.ASCII_STRING_MARSHALLER), properties.get(Constants.USER_AGENT).toString());
+          String enableV2InGRPCStream = System.getenv("enableV2InGRPCStream");
+          if(Boolean.parseBoolean(enableV2InGRPCStream) == true) {
+            headers.put(Key.of(Constants.USER_AGENT_GRPC, Metadata.ASCII_STRING_MARSHALLER), properties.get(Constants.USER_AGENT).toString() + "-JDBCV2STREAM");
+          }
+          else {
+            headers.put(Key.of(Constants.USER_AGENT_GRPC, Metadata.ASCII_STRING_MARSHALLER), properties.get(Constants.USER_AGENT).toString());
+          }
+
         } else {
           headers.put(Key.of(Constants.USER_AGENT_GRPC, Metadata.ASCII_STRING_MARSHALLER), Constants.USER_AGENT_VALUE);
         }

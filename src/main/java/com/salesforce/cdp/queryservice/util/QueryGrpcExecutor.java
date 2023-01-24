@@ -90,19 +90,27 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
         try {
             return Failsafe.with(retryPolicy)
                     .get(() -> {
-                        long startTime = System.currentTimeMillis();
-                        AtomicReference<Metadata> headers = new AtomicReference<Metadata>();
-                        AtomicReference<Metadata> trailers = new AtomicReference<Metadata>();
-                        Iterator<AnsiSqlQueryStreamResponse> response = executeQuery(sql, headers, trailers);
-                        // This checks if there is failure in first chunk itself.
-                        // NOTE: failure in later chunks is not handled intentionally here.
-                        // as in that case, we expect a new request from client.
-                        response.hasNext();
+                        try{
+                            long startTime = System.currentTimeMillis();
+                            AtomicReference<Metadata> headers = new AtomicReference<Metadata>();
+                            AtomicReference<Metadata> trailers = new AtomicReference<Metadata>();
+                            Iterator<AnsiSqlQueryStreamResponse> response = executeQuery(sql, headers, trailers);
+                            // This checks if there is failure in first chunk itself.
+                            // NOTE: failure in later chunks is not handled intentionally here.
+                            // as in that case, we expect a new request from client.
+                            response.hasNext();
 
-                        String traceId = getTraceIdFromGrpcResponseHeader(headers);
-                        log.info("Time taken to get first chunk for traceId {} is {} ms", traceId, System.currentTimeMillis() - startTime);
+                            String traceId = getTraceIdFromGrpcResponseHeader(headers);
+                            log.info("Time taken to get first chunk for traceId {} is {} ms", traceId, System.currentTimeMillis() - startTime);
 
-                        return response;
+                            return response;
+                        }
+                        catch (Exception e) {
+//                            log.info("Palani Failed " + e.getMessage());
+//                            log.info("Palani " + e.getStackTrace());
+                            throw e;
+                        }
+
                     });
         } catch (FailsafeException e) {
             if (e.getCause() != null) {

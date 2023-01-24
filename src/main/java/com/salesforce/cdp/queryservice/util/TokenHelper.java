@@ -61,6 +61,10 @@ public class TokenHelper {
         //NOOP
     }
 
+    public static boolean tokenExistsInCache(String coreToken) {
+        return tokenCache.getIfPresent(coreToken) != null;
+    }
+
     /**
      * Gets the token for specified credentials
      *

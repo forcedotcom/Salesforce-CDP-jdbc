@@ -18,6 +18,7 @@ package com.salesforce.cdp.queryservice.util;
 
 import com.google.gson.Gson;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
+import com.salesforce.cdp.queryservice.interceptors.HttpEventListener;
 import com.salesforce.cdp.queryservice.interceptors.RetryInterceptor;
 import com.salesforce.cdp.queryservice.model.AnsiQueryRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -29,16 +30,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class QueryExecutor extends QueryTokenExecutor {
 
     private static final OkHttpClient DEFAULT_QUERY_CLIENT;
     static {
+
         // By default, add retry interceptors only for query service related calls
         // todo: delay adding retry interceptor so that user configured value can be used
         DEFAULT_QUERY_CLIENT = DEFAULT_CLIENT.newBuilder()
                 .addInterceptor(new RetryInterceptor(DEFAULT_MAX_RETRY))
+                .eventListener(new HttpEventListener())
+                .connectionPool(new ConnectionPool(30, 5, TimeUnit.MINUTES))
                 .build();
     }
 
@@ -121,7 +126,8 @@ public class QueryExecutor extends QueryTokenExecutor {
         // use queryClient to fetch metadata or to execute the query
         Response response = queryClient.newCall(request).execute();
         long endTime = System.currentTimeMillis();
-        log.info("Total time taken to get response for url {} is {} ms", request.url(), endTime - startTime);
+        String traceId = response.header(Constants.TRACE_ID);
+        log.info("Total time taken to get response for url {} is {} ms with traceid {}", request.url(), endTime - startTime, traceId);
         return response;
     }
 }

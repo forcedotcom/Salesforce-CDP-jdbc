@@ -19,6 +19,7 @@ package com.salesforce.cdp.queryservice.core;
 import com.google.common.annotations.VisibleForTesting;
 import com.salesforce.cdp.queryservice.model.Token;
 import com.salesforce.cdp.queryservice.util.Constants;
+import com.salesforce.cdp.queryservice.util.TokenHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -58,7 +59,14 @@ public class QueryServiceConnection implements Connection {
         this.isSocksProxyDisabled = Boolean.parseBoolean(this.properties.getProperty(Constants.DISABLE_SOCKS_PROXY));
 
         // default `enableStreamFlow` is false
-        enableStreamFlow = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_STREAM_FLOW, Constants.FALSE_STR));
+        if(this.properties.containsKey(Constants.ENABLE_STREAM_FLOW)) {
+            enableStreamFlow = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_STREAM_FLOW, Constants.FALSE_STR));
+        }
+        String streamFlow = System.getenv("enablestreamflow");
+        if(Boolean.parseBoolean(streamFlow) == true) {
+            enableStreamFlow = true;
+        }
+
 
         // use isValid to test connection
         this.isValid(20);
@@ -351,8 +359,16 @@ public class QueryServiceConnection implements Connection {
         }
 
         try {
-            PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY);
-            return statement.execute();
+            if(properties.containsKey(Constants.CORETOKEN) && TokenHelper.tokenExistsInCache(this.properties.getProperty(Constants.CORETOKEN))) {
+                log.info("Reusing connection");
+                return true;
+            }
+            else {
+
+                PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY);
+                return statement.execute();
+            }
+
         } catch (Exception e) {
             log.error("Exception while connecting to server", e);
             if(isEnableStreamFlow()) {
