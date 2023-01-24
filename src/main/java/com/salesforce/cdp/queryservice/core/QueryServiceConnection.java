@@ -462,4 +462,12 @@ public class QueryServiceConnection implements Connection {
             throw new SQLException(QUERY_CONFIG_ERROR, e);
         }
     }
+
+    public CharSequence getDataspace() {
+        return properties.getProperty(Constants.DATASPACE);
+    }
+
+    public void setDataspace(String dataspace) {
+        properties.put(Constants.DATASPACE,dataspace);
+    }
 }

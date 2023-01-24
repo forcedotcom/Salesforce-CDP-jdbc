@@ -26,6 +26,7 @@ import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.FailsafeException;
 import net.jodah.failsafe.RetryPolicy;
 import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -129,6 +130,9 @@ public class QueryTokenExecutor {
                     .build();
         }
         return client;
+    }
+    protected String getCoreToken() throws SQLException, TokenException {
+        return Constants.BEARER + StringUtils.SPACE + TokenHelper.getCoreToken(connection.getClientInfo(),client);
     }
 
 }

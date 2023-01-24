@@ -16,6 +16,8 @@
 
 package com.salesforce.cdp.queryservice.core;
 
+import com.salesforce.cdp.queryservice.model.DataSpaceAttributes;
+import com.salesforce.cdp.queryservice.model.DataspaceResponse;
 import com.salesforce.cdp.queryservice.model.MetadataResponse;
 import com.salesforce.cdp.queryservice.model.TableMetadata;
 import com.salesforce.cdp.queryservice.util.Constants;
@@ -37,7 +39,7 @@ import static com.salesforce.cdp.queryservice.core.QueryServiceDbMetadata.*;
 
 @Slf4j
 public class QueryServiceMetadata implements DatabaseMetaData {
-    private String url;
+    private final String url;
     private Properties properties;
     private QueryServiceConnection queryServiceConnection;
     private QueryExecutor queryExecutor;
@@ -652,15 +654,64 @@ public class QueryServiceMetadata implements DatabaseMetaData {
     }
 
     @Override
-    public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
+    public ResultSet getTables(String catalog, String dataspace, String tableNamePattern, String[] types) throws SQLException {
+        log.info("Current dataspace :"+ queryServiceConnection.getDataspace());
+
+        log.info("Received dataspace :"+ dataspace);
+        if(StringUtils.isBlank(queryServiceConnection.getDataspace())){
+            queryServiceConnection.setDataspace(dataspace);
+            log.info("Selected schema :"+dataspace);
+        }
+        else if(!dataspace.equals(queryServiceConnection.getDataspace())){
+            throw new SQLException("Dataspace cannot be changed in the same connections");
+        }
         MetadataResponse metadataResponse = getMetadataResponse();
         return createTableResultSet(metadataResponse, tableNamePattern);
     }
 
     @Override
     public ResultSet getSchemas() throws SQLException {
+        if(isTableauClient()){
+            log.info("Tableau Client");
+            return getDataSpaces();
+        }
         return new QueryServiceResultSet(Collections.EMPTY_LIST,
                 new QueryServiceResultSetMetaData(GET_SCHEMAS));
+    }
+
+    private QueryServiceResultSet getDataSpaces() throws SQLException {
+        List<Object> data = new ArrayList<>();
+        try {
+            Response response = queryExecutor.getDataspaces();
+            log.info(response.toString());
+            if (!response.isSuccessful()) {
+                log.error("Dataspace request failed with response code {} and trace-Id {}",
+                        response.code(), response.headers().get(Constants.TRACE_ID));
+                HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
+            }
+           DataspaceResponse successResponse= HttpHelper.handleSuccessResponse(response,DataspaceResponse.class, false);
+           for(DataSpaceAttributes attributes :successResponse.getRecords()){
+                data.add(createDataSpaceRow(attributes));
+            }
+        } catch (Exception e) {
+            log.error("Exception while getting dataspace from query service", e);
+            throw new SQLException(METADATA_EXCEPTION, e);
+        }
+        QueryServiceDbMetadata dbMetadata = GET_SCHEMAS;
+        return   new QueryServiceResultSet(data, new QueryServiceResultSetMetaData(dbMetadata));
+    }
+
+    private Map<String, Object> createDataSpaceRow(DataSpaceAttributes attribute) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("TABLE_CAT", Constants.CATALOG);
+        row.put("TABLE_SCHEM", attribute.getName());
+        return row;
+    }
+
+    private boolean isTableauClient() {
+        String userAgent =String.valueOf(properties.get(Constants.USER_AGENT));
+        log.info("User Agent "+userAgent);
+        return StringUtils.isNotBlank(userAgent) && userAgent.equals(Constants.TABLEAU_USER_AGENT_VALUE);
     }
 
     @Override
@@ -1031,7 +1082,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
                 }
                 for (int i = 0; i < columns.size(); i++) {
                     HashMap<String, Object> columnMap = new LinkedHashMap<>();
-                    columnMap.put("TABLE_CAT", "catalog");
+                    columnMap.put("TABLE_CAT", Constants.CATALOG);
                     columnMap.put("TABLE_SCHEM", null);
                     columnMap.put("TABLE_NAME", tableNamePattern);
                     columnMap.put("COLUMN_NAME", columns.get(i).get("name"));
