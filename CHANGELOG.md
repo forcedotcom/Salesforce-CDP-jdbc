@@ -1,3 +1,7 @@
+# 1.17.0
+- Fix prepared statements to use 1-based indexes, See #117
+
+
 # :construction: 1.6
 - Fixing exceptions in metadata class.
 

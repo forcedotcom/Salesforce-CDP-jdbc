@@ -48,15 +48,15 @@ public class QueryServicePreparedStatementTest {
 
     @Test
     public void testWildCardReplacementForPreparedStatement() throws SQLException {
-        preparedStatement.setString(0, "Angella");
-        preparedStatement.setInt(1, 1000);
+        preparedStatement.setString(1, "Angella");
+        preparedStatement.setInt(2, 1000);
         String sql = preparedStatement.createSqlQuery();
         Assert.assertEquals(sql, "select FirstName__c, BirthDate__c, YearlyIncome__c from Individual__dlm where FirstName__c = 'Angella' and YearlyIncome__c > 1000");
     }
 
     @Test
     public void testSqlWithoutEnoughParameters() throws SQLException {
-        preparedStatement.setString(0, "Angella");
+        preparedStatement.setString(1, "Angella");
         exceptionRule.expect(SQLException.class);
         exceptionRule.expectMessage("Not enough parameters");
         preparedStatement.createSqlQuery();
@@ -67,7 +67,7 @@ public class QueryServicePreparedStatementTest {
         Date date = new Date(System.currentTimeMillis());
         preparedStatement = new QueryServicePreparedStatement(connection, "select FirstName__c, BirthDate__c from Individual__dlm where BirthDate__c > ?", ResultSet.TYPE_FORWARD_ONLY,
                 ResultSet.CONCUR_READ_ONLY);
-        preparedStatement.setDate(0, date);
+        preparedStatement.setDate(1, date);
         String sql = preparedStatement.createSqlQuery();
         Assert.assertEquals(sql, "select FirstName__c, BirthDate__c from Individual__dlm where BirthDate__c > " + date.toString());
     }
