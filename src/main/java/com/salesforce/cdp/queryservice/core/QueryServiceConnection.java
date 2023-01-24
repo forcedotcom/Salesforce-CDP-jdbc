@@ -54,7 +54,7 @@ public class QueryServiceConnection implements Connection {
         this.properties = properties; // fixme: do deepCopy and modify the props
         this.serviceRootUrl = getServiceRootUrl(url);
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
-        addClientSecretsIfRequired(serviceRootUrl, this.properties);
+        addClientUsernameIfRequired(this.properties);
 
         // default `enableArrowStream` is false
         enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
@@ -94,36 +94,13 @@ public class QueryServiceConnection implements Connection {
     /**
      * Adds client secrets to properties if not present and service url matches one of the existing envs.
      *
-     * @param serviceRootUrl service url which is used to infer the environment
      * @param properties Properties containing the config
      * @throws SQLException when given service url doesn't match any envs and config doesn't have exists secrets
      */
     @VisibleForTesting
-    static void addClientSecretsIfRequired(String serviceRootUrl, Properties properties) throws SQLException {
+    static void addClientUsernameIfRequired(Properties properties) throws SQLException {
         if (properties.containsKey(Constants.USER) && !properties.containsKey(Constants.USER_NAME)) {
             properties.put(Constants.USER_NAME, properties.get(Constants.USER));
-        }
-
-        if (properties.containsKey(Constants.USER_NAME)
-                && !properties.containsKey(Constants.CLIENT_ID)
-                && !properties.containsKey(Constants.CLIENT_SECRET)
-                && !properties.containsKey(Constants.PRIVATE_KEY)) {
-            log.debug("adding client secrets for server {}", serviceRootUrl);
-            String serverUrl = serviceRootUrl.toLowerCase();
-            if (serverUrl.endsWith(Constants.NA45_SERVER_URL)) {
-                properties.put(Constants.CLIENT_ID, Constants.NA45_DEFAULT_CLIENT_ID);
-                properties.put(Constants.CLIENT_SECRET, Constants.NA45_DEFAULT_CLIENT_SECRET);
-            } else if (serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
-                properties.put(Constants.CLIENT_ID, Constants.NA46_DEFAULT_CLIENT_ID);
-                properties.put(Constants.CLIENT_SECRET, Constants.NA46_DEFAULT_CLIENT_SECRET);
-            } else if (serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
-                properties.put(Constants.CLIENT_ID, Constants.PROD_DEFAULT_CLIENT_ID);
-                properties.put(Constants.CLIENT_SECRET, Constants.PROD_DEFAULT_CLIENT_SECRET);
-            } else {
-                throw new SQLException("specified url didn't match any existing envs");
-            }
-        } else {
-            log.debug("No client secrets added for server {}", serviceRootUrl);
         }
     }
 
