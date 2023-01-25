@@ -23,6 +23,7 @@ import com.salesforce.cdp.queryservice.model.Token;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
+import com.salesforce.cdp.queryservice.util.TokenHelper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
@@ -339,6 +340,11 @@ public class QueryServiceConnection implements Connection {
         }
 
         try {
+            if(properties.containsKey(Constants.CORETOKEN) && TokenHelper.tokenExistsInCache(this.properties.getProperty(Constants.CORETOKEN))) {
+                log.info("Reusing connection");
+                return true;
+            }
+
             QueryConfigResponse configResponse = getQueryConfigResponse();
             this.queryEngineEnum = QueryEngineEnum.fromValue(configResponse.getQueryengine());
 
