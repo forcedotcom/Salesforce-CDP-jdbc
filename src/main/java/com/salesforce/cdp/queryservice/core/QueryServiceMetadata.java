@@ -706,7 +706,6 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     private boolean isTableauClient() {
         String userAgent =String.valueOf(properties.get(Constants.USER_AGENT));
-        log.info("User Agent "+userAgent);
         return StringUtils.isNotBlank(userAgent) && userAgent.equals(Constants.TABLEAU_USER_AGENT_VALUE);
     }
 
