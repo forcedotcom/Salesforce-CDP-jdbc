@@ -655,12 +655,9 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public ResultSet getTables(String catalog, String dataspace, String tableNamePattern, String[] types) throws SQLException {
-        log.info("Current dataspace :"+ queryServiceConnection.getDataspace());
-
-        log.info("Received dataspace :"+ dataspace);
-        if(StringUtils.isBlank(queryServiceConnection.getDataspace())){
+         if(StringUtils.isBlank(queryServiceConnection.getDataspace())){
             queryServiceConnection.setDataspace(dataspace);
-            log.info("Selected schema :"+dataspace);
+            log.info("Selected dataspace :"+dataspace);
         }
         else if(!dataspace.equals(queryServiceConnection.getDataspace())){
             throw new SQLException("Dataspace cannot be changed in the same connections");
