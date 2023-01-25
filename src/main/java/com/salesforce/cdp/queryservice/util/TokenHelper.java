@@ -53,11 +53,11 @@ import static com.salesforce.cdp.queryservice.util.Messages.*;
 @Slf4j
 public class TokenHelper {
 
-    public static boolean isCoreTokenInvalidated() {
-        return coreTokenInvalidated;
+    public static boolean isCoreTokenExchanged() {
+       return coreTokenExchanged;
     }
 
-    private static boolean coreTokenInvalidated = false;
+    private static boolean coreTokenExchanged = false;
     private static Cache<String, Token> tokenCache = CacheBuilder.newBuilder()
             .expireAfterWrite(7200000, TimeUnit.MILLISECONDS)
             .maximumSize(100).build();
@@ -227,7 +227,7 @@ public class TokenHelper {
         try {
             Response response = login(requestBody, token_url, client);
             coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class, false);
-            coreTokenInvalidated = false;
+            coreTokenExchanged = false;
         }
         catch (IOException e) {
             log.error("Caught exception while renewing the core token", e);
@@ -242,6 +242,7 @@ public class TokenHelper {
         requestBody.put(Constants.GRANT_TYPE_NAME, Constants.GRANT_TYPE);
         requestBody.put(Constants.SUBJECT_TOKEN_TYPE_NAME, Constants.SUBJECT_TOKEN_TYPE);
         requestBody.put(Constants.SUBJECT_TOKEN, coreToken);
+        coreTokenExchanged=true;
         if(StringUtils.isNotBlank(dataspace)) {requestBody.put(Constants.DATASPACE,dataspace);}
         Calendar expire_time = Calendar.getInstance();
         Response response = null;
@@ -288,6 +289,7 @@ public class TokenHelper {
         FormBody.Builder formBody = new FormBody.Builder();
         requestBody.forEach(formBody::addEncoded);
         Map<String, String> headers = Collections.singletonMap(Constants.CONTENT_TYPE, Constants.URL_ENCODED_CONTENT);
+        log.info(requestBody.toString());
         try {
             Request request = HttpHelper.buildRequest(Constants.POST, url, formBody.build(), headers);
             Response response = client.newCall(request).execute();
@@ -314,7 +316,6 @@ public class TokenHelper {
             Request request = HttpHelper.buildRequest(Constants.POST, tokenRevokeUrl, formBody, headers);
             // Response is not needed for this call.
             client.newCall(request).execute();
-            coreTokenInvalidated = true;
         } catch (Exception e) {
             log.error("Revoking the core token failed", e);
         }
@@ -426,7 +427,7 @@ public class TokenHelper {
     }
 
     public static String getCoreToken(Properties connectionProperties, OkHttpClient client) throws TokenException {
-           if(TokenHelper.isCoreTokenInvalidated()){
+           if(TokenHelper.isCoreTokenExchanged()){
                 CoreTokenRenewResponse coreTokenRenewResponse = getCoreToken(connectionProperties.getProperty(Constants.LOGIN_URL), connectionProperties.getProperty(Constants.REFRESHTOKEN),
                         connectionProperties.getProperty(Constants.CLIENT_ID), connectionProperties.getProperty(Constants.CLIENT_SECRET), client);
                 return coreTokenRenewResponse.getAccess_token();

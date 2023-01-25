@@ -136,12 +136,10 @@ public class QueryExecutor extends QueryTokenExecutor {
         try{
 
         Properties connectionProperties = connection.getClientInfo();
-        log.info("Properties "+connectionProperties.toString());
         String url = connectionProperties.getProperty(Constants.LOGIN_URL)+Constants.DATASPACE_URL;
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.AUTHORIZATION,getCoreToken());
         headers.put(Constants.CONTENT_TYPE, Constants.JSON_CONTENT);
-        log.info("headers  "+ headers);
 
         Request request = HttpHelper.buildRequest(Constants.GET, url, null,headers );
         return getResponse(request);

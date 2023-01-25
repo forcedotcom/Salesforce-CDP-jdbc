@@ -132,4 +132,5 @@ public class Constants {
     public static final String DATASPACE_URL = "/services/data/v56.0/query/?q=SELECT+name+from+Dataspace";
     public static final String BEARER = "Bearer";
     public static final Object CATALOG ="catalog" ;
+    public static final int USER_ERROR = 400 ;
 }

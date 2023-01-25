@@ -672,7 +672,6 @@ public class QueryServiceMetadata implements DatabaseMetaData {
     @Override
     public ResultSet getSchemas() throws SQLException {
         if(isTableauClient()){
-            log.info("Tableau Client");
             return getDataSpaces();
         }
         return new QueryServiceResultSet(Collections.EMPTY_LIST,
@@ -683,16 +682,15 @@ public class QueryServiceMetadata implements DatabaseMetaData {
         List<Object> data = new ArrayList<>();
         try {
             Response response = queryExecutor.getDataspaces();
-            log.info(response.toString());
-            if (!response.isSuccessful()) {
-                log.error("Dataspace request failed with response code {} and trace-Id {}",
-                        response.code(), response.headers().get(Constants.TRACE_ID));
-                HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
+            if (response.isSuccessful()) {
+                DataspaceResponse successResponse= HttpHelper.handleSuccessResponse(response.body().string(),DataspaceResponse.class);
+                for(DataSpaceAttributes attributes :successResponse.getRecords()){
+                    data.add(createDataSpaceRow(attributes.getName()));
+                }
             }
-           DataspaceResponse successResponse= HttpHelper.handleSuccessResponse(response,DataspaceResponse.class, false);
-           for(DataSpaceAttributes attributes :successResponse.getRecords()){
-                data.add(createDataSpaceRow(attributes));
-            }
+           if(data.isEmpty()){
+               data.add(createDataSpaceRow("default"));
+           }
         } catch (Exception e) {
             log.error("Exception while getting dataspace from query service", e);
             throw new SQLException(METADATA_EXCEPTION, e);
@@ -701,10 +699,11 @@ public class QueryServiceMetadata implements DatabaseMetaData {
         return   new QueryServiceResultSet(data, new QueryServiceResultSetMetaData(dbMetadata));
     }
 
-    private Map<String, Object> createDataSpaceRow(DataSpaceAttributes attribute) {
+
+    private Map<String, Object> createDataSpaceRow(String dataspaceName) {
         Map<String, Object> row = new LinkedHashMap<>();
         row.put("TABLE_CAT", Constants.CATALOG);
-        row.put("TABLE_SCHEM", attribute.getName());
+        row.put("TABLE_SCHEM", dataspaceName);
         return row;
     }
 
@@ -967,7 +966,11 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
-        return null;
+        if(isTableauClient()){
+            return getDataSpaces();
+        }
+        return new QueryServiceResultSet(Collections.EMPTY_LIST,
+                new QueryServiceResultSetMetaData(GET_SCHEMAS));
     }
 
     @Override
