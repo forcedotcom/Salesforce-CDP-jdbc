@@ -135,7 +135,7 @@ public class QueryExecutor extends QueryTokenExecutor {
         // use queryClient to fetch metadata or to execute the query
         Response response = queryClient.newCall(request).execute();
         long endTime = System.currentTimeMillis();
-        log.info("Total time taken to get response for url {} is {} ms", request.url(), endTime - startTime);
+        log.info("Total time taken to get response for url {} is {} ms and traceid {}", request.url(), endTime - startTime, response.headers(Constants.TRACE_ID));
         return response;
     }
 }
