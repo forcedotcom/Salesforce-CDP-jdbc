@@ -17,6 +17,8 @@
 package com.salesforce.cdp.queryservice.core;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
 import com.salesforce.cdp.queryservice.model.QueryConfigResponse;
 import com.salesforce.cdp.queryservice.model.Token;
@@ -33,6 +35,7 @@ import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.salesforce.cdp.queryservice.util.Messages.QUERY_CONFIG_ERROR;
@@ -47,9 +50,12 @@ public class QueryServiceConnection implements Connection {
     private boolean enableArrowStream = false;
     private boolean isCursorBasedPaginationReq = true;
     private final boolean isSocksProxyDisabled;
-    private boolean enableStreamFlow = false;
+    private boolean enableStreamFlow = true;
     private String tenantUrl;
-    private QueryEngineEnum queryEngineEnum;
+    private final static Cache<String, QueryEngineEnum> queryEngineCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(1, TimeUnit.DAYS)
+            .maximumSize(100)
+            .build();
 
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
         this.properties = properties; // fixme: do deepCopy and modify the props
@@ -66,7 +72,7 @@ public class QueryServiceConnection implements Connection {
         this.isSocksProxyDisabled = Boolean.parseBoolean(this.properties.getProperty(Constants.DISABLE_SOCKS_PROXY));
 
         // default `enableStreamFlow` is false
-        enableStreamFlow = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_STREAM_FLOW, Constants.FALSE_STR));
+        enableStreamFlow = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_STREAM_FLOW, Constants.TRUE_STR));
 
         // use isValid to test connection
         this.isValid(20);
@@ -127,7 +133,8 @@ public class QueryServiceConnection implements Connection {
     }
 
     public QueryEngineEnum getQueryEngineEnum() {
-        return queryEngineEnum;
+        QueryEngineEnum queryEngine = queryEngineCache.getIfPresent(getTenantUrl());
+        return queryEngine == null ? QueryEngineEnum.TRINO : queryEngine;
     }
 
     @Override
@@ -340,14 +347,11 @@ public class QueryServiceConnection implements Connection {
         }
 
         try {
-            if(properties.containsKey(Constants.CORETOKEN) && TokenHelper.tokenExistsInCache(this.properties.getProperty(Constants.CORETOKEN))) {
-                log.info("Reusing connection");
+            if (this.getTenantUrl() != null && queryEngineCache.getIfPresent(this.getTenantUrl()) != null) {
                 return true;
             }
-
-            QueryConfigResponse configResponse = getQueryConfigResponse();
-            this.queryEngineEnum = QueryEngineEnum.fromValue(configResponse.getQueryengine());
-
+            QueryEngineEnum queryEngine = QueryEngineEnum.fromValue(getQueryConfigResponse().getQueryengine());
+            queryEngineCache.put(this.getTenantUrl(), queryEngine);
             return true;
         } catch (Exception e) {
             log.error("Exception while connecting to server", e);
