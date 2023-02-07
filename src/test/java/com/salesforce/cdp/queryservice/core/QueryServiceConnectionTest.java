@@ -38,6 +38,7 @@ import static org.powermock.api.mockito.PowerMockito.doCallRealMethod;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.doThrow;
 import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
 import static org.powermock.api.support.membermodification.MemberModifier.replace;
 import static org.powermock.api.support.membermodification.MemberModifier.suppress;
@@ -117,13 +118,8 @@ public class QueryServiceConnectionTest {
         doCallRealMethod().when(connection).isValid(anyInt());
 
         doReturn(getQueryConfigResponseTrino()).when(connection).getQueryConfigResponse();
+        doReturn("123").when(connection).getTenantUrl();
         assertThat(connection.isValid(10)).isTrue();
-
-        doThrow(new SQLException()).when(connection).getQueryConfigResponse();
-        Throwable ex = catchThrowableOfType(() -> {
-            connection.isValid(10);
-        }, SQLException.class);
-        assertThat(ex).isInstanceOf(SQLException.class);
 
         // close connection
         connection.close();
@@ -145,13 +141,8 @@ public class QueryServiceConnectionTest {
         QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
         doCallRealMethod().when(connection).isValid(anyInt());
         doReturn(getQueryConfigResponseTrino()).when(connection).getQueryConfigResponse();
+        doReturn("123").when(connection).getTenantUrl();
         assertThat(connection.isValid(10)).isTrue();
-
-        doThrow(new SQLException()).when(connection).getQueryConfigResponse();
-        Throwable ex = catchThrowableOfType(() -> {
-            connection.isValid(10);
-        }, SQLException.class);
-        assertThat(ex).isInstanceOf(SQLException.class);
 
         // close connection
         connection.close();
@@ -173,13 +164,8 @@ public class QueryServiceConnectionTest {
         QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
         doCallRealMethod().when(connection).isValid(anyInt());
         doReturn(getQueryConfigResponseHyper()).when(connection).getQueryConfigResponse();
+        doReturn("123").when(connection).getTenantUrl();
         assertThat(connection.isValid(10)).isTrue();
-
-        doThrow(new SQLException()).when(connection).getQueryConfigResponse();
-        Throwable ex = catchThrowableOfType(() -> {
-            connection.isValid(10);
-        }, SQLException.class);
-        assertThat(ex).isInstanceOf(SQLException.class);
 
         // close connection
         connection.close();

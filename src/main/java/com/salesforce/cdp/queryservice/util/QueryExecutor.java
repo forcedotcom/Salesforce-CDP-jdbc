@@ -109,6 +109,7 @@ public class QueryExecutor extends QueryTokenExecutor {
                 + Constants.CDP_URL
                 + Constants.QUERY_CONFIG_URL;
 
+        connection.setTenantUrl(tokenWithTenantUrl.get(Constants.TENANT_URL));
         Map<String, String> headers = createHeaders(tokenWithTenantUrl, false);
         headers.put(Constants.ENABLE_STREAM_FLOW, String.valueOf(this.connection.isEnableStreamFlow()));
 
