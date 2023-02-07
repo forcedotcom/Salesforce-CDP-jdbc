@@ -551,7 +551,7 @@ public class QueryServicePreparedStatement extends QueryServiceAbstractStatement
                 log.error("Not enough parameters to replace placeholders in query.");
                 throw new SQLException("Not enough parameters");
             }
-            Object parameter = parameters.get(parameterIndex++);
+            Object parameter = parameters.get(++parameterIndex);
             sqlQuery = sqlQuery.replaceFirst("\\?", parameter == null ? "null" : parameter.toString());
         }
         return sqlQuery;
