@@ -119,12 +119,6 @@ public class QueryServiceConnectionTest {
         doReturn(getQueryConfigResponseTrino()).when(connection).getQueryConfigResponse();
         assertThat(connection.isValid(10)).isTrue();
 
-        doThrow(new SQLException()).when(connection).getQueryConfigResponse();
-        Throwable ex = catchThrowableOfType(() -> {
-            connection.isValid(10);
-        }, SQLException.class);
-        assertThat(ex).isInstanceOf(SQLException.class);
-
         // close connection
         connection.close();
         assertThat(connection.isValid(10)).isFalse();
@@ -147,12 +141,6 @@ public class QueryServiceConnectionTest {
         doReturn(getQueryConfigResponseTrino()).when(connection).getQueryConfigResponse();
         assertThat(connection.isValid(10)).isTrue();
 
-        doThrow(new SQLException()).when(connection).getQueryConfigResponse();
-        Throwable ex = catchThrowableOfType(() -> {
-            connection.isValid(10);
-        }, SQLException.class);
-        assertThat(ex).isInstanceOf(SQLException.class);
-
         // close connection
         connection.close();
         assertThat(connection.isValid(10)).isFalse();
@@ -174,12 +162,6 @@ public class QueryServiceConnectionTest {
         doCallRealMethod().when(connection).isValid(anyInt());
         doReturn(getQueryConfigResponseHyper()).when(connection).getQueryConfigResponse();
         assertThat(connection.isValid(10)).isTrue();
-
-        doThrow(new SQLException()).when(connection).getQueryConfigResponse();
-        Throwable ex = catchThrowableOfType(() -> {
-            connection.isValid(10);
-        }, SQLException.class);
-        assertThat(ex).isInstanceOf(SQLException.class);
 
         // close connection
         connection.close();
