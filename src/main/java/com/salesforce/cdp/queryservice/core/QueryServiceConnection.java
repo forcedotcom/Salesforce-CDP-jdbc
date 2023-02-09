@@ -51,6 +51,8 @@ public class QueryServiceConnection implements Connection {
     private String tenantUrl;
     private QueryEngineEnum queryEngineEnum;
 
+    private boolean isValid = false;
+
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
         this.properties = properties; // fixme: do deepCopy and modify the props
         this.serviceRootUrl = getServiceRootUrl(url);
@@ -340,14 +342,14 @@ public class QueryServiceConnection implements Connection {
         }
 
         try {
-            if(properties.containsKey(Constants.CORETOKEN) && TokenHelper.tokenExistsInCache(this.properties.getProperty(Constants.CORETOKEN))) {
+            if(this.isValid) {
                 log.info("Reusing connection");
                 return true;
             }
 
             QueryConfigResponse configResponse = getQueryConfigResponse();
             this.queryEngineEnum = QueryEngineEnum.fromValue(configResponse.getQueryengine());
-
+            this.isValid = true;
             return true;
         } catch (Exception e) {
             log.error("Exception while connecting to server", e);
