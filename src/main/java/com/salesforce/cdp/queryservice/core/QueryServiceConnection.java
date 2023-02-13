@@ -67,8 +67,12 @@ public class QueryServiceConnection implements Connection {
 
         this.isSocksProxyDisabled = Boolean.parseBoolean(this.properties.getProperty(Constants.DISABLE_SOCKS_PROXY));
 
+        boolean isTableauConnection = Constants.TABLEAU_USER_AGENT_VALUE.equals(properties.getProperty(Constants.USER_AGENT));
+
         // default `enableStreamFlow` is false
-        enableStreamFlow = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_STREAM_FLOW, Constants.FALSE_STR));
+        enableStreamFlow = isTableauConnection || Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_STREAM_FLOW, Constants.FALSE_STR));
+
+        log.info("isTableauConnection {}, enableStreamFlow {}", isTableauConnection, enableStreamFlow);
 
         // use isValid to test connection
         this.isValid(20);
