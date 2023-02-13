@@ -17,21 +17,28 @@
 package com.salesforce.cdp.queryservice.core;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
+import com.salesforce.cdp.queryservice.model.QueryConfigResponse;
 import com.salesforce.cdp.queryservice.model.Token;
 import com.salesforce.cdp.queryservice.util.Constants;
+import com.salesforce.cdp.queryservice.util.HttpHelper;
+import com.salesforce.cdp.queryservice.util.QueryExecutor;
+import com.salesforce.cdp.queryservice.util.TokenHelper;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.salesforce.cdp.queryservice.util.Messages.QUERY_CONFIG_ERROR;
+
 @Slf4j
 public class QueryServiceConnection implements Connection {
-
-    private static final String TEST_CONNECT_QUERY = "select 1";
 
     private AtomicBoolean closed = new AtomicBoolean(false);
     private Properties properties;
@@ -42,12 +49,15 @@ public class QueryServiceConnection implements Connection {
     private final boolean isSocksProxyDisabled;
     private boolean enableStreamFlow = false;
     private String tenantUrl;
+    private QueryEngineEnum queryEngineEnum;
+
+    private boolean isValid = false;
 
     public QueryServiceConnection(String url, Properties properties) throws SQLException {
         this.properties = properties; // fixme: do deepCopy and modify the props
         this.serviceRootUrl = getServiceRootUrl(url);
         this.properties.put(Constants.LOGIN_URL, serviceRootUrl);
-        addClientSecretsIfRequired(serviceRootUrl, this.properties);
+        addClientUsernameIfRequired(this.properties);
 
         // default `enableArrowStream` is false
         enableArrowStream = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_ARROW_STREAM));
@@ -57,8 +67,12 @@ public class QueryServiceConnection implements Connection {
 
         this.isSocksProxyDisabled = Boolean.parseBoolean(this.properties.getProperty(Constants.DISABLE_SOCKS_PROXY));
 
+        boolean isTableauConnection = Constants.TABLEAU_USER_AGENT_VALUE.equals(properties.getProperty(Constants.USER_AGENT));
+
         // default `enableStreamFlow` is false
-        enableStreamFlow = Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_STREAM_FLOW, Constants.FALSE_STR));
+        enableStreamFlow = isTableauConnection || Boolean.parseBoolean(this.properties.getProperty(Constants.ENABLE_STREAM_FLOW, Constants.FALSE_STR));
+
+        log.info("isTableauConnection {}, enableStreamFlow {}", isTableauConnection, enableStreamFlow);
 
         // use isValid to test connection
         this.isValid(20);
@@ -87,36 +101,13 @@ public class QueryServiceConnection implements Connection {
     /**
      * Adds client secrets to properties if not present and service url matches one of the existing envs.
      *
-     * @param serviceRootUrl service url which is used to infer the environment
      * @param properties Properties containing the config
      * @throws SQLException when given service url doesn't match any envs and config doesn't have exists secrets
      */
     @VisibleForTesting
-    static void addClientSecretsIfRequired(String serviceRootUrl, Properties properties) throws SQLException {
+    static void addClientUsernameIfRequired(Properties properties) throws SQLException {
         if (properties.containsKey(Constants.USER) && !properties.containsKey(Constants.USER_NAME)) {
             properties.put(Constants.USER_NAME, properties.get(Constants.USER));
-        }
-
-        if (properties.containsKey(Constants.USER_NAME)
-                && !properties.containsKey(Constants.CLIENT_ID)
-                && !properties.containsKey(Constants.CLIENT_SECRET)
-                && !properties.containsKey(Constants.PRIVATE_KEY)) {
-            log.debug("adding client secrets for server {}", serviceRootUrl);
-            String serverUrl = serviceRootUrl.toLowerCase();
-            if (serverUrl.endsWith(Constants.NA45_SERVER_URL)) {
-                properties.put(Constants.CLIENT_ID, Constants.NA45_DEFAULT_CLIENT_ID);
-                properties.put(Constants.CLIENT_SECRET, Constants.NA45_DEFAULT_CLIENT_SECRET);
-            } else if (serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
-                properties.put(Constants.CLIENT_ID, Constants.NA46_DEFAULT_CLIENT_ID);
-                properties.put(Constants.CLIENT_SECRET, Constants.NA46_DEFAULT_CLIENT_SECRET);
-            } else if (serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
-                properties.put(Constants.CLIENT_ID, Constants.PROD_DEFAULT_CLIENT_ID);
-                properties.put(Constants.CLIENT_SECRET, Constants.PROD_DEFAULT_CLIENT_SECRET);
-            } else {
-                throw new SQLException("specified url didn't match any existing envs");
-            }
-        } else {
-            log.debug("No client secrets added for server {}", serviceRootUrl);
         }
     }
 
@@ -139,6 +130,10 @@ public class QueryServiceConnection implements Connection {
     public boolean updateStreamFlow(boolean flag) {
         enableStreamFlow = flag;
         return enableStreamFlow;
+    }
+
+    public QueryEngineEnum getQueryEngineEnum() {
+        return queryEngineEnum;
     }
 
     @Override
@@ -351,17 +346,17 @@ public class QueryServiceConnection implements Connection {
         }
 
         try {
-            PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY);
-            return statement.execute();
+            if(this.isValid) {
+                log.info("Reusing connection");
+                return true;
+            }
+
+            QueryConfigResponse configResponse = getQueryConfigResponse();
+            this.queryEngineEnum = QueryEngineEnum.fromValue(configResponse.getQueryengine());
+            this.isValid = true;
+            return true;
         } catch (Exception e) {
             log.error("Exception while connecting to server", e);
-            if(isEnableStreamFlow()) {
-                // use http v2 api if hyper gRPC call is failing
-                updateStreamFlow(false);
-                try(PreparedStatement statement = this.prepareStatement(TEST_CONNECT_QUERY)) {
-                    return statement.execute();
-                }
-            }
             throw e;
         }
     }
@@ -456,5 +451,21 @@ public class QueryServiceConnection implements Connection {
 
     public void setTenantUrl(String tenantUrl) {
         this.tenantUrl = tenantUrl;
+    }
+
+    private QueryExecutor createQueryExecutor() {
+        return new QueryExecutor(this);
+    }
+
+    QueryConfigResponse getQueryConfigResponse() throws SQLException {
+        try {
+            QueryExecutor executor = createQueryExecutor();
+            Response response = executor.getQueryConfig();
+
+            return HttpHelper.handleSuccessResponse(response, QueryConfigResponse.class, false);
+        } catch (IOException e) {
+            log.error("Exception while getting config from query service", e);
+            throw new SQLException(QUERY_CONFIG_ERROR, e);
+        }
     }
 }

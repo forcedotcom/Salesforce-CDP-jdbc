@@ -260,6 +260,10 @@ public class TokenHelper {
         return tokenWithUrlMap;
     }
 
+    public static boolean tokenExistsInCache(String coreToken) {
+        return tokenCache.getIfPresent(coreToken) != null;
+    }
+
     private static void clearToken(String tokenKey) {
         tokenCache.invalidate(tokenKey);
     }

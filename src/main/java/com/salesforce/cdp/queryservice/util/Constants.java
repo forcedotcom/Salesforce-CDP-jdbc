@@ -25,6 +25,7 @@ public class Constants {
     public static final String CDP_URL_V2 = "/api/v2";
     public static final String ANSI_SQL_URL = "/query";
     public static final String METADATA_URL = "/metadata";
+    public static final String QUERY_CONFIG_URL = "/query-config";
     public static final String TOKEN_EXCHANGE_URL = "/services/a360/token";
     public static final String TOKEN_REVOKE_URL = "/services/oauth2/revoke";
     public static final String CORE_TOKEN_URL = "/services/oauth2/token";
@@ -34,18 +35,10 @@ public class Constants {
     public static final String DRIVER_NAME = "QueryService-jdbc";
     public static final String DRIVER_VERSION = "1.0";
 
-    // Common client id and secret information
+    // Common server information
     public static final String PROD_SERVER_URL = ".salesforce.com";
-    public static final String PROD_DEFAULT_CLIENT_ID = "3MVG9VeAQy5y3BQVJqaUbFmV5jd8imcck2K5idmrTTGocSu9qZZ6qkbuEkxECKVYwmzm3WgvxkujqsxZDcBpL";
-    public static final String PROD_DEFAULT_CLIENT_SECRET = "1007FFFBA2B6B6B1EF21E2B03F4C4F692ADE10AB7DEF19E00D8AAF85EF6F6A12";
-
     public static final String NA45_SERVER_URL = "na45.test1.pc-rnd.salesforce.com";
-    public static final String NA45_DEFAULT_CLIENT_ID = "3MVG9XjhiDAzhaqaC4RR0yon8blsafwWlTnckUT8bEduWr0v9UpiQ2cJkmhNtFI1kVqpY8WpyE9JYkG.ZtgiE";
-    public static final String NA45_DEFAULT_CLIENT_SECRET = "84642974065EDF90CA6F30FFEE23E2C16BDFA84D3083EF90E0AE905FA46131AD";
-
     public static final String NA46_SERVER_URL = "na46.test1.pc-rnd.salesforce.com";
-    public static final String NA46_DEFAULT_CLIENT_ID = "3MVG9sA57VMGPDfeS67yma6IPflHn83FRhxVpmnuzp7R8uS42JYshQ7gWgWR63CQRgKL9gY5AfitSme.01ib6";
-    public static final String NA46_DEFAULT_CLIENT_SECRET = "BDAF015C3D2418008842CAE91B0C8DD2D672B41707FB11EA3CFC5A5392E31866";
 
     //Audience constants for different environments
     public static final String PROD_SERVER_AUD = "login.salesforce.com";

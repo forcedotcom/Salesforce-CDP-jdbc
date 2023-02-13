@@ -16,6 +16,8 @@
 
 package com.salesforce.cdp.queryservice.core;
 
+import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
+import com.salesforce.cdp.queryservice.model.QueryConfigResponse;
 import com.salesforce.cdp.queryservice.util.Constants;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -32,11 +34,9 @@ import java.util.Properties;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.doCallRealMethod;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.doThrow;
-import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
 import static org.powermock.api.support.membermodification.MemberModifier.replace;
@@ -66,8 +66,6 @@ public class QueryServiceConnectionTest {
         assertThat(rootUrl).isEqualTo("mysample://something.my.salesforce.com");
 
         assertThat(properties.getProperty(Constants.LOGIN_URL)).isEqualTo("mysample://something.my.salesforce.com");
-        assertThat(properties.getProperty(Constants.CLIENT_ID)).isEqualTo(Constants.PROD_DEFAULT_CLIENT_ID);
-        assertThat(properties.getProperty(Constants.CLIENT_SECRET)).isEqualTo(Constants.PROD_DEFAULT_CLIENT_SECRET);
         assertThat(properties.getProperty(Constants.USER_NAME)).isEqualTo("test-user");
 
         boolean isStreamEnabled = Whitebox.getInternalState(connection, "enableArrowStream");
@@ -84,8 +82,6 @@ public class QueryServiceConnectionTest {
         assertThat(rootUrl).isEqualTo("mysample://something.na45.test1.pc-rnd.salesforce.com");
 
         assertThat(properties.getProperty(Constants.LOGIN_URL)).isEqualTo("mysample://something.na45.test1.pc-rnd.salesforce.com");
-        assertThat(properties.getProperty(Constants.CLIENT_ID)).isEqualTo(Constants.NA45_DEFAULT_CLIENT_ID);
-        assertThat(properties.getProperty(Constants.CLIENT_SECRET)).isEqualTo(Constants.NA45_DEFAULT_CLIENT_SECRET);
         assertThat(properties.getProperty(Constants.USER_NAME)).isEqualTo("test-user-12");
 
         isStreamEnabled = Whitebox.getInternalState(connection, "enableArrowStream");
@@ -107,60 +103,6 @@ public class QueryServiceConnectionTest {
     }
 
     @Test
-    @DisplayName("Verify Addition of Client Secrets")
-    public void testAddingClientSecrets() throws Exception {
-        Properties properties = new Properties();
-        String serverUrl = "mysample://something.na46.test1.pc-rnd.salesforce.com";
-
-        properties.put(Constants.USER, "test-user-12");
-
-        assertThat(properties.size()).isEqualTo(1);
-        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
-        assertThat(properties.getProperty(Constants.USER_NAME)).isEqualTo("test-user-12");
-        assertThat(properties.getProperty(Constants.CLIENT_ID)).isEqualTo(Constants.NA46_DEFAULT_CLIENT_ID);
-        assertThat(properties.getProperty(Constants.CLIENT_SECRET)).isEqualTo(Constants.NA46_DEFAULT_CLIENT_SECRET);
-        assertThat(properties.size()).isEqualTo(4);
-
-        // case when no username is present
-        properties.clear();
-        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
-        assertThat(properties.size()).isEqualTo(0);
-
-        // case when only username is present
-        properties.clear();
-        properties.put(Constants.USER_NAME, "test-user");
-        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
-        assertThat(properties.size()).isEqualTo(3);
-
-        // case when username, clientId/clientSecret are present
-        properties.clear();
-        properties.put(Constants.USER_NAME, "test-user");
-        properties.put(Constants.CLIENT_ID, "bleh");
-        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
-        assertThat(properties.size()).isEqualTo(2);
-
-        properties.put(Constants.CLIENT_SECRET, "secret");
-        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
-        assertThat(properties.size()).isEqualTo(3);
-
-        // case when username and privateKey are present
-        properties.clear();
-        properties.put(Constants.USER_NAME, "test-user");
-        properties.put(Constants.PRIVATE_KEY, privateKey);
-        QueryServiceConnection.addClientSecretsIfRequired(serverUrl, properties);
-        assertThat(properties.size()).isEqualTo(2);
-
-        Throwable ex = catchThrowableOfType(() -> {
-            String url = "mysample://something.na46.test1.pc-rnd.example.com";
-            Properties configs = new Properties();
-            configs.put(Constants.USER, "Test-user-12");
-            QueryServiceConnection.addClientSecretsIfRequired(url, configs);
-        }, SQLException.class);
-        assertThat(ex).isInstanceOf(SQLException.class);
-        assertThat(ex.getMessage()).contains("specified url didn't match any existing envs");
-    }
-
-    @Test
     @DisplayName("Verify connection setup - username/password flow")
     public void testIsValid() throws SQLException {
         replace(MemberMatcher.method(QueryServiceConnection.class, "isValid"))
@@ -173,17 +115,9 @@ public class QueryServiceConnectionTest {
 
         QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
         doCallRealMethod().when(connection).isValid(anyInt());
-        QueryServicePreparedStatement preparedStatement = mock(QueryServicePreparedStatement.class);
-        doReturn(preparedStatement).when(connection).prepareStatement(anyString());
-        doReturn(true).when(preparedStatement).execute();
 
+        doReturn(getQueryConfigResponseTrino()).when(connection).getQueryConfigResponse();
         assertThat(connection.isValid(10)).isTrue();
-
-        doThrow(new SQLException()).when(preparedStatement).execute();
-        Throwable ex = catchThrowableOfType(() -> {
-            connection.isValid(10);
-        }, SQLException.class);
-        assertThat(ex).isInstanceOf(SQLException.class);
 
         // close connection
         connection.close();
@@ -199,22 +133,13 @@ public class QueryServiceConnectionTest {
         String serverUrl = "jdbc:queryService-jdbc:mysample://something.my.salesforce.com/";
         Properties properties = new Properties();
         properties.put(Constants.USER_NAME, "test-user");
-        properties.put(Constants.CLIENT_ID, Constants.PROD_DEFAULT_CLIENT_ID);
+        properties.put(Constants.CLIENT_ID, "somexxxxkey");
         properties.put(Constants.PRIVATE_KEY, privateKey);
 
         QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
         doCallRealMethod().when(connection).isValid(anyInt());
-        QueryServicePreparedStatement preparedStatement = mock(QueryServicePreparedStatement.class);
-        doReturn(preparedStatement).when(connection).prepareStatement(anyString());
-        doReturn(true).when(preparedStatement).execute();
-
+        doReturn(getQueryConfigResponseTrino()).when(connection).getQueryConfigResponse();
         assertThat(connection.isValid(10)).isTrue();
-
-        doThrow(new SQLException()).when(preparedStatement).execute();
-        Throwable ex = catchThrowableOfType(() -> {
-            connection.isValid(10);
-        }, SQLException.class);
-        assertThat(ex).isInstanceOf(SQLException.class);
 
         // close connection
         connection.close();
@@ -235,42 +160,25 @@ public class QueryServiceConnectionTest {
 
         QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
         doCallRealMethod().when(connection).isValid(anyInt());
-        QueryServicePreparedStatement preparedStatement = mock(QueryServicePreparedStatement.class);
-        doReturn(preparedStatement).when(connection).prepareStatement(anyString());
-        doReturn(true).when(preparedStatement).execute();
-
+        doReturn(getQueryConfigResponseHyper()).when(connection).getQueryConfigResponse();
         assertThat(connection.isValid(10)).isTrue();
-
-        doThrow(new SQLException()).when(preparedStatement).execute();
-        Throwable ex = catchThrowableOfType(() -> {
-            connection.isValid(10);
-        }, SQLException.class);
-        assertThat(ex).isInstanceOf(SQLException.class);
 
         // close connection
         connection.close();
         assertThat(connection.isValid(10)).isFalse();
     }
 
-    @Test
-    @DisplayName("Verify gRPC connection setup - username/password flow with fallback")
-    public void testGrpcIsValidWithFallback() throws SQLException {
-        replace(MemberMatcher.method(QueryServiceConnection.class, "isValid"))
-                .with((o, m, args) -> {return true;});
+    private QueryConfigResponse getQueryConfigResponseTrino() {
+        return getQueryConfigResponse(QueryEngineEnum.TRINO);
+    }
 
-        String serverUrl = "jdbc:queryService-jdbc:mysample://something.my.salesforce.com/";
-        Properties properties = new Properties();
-        properties.put(Constants.USER_NAME, "test-user");
-        properties.put(Constants.USER, "test-user-12");
-        properties.put(Constants.ENABLE_STREAM_FLOW, "true");
+    private QueryConfigResponse getQueryConfigResponseHyper() {
+        return getQueryConfigResponse(QueryEngineEnum.HYPER);
+    }
 
-        QueryServiceConnection connection = spy(new QueryServiceConnection(serverUrl, properties));
-        doCallRealMethod().when(connection).isValid(anyInt());
-        QueryServicePreparedStatement preparedStatement = mock(QueryServicePreparedStatement.class);
-        doReturn(preparedStatement).when(connection).prepareStatement(anyString());
-
-        // 1st time throw exception, 2nd time return true
-        doThrow(new SQLException()).doReturn(true).when(preparedStatement).execute();
-        assertThat(connection.isValid(10)).isTrue();
+    private QueryConfigResponse getQueryConfigResponse(QueryEngineEnum queryEngineEnum) {
+        QueryConfigResponse queryConfigResponse = new QueryConfigResponse();
+        queryConfigResponse.setQueryengine(queryEngineEnum.toString());
+        return queryConfigResponse;
     }
 }

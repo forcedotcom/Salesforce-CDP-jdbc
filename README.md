@@ -119,6 +119,9 @@ Class.forName("com.salesforce.cdp.queryservice.QueryServiceDriver");
    Properties properties = new Properties();
    properties.put("user", <UserName>);
    properties.put("password", <Password>);
+   properties.put("clientId", <Client Id of the connected App>);
+   properties.put("clientSecret", <Client Secret of the connected App>);
+   
 
    Connection connection =  DriverManager.getConnection("jdbc:queryService-jdbc:https://login.salesforce.com", properties);
 ```
@@ -164,7 +167,9 @@ import jaydebeapi
 // Sample properties with username and password flow.
 properties = {
     'user': "<UserName>",
-    'password': "<Password>"
+    'password': "<Password>",
+    'clientId': "<Client Id of the connected App>",
+    'clientSecret': "<Client Secret of the connected App>"
 }
 
 // Sample properties with key-pair authentication flow.

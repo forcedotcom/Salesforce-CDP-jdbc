@@ -17,8 +17,8 @@
 package com.salesforce.cdp.queryservice.util;
 
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
+import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
 import com.salesforce.cdp.queryservice.interceptors.MetadataCacheInterceptor;
-import com.salesforce.cdp.queryservice.interceptors.RetryInterceptor;
 import com.salesforce.cdp.queryservice.model.Token;
 import com.salesforce.cdp.queryservice.util.internal.SFDefaultSocketFactoryWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +26,7 @@ import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.FailsafeException;
 import net.jodah.failsafe.RetryPolicy;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
@@ -71,7 +68,7 @@ public class QueryTokenExecutor {
         this.client = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
 
         // set TenantUrl in connection. This is mandatory in gRPC flow.
-        if(connection.isEnableStreamFlow()) {
+        if(QueryEngineEnum.HYPER == connection.getQueryEngineEnum()) {
             try {
                 Map<String, String> token = getTokenWithTenantUrl();
                 connection.setTenantUrl(token.get(Constants.TENANT_URL));
