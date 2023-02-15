@@ -62,18 +62,12 @@ public class QueryExecutor extends QueryTokenExecutor {
         Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
         StringBuilder url = new StringBuilder(Constants.PROTOCOL)
                 .append(tokenWithTenantUrl.get(Constants.TENANT_URL))
-                .append(isV2Query ? Constants.CDP_URL_V2: Constants.CDP_URL)
+                .append(isV2Query ? Constants.CDP_URL_V2 : Constants.CDP_URL)
                 .append(Constants.ANSI_SQL_URL)
                 .append(Constants.QUESTION_MARK);
-        if (limit.isPresent()) {
-            url.append(Constants.LIMIT).append(limit.get()).append(Constants.AND);
-        }
-        if (offset.isPresent()) {
-            url.append(Constants.OFFSET).append(offset.get()).append(Constants.AND);
-        }
-        if (orderby.isPresent()) {
-            url.append(Constants.ORDERBY).append(orderby.get());
-        }
+        limit.ifPresent(integer -> url.append(Constants.LIMIT).append(integer).append(Constants.AND));
+        offset.ifPresent(integer -> url.append(Constants.OFFSET).append(integer).append(Constants.AND));
+        orderby.ifPresent(s -> url.append(Constants.ORDERBY).append(s));
         Request request = HttpHelper.buildRequest(Constants.POST, url.toString(), body, createHeaders(tokenWithTenantUrl, this.connection.getEnableArrowStream()));
         return getResponse(request);
     }
@@ -81,14 +75,13 @@ public class QueryExecutor extends QueryTokenExecutor {
     public Response executeNextBatchQuery(String nextBatchId) throws IOException, SQLException {
         log.info("Preparing to execute query for nextBatch {}", nextBatchId);
         Map<String, String> tokenWithTenantUrl = getTokenWithTenantUrl();
-        StringBuilder url = new StringBuilder(Constants.PROTOCOL + tokenWithTenantUrl.get(Constants.TENANT_URL)
+        String url = Constants.PROTOCOL + tokenWithTenantUrl.get(Constants.TENANT_URL)
                 + Constants.CDP_URL_V2
                 + Constants.ANSI_SQL_URL
                 + Constants.SLASH
-                + nextBatchId
-        );
+                + nextBatchId;
 
-        Request request = HttpHelper.buildRequest(Constants.GET, url.toString(), null, createHeaders(tokenWithTenantUrl, this.connection.getEnableArrowStream()));
+        Request request = HttpHelper.buildRequest(Constants.GET, url, null, createHeaders(tokenWithTenantUrl, this.connection.getEnableArrowStream()));
         return getResponse(request);
     }
 
@@ -138,4 +131,24 @@ public class QueryExecutor extends QueryTokenExecutor {
         log.info("Total time taken to get response for url {} is {} ms and traceid {}", request.url(), endTime - startTime, response.headers(Constants.TRACE_ID));
         return response;
     }
+
+    public Response getDataspaces()  {
+        try{
+
+        Properties connectionProperties = connection.getClientInfo();
+        String url = connectionProperties.getProperty(Constants.LOGIN_URL)+Constants.DATASPACE_URL;
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.AUTHORIZATION,getCoreToken());
+        headers.put(Constants.CONTENT_TYPE, Constants.JSON_CONTENT);
+
+        Request request = HttpHelper.buildRequest(Constants.GET, url, null,headers );
+        return getResponse(request);
+        }
+        catch(Exception e){
+            log.error("Error while fetching dataspace",e);
+        }
+        return null;
+    }
+
+
 }
