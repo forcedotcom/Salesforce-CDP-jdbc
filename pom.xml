@@ -222,6 +222,10 @@
                             <pattern>io.netty</pattern>
                             <shadedPattern>${shadeBase}.io.netty</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>io.grpc</pattern>
+                            <shadedPattern>${shadeBase}.io.grpc</shadedPattern>
+                        </relocation>
                     </relocations>
                     <filters>
                         <filter>
