@@ -45,7 +45,6 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
 
     private static ManagedChannel DEFAULT_CHANNEL = null;
     private static final int port = 443;
-    private static final int timeoutInMin = 5;
     // No retry on hyper for now. Fallback to v2 call if receive even one failure from hyper.
     private static final int GRPC_MAX_RETRY = 0;
     private static final Metadata.Key<String> TRACE_ID_KEY = Metadata.Key.of(Constants.TRACE_ID, Metadata.ASCII_STRING_MARSHALLER);
@@ -135,7 +134,6 @@ public class QueryGrpcExecutor extends QueryTokenExecutor {
         QueryServiceGrpc.QueryServiceBlockingStub stub = QueryServiceGrpc.newBlockingStub(channel);
         Properties properties = connection.getClientInfo();
         return stub
-            .withDeadlineAfter(timeoutInMin, TimeUnit.MINUTES)
             .withMaxInboundMessageSize(MAX_MESSAGE_SIZE)
             .withInterceptors(
                     new GrpcInterceptor(tokenWithTenantUrl, properties),
