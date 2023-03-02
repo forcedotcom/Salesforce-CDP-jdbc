@@ -22,12 +22,11 @@ import java.util.List;
 @Slf4j
 public class ExtractArrowUtil extends ArrowUtil {
     private Iterator<AnsiSqlQueryStreamResponse> inputStream;
-    private RootAllocator streamRootAllocator;
+    private static final long ALLOCATOR_MAX_SIZE_IN_BYTES = 10 * 1024 * 1024; // 10MB
 
     public ExtractArrowUtil(Iterator<AnsiSqlQueryStreamResponse> inputStream) {
         super();
         this.inputStream = inputStream;
-        streamRootAllocator = new RootAllocator(Long.MAX_VALUE);
     }
 
     public boolean isNextChunkPresent() {
@@ -38,38 +37,38 @@ public class ExtractArrowUtil extends ArrowUtil {
         AnsiSqlQueryStreamResponse response = inputStream.next();
         ByteString arrowResponseChunk = response.getArrowResponseChunk().getData();
         InputStream chunkInputStream = new ByteArrayInputStream(arrowResponseChunk.toByteArray());
-        ArrowStreamReader arrowStreamReader = new ArrowStreamReader(chunkInputStream, streamRootAllocator);
+        RootAllocator rootAllocator = new RootAllocator(ALLOCATOR_MAX_SIZE_IN_BYTES);
+        try (ArrowStreamReader arrowStreamReader = new ArrowStreamReader(chunkInputStream, rootAllocator)) {
 
-        VectorSchemaRoot vectorSchemaRoot;
+            VectorSchemaRoot vectorSchemaRoot;
 
-        try {
-            if (!arrowStreamReader.loadNextBatch()) {
-                throw new SQLException("Unable to load the record batch");
+            try {
+                if (!arrowStreamReader.loadNextBatch()) {
+                    throw new SQLException("Unable to load the record batch");
+                }
+                vectorSchemaRoot = arrowStreamReader.getVectorSchemaRoot();
+            } catch (IOException e) {
+                throw new SQLException("Error while getting VectorSchemaRoot");
             }
-            vectorSchemaRoot = arrowStreamReader.getVectorSchemaRoot();
+
+            List<FieldVector> fieldVectors = vectorSchemaRoot.getFieldVectors();
+            List<Object> data = new ArrayList<>();
+
+            int rowCount = fieldVectors.get(0).getValueCount();
+            for (int i = 0; i < rowCount; ++i) {
+                List<Object> row = new ArrayList<>();
+                for (FieldVector fieldVector : fieldVectors) {
+                    Object fieldValue = this.getFieldValue(fieldVector, i);
+                    row.add(fieldValue);
+                }
+                data.add(row);
+            }
+
+            return data;
         } catch (IOException e) {
-            throw new SQLException("Error while getting VectorSchemaRoot");
-        }
-
-        List<FieldVector> fieldVectors = vectorSchemaRoot.getFieldVectors();
-        List<Object> data = new ArrayList<>();
-
-        int rowCount = fieldVectors.get(0).getValueCount();
-        for (int i = 0; i < rowCount; ++i) {
-            List<Object> row = new ArrayList<>();
-            for (FieldVector fieldVector : fieldVectors) {
-                Object fieldValue = this.getFieldValue(fieldVector, i);
-                row.add(fieldValue);
-            }
-            data.add(row);
-        }
-        return data;
-    }
-
-    public void closeReader() {
-        if (streamRootAllocator != null) {
-            streamRootAllocator.close();
-            streamRootAllocator = null;
+            throw new SQLException("Failed to parse the arrow stream", e);
+        } finally {
+            rootAllocator.close();
         }
     }
 }
