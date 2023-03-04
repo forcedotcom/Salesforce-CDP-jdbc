@@ -226,6 +226,10 @@
                             <pattern>io.grpc</pattern>
                             <shadedPattern>${shadeBase}.io.grpc</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>com.fasterxml.jackson</pattern>
+                            <shadedPattern>${shadeBase}.com.fasterxml.jackson</shadedPattern>
+                        </relocation>
                     </relocations>
                     <filters>
                         <filter>
