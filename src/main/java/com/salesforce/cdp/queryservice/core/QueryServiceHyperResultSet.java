@@ -20,11 +20,16 @@ import com.salesforce.a360.queryservice.grpc.v1.AnsiSqlQueryStreamResponse;
 import com.salesforce.cdp.queryservice.util.ExtractArrowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 
@@ -163,6 +168,29 @@ public class QueryServiceHyperResultSet extends QueryServiceResultSet {
     @Override
     public boolean isLast() throws SQLException {
         return !this.isNextChunkPresent() && this.currentRow == this.data.size() - 1;
+    }
+
+    @Override
+    public Date getDate(String columnLabel, Calendar cal) throws SQLException {
+        errorOutIfClosed();
+        Object value = getObject(columnLabel);
+        if (wasNull() || value== null || StringUtils.EMPTY.equals(value)) {
+            wasNull.set(true);
+            return null;
+        }
+
+        if(value instanceof LocalDateTime) {
+            long epoch = ((LocalDateTime) value).toEpochSecond(ZoneOffset.UTC);
+            return new Date(epoch * 1000);
+        }
+        if(value instanceof Long) {
+            return new Date((Long)value);
+        }
+        if(value instanceof Date) {
+            return (Date) value;
+        } else {
+            throw new SQLException("Invalid date from server: " + value + ", columnLabel: " + columnLabel);
+        }
     }
 
     private boolean isNextChunkPresent() throws SQLException {
