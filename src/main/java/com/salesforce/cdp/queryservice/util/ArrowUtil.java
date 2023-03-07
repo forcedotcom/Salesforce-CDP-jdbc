@@ -28,6 +28,7 @@ import org.apache.arrow.vector.util.Text;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -145,16 +146,12 @@ public class ArrowUtil {
 			return ((TimeNanoVector) fieldVector).getObject(index);
 		} else if (type == Types.MinorType.TIMESTAMPNANOTZ) {
 			long epochNano = ((TimeStampNanoTZVector) fieldVector).getObject(index);
-			String date = new java.text.SimpleDateFormat(Constants.DATE_ISO_STD)
-					.format(new java.util.Date (epochNano/1000000));
-			return date;
+			return epochNano/1000000;
 		} else if (type == Types.MinorType.TIMESTAMPNANO) {
 			return ((TimeStampNanoVector) fieldVector).getObject(index);
 		} else if (type == Types.MinorType.TIMESTAMPMILLITZ) {
 			long epochMillis = ((TimeStampMilliTZVector) fieldVector).getObject(index);
-			String date = new java.text.SimpleDateFormat(Constants.DATE_ISO_STD)
-					.format(new java.util.Date (epochMillis));
-			return date;
+			return epochMillis;
 		} else if (type == Types.MinorType.TIMESTAMPMILLI) {
 			return ((TimeStampMilliVector) fieldVector).getObject(index);
 		}
