@@ -127,4 +127,10 @@ public class Constants {
     public static final int END_OF_STREAM = -1;
     public static final int START_OF_STREAM = 0;
     public static final String DATE_ISO_STD = "yyyy-MM-dd'T'HH:mm:ss";
+
+    public static final String DATASPACE ="dataspace";
+    public static final String DATASPACE_URL = "/services/data/v56.0/query/?q=SELECT+name+from+Dataspace";
+    public static final String BEARER = "Bearer";
+    public static final Object CATALOG ="catalog" ;
+    public static final int USER_ERROR = 400 ;
 }

@@ -6,7 +6,7 @@
 
     <groupId>com.queryService</groupId>
     <artifactId>Salesforce-CDP-jdbc</artifactId>
-    <version>1.18.0</version>
+    <version>1.19.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -225,6 +225,30 @@
                         <relocation>
                             <pattern>io.grpc</pattern>
                             <shadedPattern>${shadeBase}.io.grpc</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.fasterxml.jackson</pattern>
+                            <shadedPattern>${shadeBase}.com.fasterxml.jackson</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>io.jsonwebtoken</pattern>
+                            <shadedPattern>${shadeBase}.io.jsonwebtoken</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>io.vavr</pattern>
+                            <shadedPattern>${shadeBase}.io.vavr</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.squareup</pattern>
+                            <shadedPattern>${shadeBase}.com.squareup</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.google</pattern>
+                            <shadedPattern>${shadeBase}.com.google</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>net.jodah</pattern>
+                            <shadedPattern>${shadeBase}.net.jodah</shadedPattern>
                         </relocation>
                     </relocations>
                     <filters>

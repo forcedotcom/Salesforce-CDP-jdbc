@@ -53,6 +53,11 @@ import static com.salesforce.cdp.queryservice.util.Messages.*;
 @Slf4j
 public class TokenHelper {
 
+    public static boolean isCoreTokenExchanged() {
+       return coreTokenExchanged;
+    }
+
+    private static boolean coreTokenExchanged = false;
     private static Cache<String, Token> tokenCache = CacheBuilder.newBuilder()
             .expireAfterWrite(7200000, TimeUnit.MILLISECONDS)
             .maximumSize(100).build();
@@ -82,7 +87,7 @@ public class TokenHelper {
                     && properties.containsKey(Constants.PRIVATE_KEY)) {
                 return retrieveTokenWithJWTBearerGrant(properties, client);
             }
-            Token newToken = exchangeToken(properties.getProperty(Constants.LOGIN_URL), properties.getProperty(Constants.CORETOKEN), client);
+            Token newToken = exchangeToken(properties.getProperty(Constants.LOGIN_URL), properties.getProperty(Constants.CORETOKEN), properties.getProperty(Constants.DATASPACE),client);
             tokenCache.put(properties.getProperty(Constants.CORETOKEN), newToken);
             return newToken;
         }
@@ -94,7 +99,7 @@ public class TokenHelper {
                 clearToken(properties.getProperty(Constants.CORETOKEN));
             }
             return renewToken(properties.getProperty(Constants.LOGIN_URL), properties.getProperty(Constants.REFRESHTOKEN),
-                    properties.getProperty(Constants.CLIENT_ID), properties.getProperty(Constants.CLIENT_SECRET), client);
+                    properties.getProperty(Constants.CLIENT_ID), properties.getProperty(Constants.CLIENT_SECRET),properties.getProperty(Constants.DATASPACE), client);
         }
     }
 
@@ -134,7 +139,7 @@ public class TokenHelper {
 
             // And exchange the UN/PW flow authtoken for a scoped bearer token.
             coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class, false);
-            return exchangeToken(coreTokenRenewResponse.getInstance_url(), coreTokenRenewResponse.getAccess_token(), client);
+            return exchangeToken(coreTokenRenewResponse.getInstance_url(), coreTokenRenewResponse.getAccess_token(),properties.getProperty(Constants.DATASPACE), client);
         } catch (IOException e) {
             log.error("Caught exception while retrieving the token", e);
             throw new TokenException(TOKEN_FETCH_FAILURE, e);
@@ -173,7 +178,7 @@ public class TokenHelper {
 
             // And exchange the Key/Pair flow authtoken for a scoped bearer token.
             coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class, false);
-            return exchangeToken(coreTokenRenewResponse.getInstance_url(), coreTokenRenewResponse.getAccess_token(), client);
+            return exchangeToken(coreTokenRenewResponse.getInstance_url(), coreTokenRenewResponse.getAccess_token(),properties.getProperty(Constants.DATASPACE), client);
         } catch(SQLException sqlException) {
           log.error("Caught exception while setting audience for JWT assertion", sqlException);
           throw new TokenException(TOKEN_FETCH_FAILURE, sqlException);
@@ -200,7 +205,18 @@ public class TokenHelper {
         }
     }
 
-    private static Token renewToken(String url, String refreshToken, String clientId, String secret, OkHttpClient client) throws TokenException {
+    private static Token renewToken(String url, String refreshToken, String clientId, String secret, String dataspace,OkHttpClient client) throws TokenException {
+
+
+            CoreTokenRenewResponse coreTokenRenewResponse = getCoreToken(url,refreshToken,clientId,secret,client);
+            log.info("Renewed core token {}", coreTokenRenewResponse);
+            Token token = exchangeToken(url, coreTokenRenewResponse.getAccess_token(),dataspace, client);
+            tokenCache.put(coreTokenRenewResponse.getAccess_token(), token);
+            return token;
+
+    }
+
+    public static CoreTokenRenewResponse getCoreToken(String url, String refreshToken, String clientId, String secret, OkHttpClient client) throws TokenException {
         String token_url = url + Constants.CORE_TOKEN_URL;
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(Constants.GRANT_TYPE_NAME, Constants.REFRESH_TOKEN_GRANT_TYPE);
@@ -211,22 +227,23 @@ public class TokenHelper {
         try {
             Response response = login(requestBody, token_url, client);
             coreTokenRenewResponse = HttpHelper.handleSuccessResponse(response, CoreTokenRenewResponse.class, false);
-            log.info("Renewed core token {}", coreTokenRenewResponse);
-            Token token = exchangeToken(url, coreTokenRenewResponse.getAccess_token(), client);
-            tokenCache.put(coreTokenRenewResponse.getAccess_token(), token);
-            return token;
-        } catch (IOException e) {
+            coreTokenExchanged = false;
+        }
+        catch (IOException e) {
             log.error("Caught exception while renewing the core token", e);
             throw new TokenException(RENEW_TOKEN, e);
         }
+        return coreTokenRenewResponse;
     }
 
-    private static Token exchangeToken(String url, String coreToken, OkHttpClient client) throws TokenException {
+    private static Token exchangeToken(String url, String coreToken,String dataspace, OkHttpClient client) throws TokenException {
         String token_url = url + Constants.TOKEN_EXCHANGE_URL;
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(Constants.GRANT_TYPE_NAME, Constants.GRANT_TYPE);
         requestBody.put(Constants.SUBJECT_TOKEN_TYPE_NAME, Constants.SUBJECT_TOKEN_TYPE);
         requestBody.put(Constants.SUBJECT_TOKEN, coreToken);
+        coreTokenExchanged=true;
+        if(StringUtils.isNotBlank(dataspace)) {requestBody.put(Constants.DATASPACE,dataspace);}
         Calendar expire_time = Calendar.getInstance();
         Response response = null;
         try {
@@ -272,6 +289,7 @@ public class TokenHelper {
         FormBody.Builder formBody = new FormBody.Builder();
         requestBody.forEach(formBody::addEncoded);
         Map<String, String> headers = Collections.singletonMap(Constants.CONTENT_TYPE, Constants.URL_ENCODED_CONTENT);
+        log.info(requestBody.toString());
         try {
             Request request = HttpHelper.buildRequest(Constants.POST, url, formBody.build(), headers);
             Response response = client.newCall(request).execute();
@@ -302,6 +320,7 @@ public class TokenHelper {
             log.error("Revoking the core token failed", e);
         }
     }
+
 
     private static Response un_pw_login(
             String grantType, String clientId, byte[] clientSecret,
@@ -405,5 +424,14 @@ public class TokenHelper {
         KeyFactory kf = KeyFactory.getInstance("RSA");
         RSAPrivateKey privateKey = (RSAPrivateKey)kf.generatePrivate(keySpec);
         return privateKey;
+    }
+
+    public static String getCoreToken(Properties connectionProperties, OkHttpClient client) throws TokenException {
+           if(TokenHelper.isCoreTokenExchanged()){
+                CoreTokenRenewResponse coreTokenRenewResponse = getCoreToken(connectionProperties.getProperty(Constants.LOGIN_URL), connectionProperties.getProperty(Constants.REFRESHTOKEN),
+                        connectionProperties.getProperty(Constants.CLIENT_ID), connectionProperties.getProperty(Constants.CLIENT_SECRET), client);
+                return coreTokenRenewResponse.getAccess_token();
+            }
+           return connectionProperties.getProperty(Constants.CORETOKEN);
     }
 }
