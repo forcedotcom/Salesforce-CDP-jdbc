@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 public class ExtractArrowUtil extends ArrowUtil {
     private Iterator<AnsiSqlQueryStreamResponse> inputStream;
-    private static final long ALLOCATOR_MAX_SIZE_IN_BYTES = 10 * 1024 * 1024; // 10MB
+    private static final long ALLOCATOR_MAX_SIZE_IN_BYTES = 100 * 1024 * 1024; // 100MB
 
     public ExtractArrowUtil(Iterator<AnsiSqlQueryStreamResponse> inputStream) {
         super();
