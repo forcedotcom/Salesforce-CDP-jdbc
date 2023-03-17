@@ -37,8 +37,8 @@ public class Constants {
 
     // Common server information
     public static final String PROD_SERVER_URL = ".salesforce.com";
-    public static final String NA45_SERVER_URL = "na45.test1.pc-rnd.salesforce.com";
-    public static final String NA46_SERVER_URL = "na46.test1.pc-rnd.salesforce.com";
+    public static final String TEST_SERVER_URL = "test1.pc-rnd.salesforce.com";
+
 
     //Audience constants for different environments
     public static final String PROD_SERVER_AUD = "login.salesforce.com";
