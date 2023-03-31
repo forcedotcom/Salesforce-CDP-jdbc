@@ -245,7 +245,7 @@ public class TokenHelper {
         try{
             return exchangeToken(url,coreToken,dataspace,client);
         } catch (TokenException e) {
-            log.error("Core token is not valid fetching a new token ");
+            log.error("Core token is not valid fetching a new token ", e);
             return renewToken(url,refreshToken,clientId,secret,dataspace,client);
         }
     }
