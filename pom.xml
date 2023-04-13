@@ -280,6 +280,13 @@
                                 <exclude>codegen/**</exclude>
                             </excludes>
                         </filter>
+                        <filter>
+                            <artifact>org.slf4j:slf4j-simple</artifact>
+                            <excludes>
+                                <!-- Causes logging binding warnings with other java projects that use the shaded jar -->
+                                <exclude>org/slf4j/**</exclude>
+                            </excludes>
+                        </filter>
                     </filters>
                     <transformers>
                         <transformer
