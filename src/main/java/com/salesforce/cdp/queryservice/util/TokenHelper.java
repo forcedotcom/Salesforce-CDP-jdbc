@@ -193,7 +193,7 @@ public class TokenHelper {
 
     private static String getAudienceForJWTAssertion(String serviceRootUrl) throws SQLException {
         String serverUrl = serviceRootUrl.toLowerCase();
-        if (serverUrl.endsWith(Constants.NA45_SERVER_URL) || serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
+        if (serverUrl.contains(Constants.TEST_SERVER_URL)) {
             return Constants.DEV_TEST_SERVER_AUD;
         } else if (serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
             return Constants.PROD_SERVER_AUD;
