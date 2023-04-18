@@ -6,7 +6,7 @@
 
     <groupId>com.queryService</groupId>
     <artifactId>Salesforce-CDP-jdbc</artifactId>
-    <version>1.19.0</version>
+    <version>1.19.1</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -278,6 +278,13 @@
                             <excludes>
                                 <!-- codegen directory is used to generate java code for arrow vector package. Excludes them since we only need class file -->
                                 <exclude>codegen/**</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>org.slf4j:slf4j-simple</artifact>
+                            <excludes>
+                                <!-- Causes logging binding warnings with other java projects that use the shaded jar -->
+                                <exclude>org/slf4j/**</exclude>
                             </excludes>
                         </filter>
                     </filters>

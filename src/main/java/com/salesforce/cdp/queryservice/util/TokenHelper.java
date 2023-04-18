@@ -87,7 +87,10 @@ public class TokenHelper {
                     && properties.containsKey(Constants.PRIVATE_KEY)) {
                 return retrieveTokenWithJWTBearerGrant(properties, client);
             }
-            Token newToken = exchangeToken(properties.getProperty(Constants.LOGIN_URL), properties.getProperty(Constants.CORETOKEN), properties.getProperty(Constants.DATASPACE),client);
+            Token newToken = exchangeTokenWithRefresh(properties.getProperty(Constants.LOGIN_URL),
+                    properties.getProperty(Constants.REFRESHTOKEN),properties.getProperty(Constants.CORETOKEN)
+                    , properties.getProperty(Constants.CLIENT_ID),properties.getProperty(Constants.CLIENT_SECRET),properties.getProperty(Constants.DATASPACE),
+                    client);
             tokenCache.put(properties.getProperty(Constants.CORETOKEN), newToken);
             return newToken;
         }
@@ -190,7 +193,7 @@ public class TokenHelper {
 
     private static String getAudienceForJWTAssertion(String serviceRootUrl) throws SQLException {
         String serverUrl = serviceRootUrl.toLowerCase();
-        if (serverUrl.endsWith(Constants.NA45_SERVER_URL) || serverUrl.endsWith(Constants.NA46_SERVER_URL)) {
+        if (serverUrl.contains(Constants.TEST_SERVER_URL)) {
             return Constants.DEV_TEST_SERVER_AUD;
         } else if (serverUrl.endsWith(Constants.PROD_SERVER_URL)) {
             return Constants.PROD_SERVER_AUD;
@@ -234,6 +237,17 @@ public class TokenHelper {
             throw new TokenException(RENEW_TOKEN, e);
         }
         return coreTokenRenewResponse;
+    }
+
+    private static Token exchangeTokenWithRefresh(String url, String refreshToken,
+                                                  String coreToken, String clientId, String secret,
+                                                  String dataspace,OkHttpClient client) throws TokenException {
+        try{
+            return exchangeToken(url,coreToken,dataspace,client);
+        } catch (TokenException e) {
+            log.error("Core token is not valid fetching a new token ", e);
+            return renewToken(url,refreshToken,clientId,secret,dataspace,client);
+        }
     }
 
     private static Token exchangeToken(String url, String coreToken,String dataspace, OkHttpClient client) throws TokenException {

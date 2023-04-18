@@ -24,15 +24,12 @@ import okhttp3.*;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.Mockito.*;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -151,7 +148,6 @@ public class TokenHelperTest {
             TokenHelper.getToken(properties, client);
         }, TokenException.class);
         assertThat(ex.getCause()).isInstanceOf(IOException.class);
-        assertThat(ex.getCause().getMessage()).contains("expired authorization code");
     }
 
     @Test
@@ -188,8 +184,12 @@ public class TokenHelperTest {
                 request(buildRequest()).protocol(Protocol.HTTP_1_1).
                 message("Internal Server Error").
                 body(ResponseBody.create(errorString, MediaType.parse("application/json"))).build();
-        when(remoteCall.execute()).thenReturn(errorResponse);
-        when(client.newCall(any())).thenReturn(remoteCall);
+        Response refreshResponse = new Response.Builder().code(HttpStatus.SC_OK).
+                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+                message("Internal Server Error").
+                body(ResponseBody.create(errorString, MediaType.parse("application/json"))).build();
+        when(remoteCall.execute()).thenReturn(errorResponse).thenReturn(refreshResponse);
+        when(client.newCall(any())).thenReturn(remoteCall).thenReturn(remoteCall);
         ArgumentCaptor<Request> eventCaptor =
                 ArgumentCaptor.forClass(Request.class);
 
@@ -197,12 +197,12 @@ public class TokenHelperTest {
             TokenHelper.getToken(properties, client);
         }, TokenException.class);
         assertThat(ex.getCause()).isInstanceOf(JsonParseException.class);
-        assertThat(ex.getMessage()).contains("Token exchange failed. Please login again");
+        assertThat(ex.getMessage()).contains("Failed to Renew Token. Please retry");
 
-        verify(client, times(2)).newCall(eventCaptor.capture());
+        verify(client, times(3)).newCall(eventCaptor.capture());
         Request request = eventCaptor.getValue();
         String url = request.url().toString();
-        Assert.assertTrue(url.contains(Constants.TOKEN_REVOKE_URL));
+        Assert.assertTrue(url.contains(Constants.CORE_TOKEN_URL));
     }
 
     private Request buildRequest() {
