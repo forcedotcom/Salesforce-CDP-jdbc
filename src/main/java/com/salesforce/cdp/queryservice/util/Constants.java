@@ -59,6 +59,7 @@ public class Constants {
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String USER_AGENT_VALUE = "cdp/jdbc";
     public static final String TABLEAU_USER_AGENT_VALUE = "Tableau/Audiences360";
+    public static final String DATA_WRANGLER_USER_AGENT_VALUE = "Data-Wrangler";
     public static final String JSON_CONTENT = "application/json";
     public static final String URL_ENCODED_CONTENT = "application/x-www-form-urlencoded";
     public static final String ENABLE_ARROW_STREAM = "enable-arrow-stream";
