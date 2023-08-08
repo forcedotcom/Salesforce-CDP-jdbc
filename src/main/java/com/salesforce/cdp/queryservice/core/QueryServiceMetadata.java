@@ -237,15 +237,14 @@ public class QueryServiceMetadata implements DatabaseMetaData {
         String[] HIVE_STRING_FUNCTIONS = {
                 "ASCII",
                 "CONCAT",
-                "GET_JSON_OBJECT",
+                "JSON_EXTRACT",
                 "ENCODE",
                 "LENGTH",
-                "LPAD",
+                "UPPER",
+                "LOWER",
                 "RTRIM",
-                "REGEXP",
                 "REGEXP_EXTRACT",
                 "REGEXP_REPLACE",
-                "REPLACE",
                 "SUBSTR",
                 "SUBSTRING",
                 "QUOTE"
@@ -257,6 +256,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
     @Override
     public String getSystemFunctions() throws SQLException {
         String[] HIVE_SYS_FUNCTIONS = {
+                "CAST",
                 "LAG",
                 "LEAD",
                 "NTILE",
@@ -273,7 +273,8 @@ public class QueryServiceMetadata implements DatabaseMetaData {
                 "ISNULL",
                 "ISNOTNULL",
                 "NULLIF",
-                "VERSION"
+                "VERSION",
+                "PREDICT"
 
         };
         return String.join(",",HIVE_SYS_FUNCTIONS);
