@@ -70,6 +70,7 @@ public class ExtractArrowUtil extends ArrowUtil {
         } finally {
             rootAllocator.close();
         }
+
     }
 
 
