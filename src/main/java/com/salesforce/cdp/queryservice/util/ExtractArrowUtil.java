@@ -69,6 +69,7 @@ public class ExtractArrowUtil extends ArrowUtil {
             throw new SQLException("Failed to parse the arrow stream", e);
         } finally {
             rootAllocator.close();
+
         }
 
 
