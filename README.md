@@ -64,6 +64,9 @@ This flow utilizes Salesforce's server to server [JWT bearer flow](https://help.
    1. Select **“Edit Policies”**
    2. Change **“IP Relaxation”** to **“Relax IP restrictions”**
    3. Select **Save**
+5. In Setup search for OAuth and OpenID Connect Settings
+   1. Turn on password flow
+
 
 ## App Authorization
 
