@@ -68,7 +68,6 @@ This flow utilizes Salesforce's server to server [JWT bearer flow](https://help.
    1. Turn on password flow
 
 ## App Authorization
-
 At this point your connected app has been configured however there is a ***_one time setup requirement_*** to authorize your user with the connected app.
 
 The URL format will look like:
