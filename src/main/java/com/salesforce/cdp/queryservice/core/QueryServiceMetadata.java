@@ -16,6 +16,7 @@
 
 package com.salesforce.cdp.queryservice.core;
 
+//import apple.laf.JRSUIUtils;
 import com.salesforce.cdp.queryservice.model.DataSpaceAttributes;
 import com.salesforce.cdp.queryservice.model.DataspaceResponse;
 import com.salesforce.cdp.queryservice.model.MetadataResponse;
@@ -30,6 +31,7 @@ import okhttp3.Response;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.xml.transform.Result;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
@@ -43,6 +45,8 @@ public class QueryServiceMetadata implements DatabaseMetaData {
     private Properties properties;
     private QueryServiceConnection queryServiceConnection;
     private QueryExecutor queryExecutor;
+
+    private final TreeMap<String, String> functions = new TreeMap<>();
 
     public QueryServiceMetadata(QueryServiceConnection queryServiceConnection, String url, Properties properties) {
         this.url = url;
@@ -183,27 +187,125 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public String getSQLKeywords() throws SQLException {
-        return null;
+
+        String[] NON_RESERVED_KEYWORDS = {
+                "DEFAULT",
+                "AFTER",
+                "CASCADE",
+                "DATA",
+                "DEFINED",
+                "INDEX",
+                "ISOLATION",
+                "KEY",
+                "LEVEL",
+                "LIMIT",
+                "OPTION",
+                "RENAME",
+                "RESTRICT",
+                "SCHEMA",
+                "TRANSACTION",
+                "VIEW"
+        };
+
+        return String.join(",",NON_RESERVED_KEYWORDS);
     }
 
     @Override
     public String getNumericFunctions() throws SQLException {
-        return null;
+        String[] HIVE_NUM_FUNCTIONS = {
+                "ABS",
+                "GREATEST",
+                "LEAST",
+                "LOG",
+                "RAND",
+                "ROUND",
+                "STDDEV",
+                "EXP",
+                "MOD",
+                "COUNT",
+                "SUM",
+                "MIN",
+                "MAX",
+                "AVG",
+                "MEAN",
+        };
+        return String.join(",",HIVE_NUM_FUNCTIONS);
     }
 
     @Override
     public String getStringFunctions() throws SQLException {
-        return null;
+        String[] HIVE_STRING_FUNCTIONS = {
+                "ASCII",
+                "CONCAT",
+                "JSON_EXTRACT",
+                "ENCODE",
+                "LENGTH",
+                "UPPER",
+                "LOWER",
+                "RTRIM",
+                "REGEXP_EXTRACT",
+                "REGEXP_REPLACE",
+                "SUBSTR",
+                "SUBSTRING",
+                "QUOTE"
+        };
+
+        return String.join(",",HIVE_STRING_FUNCTIONS);
     }
 
     @Override
     public String getSystemFunctions() throws SQLException {
-        return null;
+        String[] HIVE_SYS_FUNCTIONS = {
+                "CAST",
+                "LAG",
+                "LEAD",
+                "NTILE",
+                "RANK",
+                "PERCENT_RANK",
+                "PERCENTILE",
+                "DENSE_RANK",
+                "ROW_NUMBER",
+                "FIRST_VALUE",
+                "LAST_VALUE",
+                "APPROX_COUNT_DISTINCT",
+                "FIRST",
+                "LAST",
+                "ISNULL",
+                "ISNOTNULL",
+                "NULLIF",
+                "VERSION",
+                "PREDICT"
+
+        };
+        return String.join(",",HIVE_SYS_FUNCTIONS);
     }
 
     @Override
     public String getTimeDateFunctions() throws SQLException {
-        return null;
+
+        String[] HIVE_EXTRA_FUNCTIONS = {
+                "ARRAY_CONTAINS",
+                "COALESCE",
+                "CURRENT_DATABASE",
+                "DATE_ADD",
+                "DATE_FORMAT",
+                "DATEDIFF",
+                "DAY",
+                "DAYOFWEEK",
+                "HOUR",
+                "MINUTE",
+                "MONTH",
+                "RLIKE",
+                "SECOND",
+                "SIZE",
+                "SUBSTRING_INDEX",
+                "TO_DATE",
+                "TRUNC",
+                "VERSION",
+                "YEAR",
+                "WEEKOFYEAR"
+        };
+        return String.join(",",HIVE_EXTRA_FUNCTIONS);
     }
 
     @Override

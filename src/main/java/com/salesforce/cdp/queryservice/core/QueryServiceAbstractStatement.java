@@ -104,7 +104,7 @@ public abstract class QueryServiceAbstractStatement {
             }
         } catch (IOException e) {
             log.error("Exception while running the query", e);
-            throw new SQLException(QUERY_EXCEPTION);
+            throw new SQLException(QUERY_EXCEPTION + "\n" + e.getMessage());
         }
     }
 
