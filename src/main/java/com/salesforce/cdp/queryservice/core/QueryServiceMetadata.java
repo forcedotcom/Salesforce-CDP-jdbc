@@ -668,11 +668,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public ResultSet getSchemas() throws SQLException {
-        if(isTableauClient() || isDataWranglerClient()){
-            return getDataSpaces();
-        }
-        return new QueryServiceResultSet(Collections.EMPTY_LIST,
-                new QueryServiceResultSetMetaData(GET_SCHEMAS));
+        return getDataSpaces();
     }
 
     private QueryServiceResultSet getDataSpaces() throws SQLException {
@@ -702,16 +698,6 @@ public class QueryServiceMetadata implements DatabaseMetaData {
         row.put("TABLE_CAT", Constants.CATALOG);
         row.put("TABLE_SCHEM", dataspaceName);
         return row;
-    }
-
-    private boolean isTableauClient() {
-        String userAgent =String.valueOf(properties.get(Constants.USER_AGENT));
-        return StringUtils.isNotBlank(userAgent) && userAgent.equals(Constants.TABLEAU_USER_AGENT_VALUE);
-    }
-
-    private boolean isDataWranglerClient() {
-        String userAgent =String.valueOf(properties.get(Constants.USER_AGENT));
-        return StringUtils.isNotBlank(userAgent) && userAgent.equals(Constants.DATA_WRANGLER_USER_AGENT_VALUE);
     }
 
     @Override
@@ -967,11 +953,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
 
     @Override
     public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
-        if(isTableauClient() || isDataWranglerClient()){
-            return getDataSpaces();
-        }
-        return new QueryServiceResultSet(Collections.EMPTY_LIST,
-                new QueryServiceResultSetMetaData(GET_SCHEMAS));
+        return getDataSpaces();
     }
 
     @Override
