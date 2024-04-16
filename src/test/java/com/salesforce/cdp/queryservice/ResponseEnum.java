@@ -282,7 +282,27 @@ public enum ResponseEnum {
             "</head>\n" +
             "\n" +
             "\n" +
-            "</html>");
+            "</html>"),
+    DATASPACE_RESPONSE("{\n" +
+            "    \"totalSize\": 2,\n" +
+            "    \"done\": true,\n" +
+            "    \"records\": [\n" +
+            "        {\n" +
+            "            \"attributes\": {\n" +
+            "                \"type\": \"DataSpace\",\n" +
+            "                \"url\": \"/services/data/v60.0/sobjects/DataSpace/0vhVF00000003AnYAI\"\n" +
+            "            },\n" +
+            "            \"Name\": \"default\"\n" +
+            "        },\n" +
+            "        {\n" +
+            "            \"attributes\": {\n" +
+            "                \"type\": \"DataSpace\",\n" +
+            "                \"url\": \"/services/data/v60.0/sobjects/DataSpace/0vhVF0000000Ch7YAE\"\n" +
+            "            },\n" +
+            "            \"Name\": \"DS2\"\n" +
+            "        }\n" +
+            "    ]\n" +
+            "}");
 
     private String response;
 

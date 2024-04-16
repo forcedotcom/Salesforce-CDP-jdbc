@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Properties;
 
 import static com.salesforce.cdp.queryservice.ResponseEnum.*;
@@ -134,6 +136,40 @@ public class QueryServiceMetadataTest {
         doReturn(response).when(queryExecutor).getMetadata();
         ResultSet resultSet = queryServiceMetadata.getColumns("", "", "Individual__dlm", "");
         Assert.assertFalse(resultSet.next());
+    }
+
+    @Test
+    public void testGetSchemas() throws SQLException {
+        String jsonString = DATASPACE_RESPONSE.getResponse();
+        Response response = new Response.Builder().code(HttpStatus.SC_OK).
+                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+                message("Successful").
+                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
+        doReturn(response).when(queryExecutor).getDataspaces();
+        ResultSet resultSet = queryServiceMetadata.getSchemas();
+        List<Object> results = ((QueryServiceResultSet) resultSet).data;
+        Assert.assertEquals(results.size(), 2);
+        Assert.assertEquals(((LinkedHashMap) results.get(0)).get("TABLE_SCHEM"), "default");
+        Assert.assertEquals(((LinkedHashMap) results.get(0)).get("TABLE_CAT"), "catalog");
+        Assert.assertEquals(((LinkedHashMap) results.get(1)).get("TABLE_SCHEM"), "DS2");
+        Assert.assertEquals(((LinkedHashMap) results.get(1)).get("TABLE_CAT"), "catalog");
+    }
+
+    @Test
+    public void testGetSchemasWithCatalogAndSchemaPattern() throws SQLException {
+        String jsonString = DATASPACE_RESPONSE.getResponse();
+        Response response = new Response.Builder().code(HttpStatus.SC_OK).
+                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+                message("Successful").
+                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
+        doReturn(response).when(queryExecutor).getDataspaces();
+        ResultSet resultSet = queryServiceMetadata.getSchemas("random_catalog", "random_pattern");
+        List<Object> results = ((QueryServiceResultSet) resultSet).data;
+        Assert.assertEquals(results.size(), 2);
+        Assert.assertEquals(((LinkedHashMap) results.get(0)).get("TABLE_SCHEM"), "default");
+        Assert.assertEquals(((LinkedHashMap) results.get(0)).get("TABLE_CAT"), "catalog");
+        Assert.assertEquals(((LinkedHashMap) results.get(1)).get("TABLE_SCHEM"), "DS2");
+        Assert.assertEquals(((LinkedHashMap) results.get(1)).get("TABLE_CAT"), "catalog");
     }
 
 
