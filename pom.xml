@@ -18,6 +18,8 @@
         <lombok.version>1.18.22</lombok.version>
         <slf4j.version>1.7.32</slf4j.version>
         <shadeBase>com.salesforce.cdp.queryservice.internal</shadeBase>
+        <maven.compiler.source>{java.version}</maven.compiler.source>
+        <maven.compiler.target>{java.version}</maven.compiler.target>
     </properties>
 
     <dependencies>
