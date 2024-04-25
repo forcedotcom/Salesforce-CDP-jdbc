@@ -32,6 +32,9 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Properties;
 
 import static com.salesforce.cdp.queryservice.ResponseEnum.*;
@@ -50,6 +53,8 @@ public class QueryServiceMetadataTest {
 
     private QueryServiceMetadata queryServiceMetadata;
 
+    private List<String> booleanColumns = new ArrayList<>();
+
     @Before
     public void init() {
         Properties properties = new Properties();
@@ -61,6 +66,7 @@ public class QueryServiceMetadataTest {
                 return queryExecutor;
             }
         };
+        booleanColumns.add("active__c");
     }
 
     @Test
@@ -117,9 +123,15 @@ public class QueryServiceMetadataTest {
         doReturn(response).when(queryExecutor).getMetadata();
         ResultSet resultSet = queryServiceMetadata.getColumns("", "", "ContactPointEmail__dlm", "");
         while(resultSet.next()) {
-            Assert.assertNotNull(resultSet.getString("COLUMN_NAME"));
-            Assert.assertEquals(resultSet.getInt("DATA_TYPE"), Types.VARCHAR);
-            Assert.assertEquals(resultSet.getString("SQL_DATA_TYPE"), JavaType.STRING.getName());
+            String columnName = resultSet.getString("COLUMN_NAME");
+            Assert.assertNotNull(columnName);
+            if (booleanColumns.contains(columnName)) {
+                Assert.assertEquals(resultSet.getInt("DATA_TYPE"), Types.BOOLEAN);
+                Assert.assertEquals(resultSet.getString("SQL_DATA_TYPE"), JavaType.BOOLEAN.getName());
+            } else {
+                Assert.assertEquals(resultSet.getInt("DATA_TYPE"), Types.VARCHAR);
+                Assert.assertEquals(resultSet.getString("SQL_DATA_TYPE"), JavaType.STRING.getName());
+            }
         }
         Assert.assertEquals(resultSet.getMetaData().getColumnCount(), 24);
     }
@@ -134,6 +146,40 @@ public class QueryServiceMetadataTest {
         doReturn(response).when(queryExecutor).getMetadata();
         ResultSet resultSet = queryServiceMetadata.getColumns("", "", "Individual__dlm", "");
         Assert.assertFalse(resultSet.next());
+    }
+
+    @Test
+    public void testGetSchemas() throws SQLException {
+        String jsonString = DATASPACE_RESPONSE.getResponse();
+        Response response = new Response.Builder().code(HttpStatus.SC_OK).
+                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+                message("Successful").
+                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
+        doReturn(response).when(queryExecutor).getDataspaces();
+        ResultSet resultSet = queryServiceMetadata.getSchemas();
+        List<Object> results = ((QueryServiceResultSet) resultSet).data;
+        Assert.assertEquals(results.size(), 2);
+        Assert.assertEquals(((LinkedHashMap) results.get(0)).get("TABLE_SCHEM"), "default");
+        Assert.assertEquals(((LinkedHashMap) results.get(0)).get("TABLE_CAT"), "catalog");
+        Assert.assertEquals(((LinkedHashMap) results.get(1)).get("TABLE_SCHEM"), "DS2");
+        Assert.assertEquals(((LinkedHashMap) results.get(1)).get("TABLE_CAT"), "catalog");
+    }
+
+    @Test
+    public void testGetSchemasWithCatalogAndSchemaPattern() throws SQLException {
+        String jsonString = DATASPACE_RESPONSE.getResponse();
+        Response response = new Response.Builder().code(HttpStatus.SC_OK).
+                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+                message("Successful").
+                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
+        doReturn(response).when(queryExecutor).getDataspaces();
+        ResultSet resultSet = queryServiceMetadata.getSchemas("random_catalog", "random_pattern");
+        List<Object> results = ((QueryServiceResultSet) resultSet).data;
+        Assert.assertEquals(results.size(), 2);
+        Assert.assertEquals(((LinkedHashMap) results.get(0)).get("TABLE_SCHEM"), "default");
+        Assert.assertEquals(((LinkedHashMap) results.get(0)).get("TABLE_CAT"), "catalog");
+        Assert.assertEquals(((LinkedHashMap) results.get(1)).get("TABLE_SCHEM"), "DS2");
+        Assert.assertEquals(((LinkedHashMap) results.get(1)).get("TABLE_CAT"), "catalog");
     }
 
 

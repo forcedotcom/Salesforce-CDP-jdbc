@@ -54,6 +54,10 @@ public enum ResponseEnum {
             "                    \"type\": \"STRING\"\n" +
             "                },\n" +
             "                {\n" +
+            "                    \"name\": \"active__c\",\n" +
+            "                    \"type\": \"BOOLEAN\"\n" +
+            "                },\n" +
+            "                {\n" +
             "                    \"name\": \"PartyId__c\",\n" +
             "                    \"type\": \"STRING\"\n" +
             "                }\n" +
@@ -250,12 +254,12 @@ public enum ResponseEnum {
             "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\",\n" +
             "    \"done\": true,\n" +
             "    \"metadata\": {\n" +
-                    "        \"count_num\": {\n" +
-                    "            \"placeInOrder\": 0,\n" +
-                    "            \"typeCode\": 3,\n" +
-                    "            \"type\": \"DECIMAL\"\n" +
-                    "        }\n" +
-                    "} \n" +
+            "        \"count_num\": {\n" +
+            "            \"placeInOrder\": 0,\n" +
+            "            \"typeCode\": 3,\n" +
+            "            \"type\": \"DECIMAL\"\n" +
+            "        }\n" +
+            "} \n" +
             "}"),
     HTML_ERROR_RESPONSE("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n" +
             "<html>\n" +
@@ -282,7 +286,27 @@ public enum ResponseEnum {
             "</head>\n" +
             "\n" +
             "\n" +
-            "</html>");
+            "</html>"),
+    DATASPACE_RESPONSE("{\n" +
+            "    \"totalSize\": 2,\n" +
+            "    \"done\": true,\n" +
+            "    \"records\": [\n" +
+            "        {\n" +
+            "            \"attributes\": {\n" +
+            "                \"type\": \"DataSpace\",\n" +
+            "                \"url\": \"/services/data/v60.0/sobjects/DataSpace/0vhVF00000003AnYAI\"\n" +
+            "            },\n" +
+            "            \"Name\": \"default\"\n" +
+            "        },\n" +
+            "        {\n" +
+            "            \"attributes\": {\n" +
+            "                \"type\": \"DataSpace\",\n" +
+            "                \"url\": \"/services/data/v60.0/sobjects/DataSpace/0vhVF0000000Ch7YAE\"\n" +
+            "            },\n" +
+            "            \"Name\": \"DS2\"\n" +
+            "        }\n" +
+            "    ]\n" +
+            "}");
 
     private String response;
 
