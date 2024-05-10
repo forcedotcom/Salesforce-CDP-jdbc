@@ -144,8 +144,7 @@ public class QueryServiceConnection implements Connection {
 
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-        return new QueryServicePreparedStatement(this, sql,
-                ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+       throw new SQLFeatureNotSupportedException("PreparedStatement is not supported");
     }
 
     @Override
@@ -241,7 +240,7 @@ public class QueryServiceConnection implements Connection {
 
     @Override
     public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-        return new QueryServicePreparedStatement(this, sql, resultSetType, resultSetConcurrency);
+        throw new SQLFeatureNotSupportedException("PreparedStatement is not supported");
     }
 
     @Override
