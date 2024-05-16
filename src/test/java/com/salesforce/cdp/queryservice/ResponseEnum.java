@@ -119,6 +119,34 @@ public enum ResponseEnum {
             "        }\n" +
             "} \n" +
             "}"),
+    QUERY_RESPONSE_WITH_LIST_OF_FLOATS("{\n" +
+            "    \"data\": [\n" +
+            "        {\n" +
+            "            \"telephonenumber__c\": \"001 5483188\",\n" +
+            "            \"VectorEmbedding__c\": { \"array\": [0.0042559705, -0.028879853, 0.028059203, -0.018148176, -0.030993622]}\n" +
+            "        },\n" +
+            "        {\n" +
+            "            \"telephonenumber__c\": \"001 3205512\",\n" +
+            "            \"VectorEmbedding__c\": { \"array\": [0.0042559705, -0.028879853, 0.028059203, -0.018148176, -0.030993622]}\n" +
+            "        }]," +
+            "    \"startTime\": \"2021-01-11T05:34:34.040931Z\",\n" +
+            "    \"endTime\": \"2021-01-11T05:34:34.040981Z\",\n" +
+            "    \"rowCount\": 2,\n" +
+            "    \"queryId\": \"53c66a0f-e666-4f61-9f84-7718528b7a63\",\n" +
+            "    \"done\": true," +
+            "    \"metadata\": {\n" +
+            "        \"telephonenumber__c\": {\n" +
+            "            \"placeInOrder\": 0,\n" +
+            "            \"typeCode\": 12,\n" +
+            "            \"type\": \"VARCHAR\"\n" +
+            "        },\n" +
+            "        \"VectorEmbedding__c\": {\n" +
+            "            \"placeInOrder\": 1,\n" +
+            "            \"typeCode\": 2003,\n" +
+            "            \"type\": \"ARRAY\"\n" +
+            "        }\n" +
+            "} \n" +
+            "}"),
     QUERY_RESPONSE_V2("{\n" +
             "    \"data\": [\n" +
             "        [\n" +
