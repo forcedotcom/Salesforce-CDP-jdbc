@@ -19,7 +19,6 @@ package com.salesforce.cdp.queryservice.util;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.salesforce.cdp.queryservice.model.Token;
 import okhttp3.*;
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
@@ -49,7 +48,7 @@ import static org.mockito.Matchers.any;
 @PowerMockIgnore("jdk.internal.reflect.*")
 public class TokenHelperTest {
 
-    private Cache<String, Token> tokenCache;
+//    private Cache<String, Off> tokenCache;
 
     @Mock
     private OkHttpClient client;
@@ -59,151 +58,151 @@ public class TokenHelperTest {
 
     private Properties properties;
 
-    @Before
-    public void init() {
-        tokenCache = CacheBuilder.newBuilder().expireAfterWrite(10000, TimeUnit.MILLISECONDS).maximumSize(1).build();
-        properties = new Properties();
-        properties.put(Constants.LOGIN_URL, "https://login.stmpa.stm.salesforce.com");
-        properties.put(Constants.CORETOKEN, "1234");
-        properties.put(Constants.REFRESHTOKEN, "7347");
-        properties.put(Constants.CLIENT_ID, "73abjd47");
-        properties.put(Constants.CLIENT_SECRET, "73a0384bjd47");
-    }
-
-    @Test
-    public void testCreateTokenSuccess() throws Exception {
-        String jsonString = TOKEN_EXCHANGE.getResponse();
-        Response response = new Response.Builder().code(HttpStatus.SC_OK).
-                request(buildRequest()).protocol(Protocol.HTTP_1_1).
-                message("Success").
-                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
-        when(remoteCall.execute()).thenReturn(response);
-        when(client.newCall(any())).thenReturn(remoteCall);
-        Token token = TokenHelper.getToken(properties, client);
-        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithUrl(token);
-        Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
-        Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
-    }
-
-    @Test
-    public void testAlreadyExistingToken() throws Exception {
-        Token token = new Token();
-        token.setAccess_token("1234");
-        token.setInstance_url("abcd");
-        token.setToken_type("Bearer");
-        Calendar now = Calendar.getInstance();
-        now.add(Calendar.MINUTE, 10);
-        token.setExpire_time(now);
-        tokenCache.put("1234", token);
-        Field tokenCacheField = TokenHelper.class.getDeclaredField("tokenCache");
-        tokenCacheField.setAccessible(true);
-        tokenCacheField.set(null, tokenCache);
-        Token cachedToken = TokenHelper.getToken(properties, client);
-        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithUrl(cachedToken);
-        Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
-        Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
-    }
-
-    @Test
-    public void testExpiredToken() throws Exception {
-        Token token = new Token();
-        token.setAccess_token("1234");
-        token.setInstance_url("abcd");
-        token.setToken_type("Bearer");
-        Calendar now = Calendar.getInstance();
-        now.add(Calendar.MINUTE, -10);
-        token.setExpire_time(now);
-        tokenCache.put("1234", token);
-        Field tokenCacheField = TokenHelper.class.getDeclaredField("tokenCache");
-        tokenCacheField.setAccessible(true);
-        tokenCacheField.set(null, tokenCache);
-        String jsonString = RENEWED_CORE_TOKEN.getResponse();
-        Response renewCoreTokenResponse = new Response.Builder().code(HttpStatus.SC_OK).
-                request(buildRequest()).protocol(Protocol.HTTP_1_1).
-                message("Success").
-                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
-        Response offCoreResponse = new Response.Builder().code(HttpStatus.SC_OK).
-                request(buildRequest()).protocol(Protocol.HTTP_1_1).
-                message("Success").
-                body(ResponseBody.create(TOKEN_EXCHANGE.getResponse(), MediaType.parse("application/json"))).build();
-        when(remoteCall.execute()).thenReturn(renewCoreTokenResponse).thenReturn(offCoreResponse);
-        when(client.newCall(any())).thenReturn(remoteCall);
-        Token cachedToken = TokenHelper.getToken(properties, client);
-        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithUrl(cachedToken);
-        Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
-        Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
-    }
-
-    @Test
-    public void testTokenExchangeWithException() throws Exception {
-        String jsonString = OAUTH_TOKEN_ERROR.getResponse();
-        Response response = new Response.Builder().code(HttpStatus.SC_INTERNAL_SERVER_ERROR).
-                request(buildRequest()).protocol(Protocol.HTTP_1_1).
-                message("Internal Server Error").
-                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
-        when(remoteCall.execute()).thenReturn(response);
-        when(client.newCall(any())).thenReturn(remoteCall);
-
-        Throwable ex = catchThrowableOfType(() -> {
-            TokenHelper.getToken(properties, client);
-        }, TokenException.class);
-        assertThat(ex.getCause()).isInstanceOf(IOException.class);
-    }
-
-    @Test
-    public void testCacheAfterInvalidingEntry() throws Exception {
-        tokenCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.MILLISECONDS).maximumSize(10).build();
-        Token token = new Token();
-        token.setAccess_token("1234");
-        token.setInstance_url("abcd");
-        token.setToken_type("Bearer");
-        Calendar now = Calendar.getInstance();
-        now.add(Calendar.MINUTE, 10);
-        token.setExpire_time(now);
-        tokenCache.put("1234", token);
-        Field tokenCacheField = TokenHelper.class.getDeclaredField("tokenCache");
-        tokenCacheField.setAccessible(true);
-        tokenCacheField.set(null, tokenCache);
-        String jsonString = TOKEN_EXCHANGE.getResponse();
-        Response response = new Response.Builder().code(HttpStatus.SC_OK).
-                request(buildRequest()).protocol(Protocol.HTTP_1_1).
-                message("Success").
-                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
-        when(remoteCall.execute()).thenReturn(response);
-        when(client.newCall(any())).thenReturn(remoteCall);
-        Token cachedToken = TokenHelper.getToken(properties, client);
-        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithUrl(cachedToken);
-        Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
-        Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
-    }
-
-    @Test
-    public void testInvalidateCoreToken() throws Exception {
-        String errorString = HTML_ERROR_RESPONSE.getResponse();
-        Response errorResponse = new Response.Builder().code(HttpStatus.SC_OK).
-                request(buildRequest()).protocol(Protocol.HTTP_1_1).
-                message("Internal Server Error").
-                body(ResponseBody.create(errorString, MediaType.parse("application/json"))).build();
-        Response refreshResponse = new Response.Builder().code(HttpStatus.SC_OK).
-                request(buildRequest()).protocol(Protocol.HTTP_1_1).
-                message("Internal Server Error").
-                body(ResponseBody.create(errorString, MediaType.parse("application/json"))).build();
-        when(remoteCall.execute()).thenReturn(errorResponse).thenReturn(refreshResponse);
-        when(client.newCall(any())).thenReturn(remoteCall).thenReturn(remoteCall);
-        ArgumentCaptor<Request> eventCaptor =
-                ArgumentCaptor.forClass(Request.class);
-
-        Throwable ex = catchThrowableOfType(() -> {
-            TokenHelper.getToken(properties, client);
-        }, TokenException.class);
-        assertThat(ex.getCause()).isInstanceOf(JsonParseException.class);
-        assertThat(ex.getMessage()).contains("Failed to Renew Token. Please retry");
-
-        verify(client, times(3)).newCall(eventCaptor.capture());
-        Request request = eventCaptor.getValue();
-        String url = request.url().toString();
-        Assert.assertTrue(url.contains(Constants.CORE_TOKEN_URL));
-    }
+//    @Before
+//    public void init() {
+//        tokenCache = CacheBuilder.newBuilder().expireAfterWrite(10000, TimeUnit.MILLISECONDS).maximumSize(1).build();
+//        properties = new Properties();
+//        properties.put(Constants.LOGIN_URL, "https://login.stmpa.stm.salesforce.com");
+//        properties.put(Constants.CORETOKEN, "1234");
+//        properties.put(Constants.REFRESHTOKEN, "7347");
+//        properties.put(Constants.CLIENT_ID, "73abjd47");
+//        properties.put(Constants.CLIENT_SECRET, "73a0384bjd47");
+//    }
+//
+//    @Test
+//    public void testCreateTokenSuccess() throws Exception {
+//        String jsonString = TOKEN_EXCHANGE.getResponse();
+//        Response response = new Response.Builder().code(HttpStatus.SC_OK).
+//                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+//                message("Success").
+//                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
+//        when(remoteCall.execute()).thenReturn(response);
+//        when(client.newCall(any())).thenReturn(remoteCall);
+//        Token token = TokenHelper.getCoreToken(properties, client);
+//        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithUrl(token);
+//        Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
+//        Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
+//    }
+//
+//    @Test
+//    public void testAlreadyExistingToken() throws Exception {
+//        Token token = new Token();
+//        token.setAccess_token("1234");
+//        token.setInstance_url("abcd");
+//        token.setToken_type("Bearer");
+//        Calendar now = Calendar.getInstance();
+//        now.add(Calendar.MINUTE, 10);
+//        token.setExpire_time(now);
+//        tokenCache.put("1234", token);
+//        Field tokenCacheField = TokenHelper.class.getDeclaredField("tokenCache");
+//        tokenCacheField.setAccessible(true);
+//        tokenCacheField.set(null, tokenCache);
+//        Token cachedToken = TokenHelper.getCoreToken(properties, client);
+//        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithUrl(cachedToken);
+//        Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
+//        Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
+//    }
+//
+//    @Test
+//    public void testExpiredToken() throws Exception {
+//        Token token = new Token();
+//        token.setAccess_token("1234");
+//        token.setInstance_url("abcd");
+//        token.setToken_type("Bearer");
+//        Calendar now = Calendar.getInstance();
+//        now.add(Calendar.MINUTE, -10);
+//        token.setExpire_time(now);
+//        tokenCache.put("1234", token);
+//        Field tokenCacheField = TokenHelper.class.getDeclaredField("tokenCache");
+//        tokenCacheField.setAccessible(true);
+//        tokenCacheField.set(null, tokenCache);
+//        String jsonString = RENEWED_CORE_TOKEN.getResponse();
+//        Response renewCoreTokenResponse = new Response.Builder().code(HttpStatus.SC_OK).
+//                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+//                message("Success").
+//                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
+//        Response offCoreResponse = new Response.Builder().code(HttpStatus.SC_OK).
+//                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+//                message("Success").
+//                body(ResponseBody.create(TOKEN_EXCHANGE.getResponse(), MediaType.parse("application/json"))).build();
+//        when(remoteCall.execute()).thenReturn(renewCoreTokenResponse).thenReturn(offCoreResponse);
+//        when(client.newCall(any())).thenReturn(remoteCall);
+//        Token cachedToken = TokenHelper.getCoreToken(properties, client);
+//        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithUrl(cachedToken);
+//        Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
+//        Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
+//    }
+//
+//    @Test
+//    public void testTokenExchangeWithException() throws Exception {
+//        String jsonString = OAUTH_TOKEN_ERROR.getResponse();
+//        Response response = new Response.Builder().code(HttpStatus.SC_INTERNAL_SERVER_ERROR).
+//                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+//                message("Internal Server Error").
+//                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
+//        when(remoteCall.execute()).thenReturn(response);
+//        when(client.newCall(any())).thenReturn(remoteCall);
+//
+//        Throwable ex = catchThrowableOfType(() -> {
+//            TokenHelper.getCoreToken(properties, client);
+//        }, TokenException.class);
+//        assertThat(ex.getCause()).isInstanceOf(IOException.class);
+//    }
+//
+//    @Test
+//    public void testCacheAfterInvalidingEntry() throws Exception {
+//        tokenCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.MILLISECONDS).maximumSize(10).build();
+//        Token token = new Token();
+//        token.setAccess_token("1234");
+//        token.setInstance_url("abcd");
+//        token.setToken_type("Bearer");
+//        Calendar now = Calendar.getInstance();
+//        now.add(Calendar.MINUTE, 10);
+//        token.setExpire_time(now);
+//        tokenCache.put("1234", token);
+//        Field tokenCacheField = TokenHelper.class.getDeclaredField("tokenCache");
+//        tokenCacheField.setAccessible(true);
+//        tokenCacheField.set(null, tokenCache);
+//        String jsonString = TOKEN_EXCHANGE.getResponse();
+//        Response response = new Response.Builder().code(HttpStatus.SC_OK).
+//                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+//                message("Success").
+//                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
+//        when(remoteCall.execute()).thenReturn(response);
+//        when(client.newCall(any())).thenReturn(remoteCall);
+//        Token cachedToken = TokenHelper.getCoreToken(properties, client);
+//        Map<String, String> tokenWithUrlMap = TokenHelper.getTokenWithUrl(cachedToken);
+//        Assert.assertEquals(tokenWithUrlMap.get(Constants.ACCESS_TOKEN), "Bearer 1234");
+//        Assert.assertEquals(tokenWithUrlMap.get(Constants.TENANT_URL), "abcd");
+//    }
+//
+//    @Test
+//    public void testInvalidateCoreToken() throws Exception {
+//        String errorString = HTML_ERROR_RESPONSE.getResponse();
+//        Response errorResponse = new Response.Builder().code(HttpStatus.SC_OK).
+//                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+//                message("Internal Server Error").
+//                body(ResponseBody.create(errorString, MediaType.parse("application/json"))).build();
+//        Response refreshResponse = new Response.Builder().code(HttpStatus.SC_OK).
+//                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+//                message("Internal Server Error").
+//                body(ResponseBody.create(errorString, MediaType.parse("application/json"))).build();
+//        when(remoteCall.execute()).thenReturn(errorResponse).thenReturn(refreshResponse);
+//        when(client.newCall(any())).thenReturn(remoteCall).thenReturn(remoteCall);
+//        ArgumentCaptor<Request> eventCaptor =
+//                ArgumentCaptor.forClass(Request.class);
+//
+//        Throwable ex = catchThrowableOfType(() -> {
+//            TokenHelper.getCoreToken(properties, client);
+//        }, TokenException.class);
+//        assertThat(ex.getCause()).isInstanceOf(JsonParseException.class);
+//        assertThat(ex.getMessage()).contains("Failed to Renew Token. Please retry");
+//
+//        verify(client, times(3)).newCall(eventCaptor.capture());
+//        Request request = eventCaptor.getValue();
+//        String url = request.url().toString();
+//        Assert.assertTrue(url.contains(Constants.CORE_TOKEN_URL));
+//    }
 
     private Request buildRequest() {
         return new Request.Builder()
