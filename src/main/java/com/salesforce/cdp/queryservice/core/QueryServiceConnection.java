@@ -17,13 +17,12 @@
 package com.salesforce.cdp.queryservice.core;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.salesforce.cdp.queryservice.auth.OffcoreToken;
 import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
 import com.salesforce.cdp.queryservice.model.QueryConfigResponse;
-import com.salesforce.cdp.queryservice.model.Token;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
-import com.salesforce.cdp.queryservice.util.TokenHelper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +42,7 @@ public class QueryServiceConnection implements Connection {
     private AtomicBoolean closed = new AtomicBoolean(false);
     private Properties properties;
     private final String serviceRootUrl;
-    private Token token;
+    private OffcoreToken token;
     private boolean enableArrowStream = false;
     private boolean isCursorBasedPaginationReq = true;
     private final boolean isSocksProxyDisabled;
@@ -432,7 +431,7 @@ public class QueryServiceConnection implements Connection {
         token = null;
     }
 
-    public void setToken(Token token) {
+    public void setToken(OffcoreToken token) {
         // Store token at connection level only for username password and key pair auth flows.
         if ((properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PD)) ||
                 (properties.containsKey(Constants.USER_NAME) && properties.containsKey(Constants.PRIVATE_KEY))) {
@@ -440,7 +439,7 @@ public class QueryServiceConnection implements Connection {
         }
     }
 
-    public Token getToken() {
+    public OffcoreToken getToken() {
         return token;
     }
 
