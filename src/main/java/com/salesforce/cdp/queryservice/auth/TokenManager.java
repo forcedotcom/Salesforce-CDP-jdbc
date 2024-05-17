@@ -18,6 +18,11 @@ public class TokenManager {
         tokenExchangeHelper = new TokenExchangeHelper(properties, client);
     }
 
+    public TokenManager(CoreTokenProvider tokenProvider, TokenExchangeHelper tokenExchangeHelper) {
+        this.tokenProvider = tokenProvider;
+        this.tokenExchangeHelper = tokenExchangeHelper;
+    }
+
     public CoreToken getCoreToken() throws TokenException {
         return tokenProvider.getCoreToken();
     }
