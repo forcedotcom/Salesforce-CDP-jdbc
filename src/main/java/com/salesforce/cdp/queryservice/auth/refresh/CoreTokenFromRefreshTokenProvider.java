@@ -43,17 +43,17 @@ public class CoreTokenFromRefreshTokenProvider implements CoreTokenProvider, Off
     @Override
     public OffcoreToken getOffcoreToken() throws TokenException {
         String coreTokenString = properties.getProperty(Constants.CORETOKEN);
-        if(properties.containsKey(Constants.CORETOKEN)) {
+        if(StringUtils.isNotBlank(coreTokenString)) {
             OffcoreToken offcoreToken = tokenCache.getIfPresent(coreTokenString);
             if (offcoreToken != null && TokenUtils.isValid(offcoreToken)) {
                 return offcoreToken;
-            } else {
-                tokenCache.invalidate(coreTokenString);
             }
         }
         CoreToken coreToken = getCoreToken();
         OffcoreToken offcoreToken = tokenExchangeHelper.exchangeToken(coreToken);
-        tokenCache.put(coreTokenString, offcoreToken);
+        if (StringUtils.isNotBlank(coreTokenString)) {
+            tokenCache.put(coreTokenString, offcoreToken);
+        }
         return offcoreToken;
     }
 
