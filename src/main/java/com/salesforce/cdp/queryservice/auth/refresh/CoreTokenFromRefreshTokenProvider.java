@@ -72,8 +72,8 @@ public class CoreTokenFromRefreshTokenProvider implements CoreTokenProvider, Off
             throw new TokenException("Client Secret cannot be null/empty");
         }
 
-        if (properties.getProperty(Constants.CLIENT_SECRET) == null || properties.getProperty(Constants.CLIENT_SECRET).isEmpty()) {
-            throw new TokenException("Client Secret cannot be null/empty");
+        if (properties.getProperty(Constants.REFRESHTOKEN) == null || properties.getProperty(Constants.REFRESHTOKEN).isEmpty()) {
+            throw new TokenException("Refresh Token cannot be null/empty");
         }
 
     }
