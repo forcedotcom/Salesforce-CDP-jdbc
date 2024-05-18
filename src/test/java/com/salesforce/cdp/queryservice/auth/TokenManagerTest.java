@@ -22,12 +22,12 @@ public class TokenManagerTest {
         TokenExchangeHelper tokenExchangeHelper = Mockito.mock(TokenExchangeHelper.class);
         OffcoreToken mockOffcoreToken = new OffcoreToken();
         mockOffcoreToken.setAccessToken("offcore_access_token");
-        Mockito.when(tokenExchangeHelper.exchangeToken(any())).thenReturn(mockOffcoreToken);
         TokenProvider tokenProvider = Mockito.mock(TokenProvider.class);
         CoreToken mockCoreToken = new CoreToken();
         mockCoreToken.setAccessToken("access_token");
         Mockito.when(tokenProvider.getCoreToken()).thenReturn(mockCoreToken);
-        TokenManager tokenManager = new TokenManager(tokenProvider, tokenExchangeHelper);
+        Mockito.when(tokenProvider.getOffcoreToken()).thenReturn(mockOffcoreToken);
+        TokenManager tokenManager = new TokenManager(tokenProvider);
 
         CoreToken coreToken = tokenManager.getCoreToken();
         Assertions.assertThat(coreToken).isEqualTo(mockCoreToken);

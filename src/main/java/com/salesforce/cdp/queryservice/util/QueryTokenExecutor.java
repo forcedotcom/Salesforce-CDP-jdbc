@@ -68,7 +68,7 @@ public class QueryTokenExecutor {
     }
 
     @SneakyThrows
-    public QueryTokenExecutor(QueryServiceConnection connection, OkHttpClient client, TokenManager tokenManager) {
+    QueryTokenExecutor(QueryServiceConnection connection, OkHttpClient client, TokenManager tokenManager) {
         // fixme: even though constructor is public currently, it is not possible
         //  for users to specify custom Client as part of connection creation
         this.connection = connection;

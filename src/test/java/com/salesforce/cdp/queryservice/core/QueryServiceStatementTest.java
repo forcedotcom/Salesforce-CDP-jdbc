@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.Properties;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -54,8 +55,11 @@ public class QueryServiceStatementTest {
     private QueryServiceStatement queryServiceStatement;
 
     @Before
-    public void init() {
+    public void init() throws SQLException {
         queryExecutor = mock(QueryExecutor.class);
+        Properties properties = new Properties();
+        properties.setProperty("refreshToken", "refreshToken");
+        Mockito.when(queryServiceConnection.getClientInfo()).thenReturn(properties);
         queryServiceStatement = new QueryServiceStatement(queryServiceConnection, ResultSet.TYPE_FORWARD_ONLY,
                 ResultSet.CONCUR_READ_ONLY) {
             @Override

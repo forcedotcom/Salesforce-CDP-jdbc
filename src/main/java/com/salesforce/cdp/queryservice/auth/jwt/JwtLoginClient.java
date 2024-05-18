@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import static com.salesforce.cdp.queryservice.auth.TokenUtils.fillArray;
 import static com.salesforce.cdp.queryservice.util.Messages.FAILED_LOGIN;
 import static com.salesforce.cdp.queryservice.util.Messages.JWT_CREATION_FAILURE;
 
@@ -61,10 +62,10 @@ public class JwtLoginClient {
             log.error("login with user credentials failed", e);
             throw new TokenException(FAILED_LOGIN, e);
         } finally {
-            Arrays.fill(grantTypeSegment, (byte)0);
-            Arrays.fill(jwsSegment, (byte)0);
-            Arrays.fill(separator, (byte)0);
-            Arrays.fill(body, (byte)0);
+            fillArray(grantTypeSegment, (byte)0);
+            fillArray(jwsSegment, (byte)0);
+            fillArray(separator, (byte)0);
+            fillArray(body, (byte)0);
         }
     }
 

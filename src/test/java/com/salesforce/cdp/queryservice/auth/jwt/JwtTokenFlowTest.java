@@ -1,6 +1,7 @@
 package com.salesforce.cdp.queryservice.auth.jwt;
 
 import com.salesforce.cdp.queryservice.auth.CoreToken;
+import com.salesforce.cdp.queryservice.auth.TokenExchangeHelper;
 import com.salesforce.cdp.queryservice.util.TokenException;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -20,11 +21,12 @@ public class JwtTokenFlowTest {
         properties.put("userName", "someusername");
         properties.put("privateKey", "someprivatekey");
         JwtLoginClient mockJwtLoginClient = Mockito.mock(JwtLoginClient.class);
+        TokenExchangeHelper mockTokenExchangeHelper = Mockito.mock(TokenExchangeHelper.class);
         CoreToken mockToken = new CoreToken();
         mockToken.setAccessToken("access_token");
         Mockito.when(mockJwtLoginClient.keyPairAuthLogin(anyString(),anyString(),anyString(),anyString(),anyString(),anyString()))
                 .thenReturn(mockToken);
-        JwtTokenFlow jwtCoreTokenProvider = new JwtTokenFlow(properties, mockJwtLoginClient);
+        JwtTokenFlow jwtCoreTokenProvider = new JwtTokenFlow(properties, mockJwtLoginClient, mockTokenExchangeHelper);
         CoreToken coreToken = jwtCoreTokenProvider.getCoreToken();
         Assertions.assertThat(coreToken).isEqualTo(mockToken);
     }

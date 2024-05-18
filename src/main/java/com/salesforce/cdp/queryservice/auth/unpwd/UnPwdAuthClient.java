@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
+import static com.salesforce.cdp.queryservice.auth.TokenUtils.fillArray;
 import static com.salesforce.cdp.queryservice.util.Messages.FAILED_LOGIN;
 
 @Slf4j
@@ -60,7 +61,7 @@ public class UnPwdAuthClient {
             log.error("login with user credentials failed", e);
             throw new TokenException(FAILED_LOGIN, e);
         } finally {
-            Arrays.fill(body, (byte)0);
+            fillArray(body, (byte)0);
         }
     }
 }

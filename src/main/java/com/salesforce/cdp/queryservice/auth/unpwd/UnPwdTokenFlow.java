@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
 
+import static com.salesforce.cdp.queryservice.auth.TokenUtils.fillArray;
 import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_FETCH_FAILURE;
 
 @Slf4j
@@ -17,10 +18,13 @@ public class UnPwdTokenFlow implements TokenProvider {
 
     private final Properties properties;
     private final UnPwdAuthClient client;
+    private final TokenExchangeHelper tokenExchangeHelper;
+    private OffcoreToken offcoreToken;
 
-    public UnPwdTokenFlow(Properties properties, UnPwdAuthClient client) {
+    public UnPwdTokenFlow(Properties properties, UnPwdAuthClient client, TokenExchangeHelper tokenExchangeHelper) {
         this.properties = properties;
         this.client = client;
+        this.tokenExchangeHelper = tokenExchangeHelper;
     }
 
     @Override
@@ -48,9 +52,17 @@ public class UnPwdTokenFlow implements TokenProvider {
             log.error("Caught exception while retrieving the token", e);
             throw new TokenException(TOKEN_FETCH_FAILURE, e);
         } finally {
-            Arrays.fill(passwordBytes, (byte) 0);
-            Arrays.fill(clientSecret, (byte)0);
+            fillArray(passwordBytes, (byte) 0);
+            fillArray(clientSecret, (byte)0);
         }
+    }
+
+    @Override
+    public OffcoreToken getOffcoreToken() throws TokenException {
+        if (TokenUtils.isValid(offcoreToken)) return offcoreToken;
+        CoreToken coreToken = getCoreToken();
+        offcoreToken = tokenExchangeHelper.exchangeToken(coreToken);
+        return offcoreToken;
     }
 
     private void validateProperties() throws TokenException {

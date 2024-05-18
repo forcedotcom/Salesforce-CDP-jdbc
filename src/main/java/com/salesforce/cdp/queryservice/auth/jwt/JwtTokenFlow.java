@@ -17,12 +17,14 @@ public class JwtTokenFlow implements TokenProvider {
 
     private final Properties properties;
     private final JwtLoginClient client;
+    private final TokenExchangeHelper tokenExchangeHelper;
 
-    private Optional<OffcoreToken> offcoreToken;
+    private OffcoreToken offcoreToken;
 
-    public JwtTokenFlow(Properties properties, JwtLoginClient client) {
+    public JwtTokenFlow(Properties properties, JwtLoginClient client, TokenExchangeHelper tokenExchangeHelper) {
         this.properties = properties;
         this.client = client;
+        this.tokenExchangeHelper = tokenExchangeHelper;
     }
 
     @Override
@@ -49,6 +51,14 @@ public class JwtTokenFlow implements TokenProvider {
             log.error("Caught exception while retrieving the token", e);
             throw new TokenException(TOKEN_FETCH_FAILURE, e);
         }
+    }
+
+    @Override
+    public OffcoreToken getOffcoreToken() throws TokenException {
+        if (TokenUtils.isValid(offcoreToken)) return offcoreToken;
+        CoreToken coreToken = getCoreToken();
+        offcoreToken = tokenExchangeHelper.exchangeToken(coreToken);
+        return offcoreToken;
     }
 
     private static void validateProperties(Properties properties) throws TokenException {

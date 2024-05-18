@@ -57,7 +57,7 @@ public class QueryExecutor extends QueryTokenExecutor {
         this.queryClient = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
     }
 
-    public QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client, TokenManager tokenManager) {
+    QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client, TokenManager tokenManager) {
         super(connection, tokenClient, tokenManager);
         client = client == null ? DEFAULT_QUERY_CLIENT : client;
         this.queryClient = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());

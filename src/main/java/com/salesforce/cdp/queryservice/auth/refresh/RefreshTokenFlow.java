@@ -12,13 +12,13 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class RefreshTokenFlow implements TokenProvider, OffcoreTokenProvider {
+public class RefreshTokenFlow implements TokenProvider {
 
     private final Properties properties;
     private final RefreshTokenClient client;
     private final TokenExchangeHelper tokenExchangeHelper;
 
-    private static Cache<String, OffcoreToken> tokenCache = CacheBuilder.newBuilder()
+    private static final Cache<String, OffcoreToken> tokenCache = CacheBuilder.newBuilder()
             .expireAfterWrite(7200000, TimeUnit.MILLISECONDS)
             .maximumSize(100).build();
 

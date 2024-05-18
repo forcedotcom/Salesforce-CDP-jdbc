@@ -4,4 +4,5 @@ import com.salesforce.cdp.queryservice.util.TokenException;
 
 public interface TokenProvider {
     CoreToken getCoreToken() throws TokenException;
+    OffcoreToken getOffcoreToken() throws TokenException;
 }

@@ -24,7 +24,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -39,7 +38,7 @@ import java.util.Properties;
 
 import static org.mockito.Mockito.*;
 
-@PrepareForTest({HttpHelper.class, CoreTokenProviderFactory.class})
+@PrepareForTest({HttpHelper.class, TokenProviderFactory.class})
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore({"jdk.internal.reflect.*", "javax.net.ssl.*"})
 public class QueryExecutorTest {

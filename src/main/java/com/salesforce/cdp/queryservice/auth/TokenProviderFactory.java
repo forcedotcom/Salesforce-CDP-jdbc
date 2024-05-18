@@ -13,16 +13,17 @@ import okhttp3.OkHttpClient;
 
 import java.util.Properties;
 
-public class CoreTokenProviderFactory {
+public class TokenProviderFactory {
 
-    public static TokenProvider getCoreTokenProvider(Properties properties, OkHttpClient client) throws TokenException {
+    public static TokenProvider getTokenProvider(Properties properties, OkHttpClient client) throws TokenException {
+        TokenExchangeHelper tokenExchangeHelper = new TokenExchangeHelper(properties, client);
         if (canSupportUsernamePasswordProvider(properties)) {
-            return new UnPwdTokenFlow(properties, new UnPwdAuthClient(client));
+            return new UnPwdTokenFlow(properties, new UnPwdAuthClient(client), tokenExchangeHelper);
         } else if (canSupportJwtProvider(properties)) {
-            return new JwtTokenFlow(properties, new JwtLoginClient(client));
+            return new JwtTokenFlow(properties, new JwtLoginClient(client), tokenExchangeHelper);
         } else if (canSupportRefreshToken(properties)) {
             return new RefreshTokenFlow(properties, new RefreshTokenClient(client),
-                    new TokenExchangeHelper(properties, client));
+                    tokenExchangeHelper);
         }
         throw new TokenException("Sufficient properties for deciding auth flow is not provided");
     }

@@ -8,18 +8,13 @@ import java.util.Properties;
 public class TokenManager {
 
     private final TokenProvider tokenProvider;
-    private final TokenExchangeHelper tokenExchangeHelper;
-
-    private OffcoreToken offcoreToken = null;
 
     public TokenManager(Properties properties, OkHttpClient client) throws TokenException {
-        tokenProvider = CoreTokenProviderFactory.getCoreTokenProvider(properties, client);
-        tokenExchangeHelper = new TokenExchangeHelper(properties, client);
+        tokenProvider = TokenProviderFactory.getTokenProvider(properties, client);
     }
 
-    public TokenManager(TokenProvider tokenProvider, TokenExchangeHelper tokenExchangeHelper) {
+    public TokenManager(TokenProvider tokenProvider) {
         this.tokenProvider = tokenProvider;
-        this.tokenExchangeHelper = tokenExchangeHelper;
     }
 
     public CoreToken getCoreToken() throws TokenException {
@@ -27,15 +22,6 @@ public class TokenManager {
     }
 
     public OffcoreToken getOffcoreToken() throws TokenException {
-        if (tokenProvider instanceof OffcoreTokenProvider) {
-            return ((OffcoreTokenProvider) tokenProvider).getOffcoreToken();
-        }
-        if (offcoreToken != null && TokenUtils.isValid(offcoreToken)) {
-            return offcoreToken;
-        }
-        CoreToken coreToken = getCoreToken();
-        OffcoreToken offcoreToken = tokenExchangeHelper.exchangeToken(coreToken);
-        this.offcoreToken = offcoreToken;
-        return offcoreToken;
+        return tokenProvider.getOffcoreToken();
     }
 }

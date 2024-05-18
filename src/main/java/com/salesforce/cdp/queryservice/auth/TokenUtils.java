@@ -8,10 +8,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class TokenUtils {
@@ -50,5 +47,11 @@ public class TokenUtils {
         tokenWithUrlMap.put(Constants.ACCESS_TOKEN, token.getTokenType() + StringUtils.SPACE + token.getAccessToken());
         tokenWithUrlMap.put(Constants.TENANT_URL, token.getInstanceUrl());
         return tokenWithUrlMap;
+    }
+
+    public static void fillArray(byte[] bytes, byte val) {
+        if (bytes != null) {
+            Arrays.fill(bytes, val);
+        }
     }
 }

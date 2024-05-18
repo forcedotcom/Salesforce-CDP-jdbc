@@ -1,6 +1,7 @@
 package com.salesforce.cdp.queryservice.auth.unpwd;
 
 import com.salesforce.cdp.queryservice.auth.CoreToken;
+import com.salesforce.cdp.queryservice.auth.TokenExchangeHelper;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.TokenException;
 import org.assertj.core.api.Assertions;
@@ -24,10 +25,12 @@ public class UnPwdTokenFlowTest {
         properties.put(Constants.PD, "somepd");
 
         UnPwdAuthClient unPwdAuthClient = Mockito.mock(UnPwdAuthClient.class);
+        TokenExchangeHelper mockTokenExchangeHelper = Mockito.mock(TokenExchangeHelper.class);
         CoreToken mockToken = new CoreToken();
         mockToken.setAccessToken("some_token");
+
         Mockito.when(unPwdAuthClient.un_pw_login(anyString(),anyString(),anyObject(),anyString(),anyObject(), anyString())).thenReturn(mockToken);
-        UnPwdTokenFlow unPwdTokenFlow = new UnPwdTokenFlow(properties, unPwdAuthClient);
+        UnPwdTokenFlow unPwdTokenFlow = new UnPwdTokenFlow(properties, unPwdAuthClient, mockTokenExchangeHelper);
 
         CoreToken coreToken = unPwdTokenFlow.getCoreToken();
         Assertions.assertThat(coreToken).isEqualTo(mockToken);
