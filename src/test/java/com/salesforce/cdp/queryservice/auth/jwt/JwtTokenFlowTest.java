@@ -10,7 +10,7 @@ import java.util.Properties;
 
 import static org.mockito.Matchers.anyString;
 
-public class JwtCoreTokenProviderTest {
+public class JwtTokenFlowTest {
 
     @Test
     public void testJwtCoreTokenProvider() throws TokenException {
@@ -24,7 +24,7 @@ public class JwtCoreTokenProviderTest {
         mockToken.setAccessToken("access_token");
         Mockito.when(mockJwtLoginClient.keyPairAuthLogin(anyString(),anyString(),anyString(),anyString(),anyString(),anyString()))
                 .thenReturn(mockToken);
-        JwtCoreTokenProvider jwtCoreTokenProvider = new JwtCoreTokenProvider(properties, mockJwtLoginClient);
+        JwtTokenFlow jwtCoreTokenProvider = new JwtTokenFlow(properties, mockJwtLoginClient);
         CoreToken coreToken = jwtCoreTokenProvider.getCoreToken();
         Assertions.assertThat(coreToken).isEqualTo(mockToken);
     }

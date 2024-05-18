@@ -8,12 +8,11 @@ import com.salesforce.cdp.queryservice.util.TokenException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class CoreTokenFromRefreshTokenProvider implements CoreTokenProvider, OffcoreTokenProvider {
+public class RefreshTokenFlow implements TokenProvider, OffcoreTokenProvider {
 
     private final Properties properties;
     private final RefreshTokenClient client;
@@ -23,7 +22,7 @@ public class CoreTokenFromRefreshTokenProvider implements CoreTokenProvider, Off
             .expireAfterWrite(7200000, TimeUnit.MILLISECONDS)
             .maximumSize(100).build();
 
-    public CoreTokenFromRefreshTokenProvider(Properties properties, RefreshTokenClient client, TokenExchangeHelper tokenExchangeHelper) {
+    public RefreshTokenFlow(Properties properties, RefreshTokenClient client, TokenExchangeHelper tokenExchangeHelper) {
         this.properties = properties;
         this.client = client;
         this.tokenExchangeHelper = tokenExchangeHelper;

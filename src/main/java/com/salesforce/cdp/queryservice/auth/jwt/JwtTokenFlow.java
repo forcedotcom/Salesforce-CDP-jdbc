@@ -13,14 +13,14 @@ import java.util.Properties;
 import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_FETCH_FAILURE;
 
 @Slf4j
-public class JwtCoreTokenProvider implements CoreTokenProvider {
+public class JwtTokenFlow implements TokenProvider {
 
     private final Properties properties;
     private final JwtLoginClient client;
 
     private Optional<OffcoreToken> offcoreToken;
 
-    public JwtCoreTokenProvider(Properties properties, JwtLoginClient client) {
+    public JwtTokenFlow(Properties properties, JwtLoginClient client) {
         this.properties = properties;
         this.client = client;
     }

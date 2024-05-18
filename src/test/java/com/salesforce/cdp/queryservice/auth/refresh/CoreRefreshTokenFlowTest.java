@@ -13,7 +13,7 @@ import java.util.Properties;
 
 import static org.mockito.Matchers.anyString;
 
-public class CoreTokenFromRefreshTokenProviderTest {
+public class CoreRefreshTokenFlowTest {
 
     @Test
     public void testCoreTokenWithRefreshTokenTest() throws TokenException {
@@ -29,8 +29,8 @@ public class CoreTokenFromRefreshTokenProviderTest {
         mockToken.setAccessToken("some_access_token");
         Mockito.when(refreshTokenClient.getCoreToken(anyString(),anyString(),anyString(),anyString())).thenReturn(mockToken);
         TokenExchangeHelper tokenExchangeHelper = Mockito.mock(TokenExchangeHelper.class);
-        CoreTokenFromRefreshTokenProvider coreTokenFromRefreshTokenProvider = new CoreTokenFromRefreshTokenProvider(properties, refreshTokenClient, tokenExchangeHelper);
-        CoreToken coreToken = coreTokenFromRefreshTokenProvider.getCoreToken();
+        RefreshTokenFlow coreRefreshTokenFlow = new RefreshTokenFlow(properties, refreshTokenClient, tokenExchangeHelper);
+        CoreToken coreToken = coreRefreshTokenFlow.getCoreToken();
         Assertions.assertThat(coreToken).isEqualTo(mockToken);
         Assertions.assertThat(properties.get("refreshToken")).isEqualTo("some_refresh_token");
     }
@@ -56,9 +56,9 @@ public class CoreTokenFromRefreshTokenProviderTest {
         expiryTime.add(Calendar.HOUR, 24);
         mockOffcoreToken.setExpireTime(expiryTime);
         Mockito.when(tokenExchangeHelper.exchangeToken(Mockito.any())).thenReturn(mockOffcoreToken);
-        CoreTokenFromRefreshTokenProvider coreTokenFromRefreshTokenProvider = new CoreTokenFromRefreshTokenProvider(properties, refreshTokenClient, tokenExchangeHelper);
-        OffcoreToken offcoreToken = coreTokenFromRefreshTokenProvider.getOffcoreToken();
-        offcoreToken = coreTokenFromRefreshTokenProvider.getOffcoreToken();
+        RefreshTokenFlow coreRefreshTokenFlow = new RefreshTokenFlow(properties, refreshTokenClient, tokenExchangeHelper);
+        OffcoreToken offcoreToken = coreRefreshTokenFlow.getOffcoreToken();
+        offcoreToken = coreRefreshTokenFlow.getOffcoreToken();
         Assertions.assertThat(offcoreToken).isEqualTo(mockOffcoreToken);
         Mockito.verify(tokenExchangeHelper, Mockito.times(1)).exchangeToken(Mockito.eq(mockToken));
     }
@@ -84,9 +84,9 @@ public class CoreTokenFromRefreshTokenProviderTest {
         expiryTime.add(Calendar.HOUR, -100);
         mockOffcoreToken.setExpireTime(expiryTime);
         Mockito.when(tokenExchangeHelper.exchangeToken(Mockito.any())).thenReturn(mockOffcoreToken);
-        CoreTokenFromRefreshTokenProvider coreTokenFromRefreshTokenProvider = new CoreTokenFromRefreshTokenProvider(properties, refreshTokenClient, tokenExchangeHelper);
-        OffcoreToken offcoreToken = coreTokenFromRefreshTokenProvider.getOffcoreToken();
-        offcoreToken = coreTokenFromRefreshTokenProvider.getOffcoreToken();
+        RefreshTokenFlow coreRefreshTokenFlow = new RefreshTokenFlow(properties, refreshTokenClient, tokenExchangeHelper);
+        OffcoreToken offcoreToken = coreRefreshTokenFlow.getOffcoreToken();
+        offcoreToken = coreRefreshTokenFlow.getOffcoreToken();
         Assertions.assertThat(offcoreToken).isEqualTo(mockOffcoreToken);
         Mockito.verify(tokenExchangeHelper, Mockito.times(2)).exchangeToken(Mockito.eq(mockToken));
     }

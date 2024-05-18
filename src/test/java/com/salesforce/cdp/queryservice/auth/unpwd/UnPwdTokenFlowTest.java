@@ -12,7 +12,7 @@ import java.util.Properties;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 
-public class UnPwdTokenProviderTest {
+public class UnPwdTokenFlowTest {
 
     @Test
     public void testUsernamePasswrdFlow() throws TokenException {
@@ -27,9 +27,9 @@ public class UnPwdTokenProviderTest {
         CoreToken mockToken = new CoreToken();
         mockToken.setAccessToken("some_token");
         Mockito.when(unPwdAuthClient.un_pw_login(anyString(),anyString(),anyObject(),anyString(),anyObject(), anyString())).thenReturn(mockToken);
-        UnPwdTokenProvider unPwdTokenProvider = new UnPwdTokenProvider(properties, unPwdAuthClient);
+        UnPwdTokenFlow unPwdTokenFlow = new UnPwdTokenFlow(properties, unPwdAuthClient);
 
-        CoreToken coreToken = unPwdTokenProvider.getCoreToken();
+        CoreToken coreToken = unPwdTokenFlow.getCoreToken();
         Assertions.assertThat(coreToken).isEqualTo(mockToken);
     }
 

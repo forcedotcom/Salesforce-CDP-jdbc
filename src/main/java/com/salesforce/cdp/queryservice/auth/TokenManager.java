@@ -3,12 +3,11 @@ package com.salesforce.cdp.queryservice.auth;
 import com.salesforce.cdp.queryservice.util.TokenException;
 import okhttp3.OkHttpClient;
 
-import java.util.Optional;
 import java.util.Properties;
 
 public class TokenManager {
 
-    private final CoreTokenProvider tokenProvider;
+    private final TokenProvider tokenProvider;
     private final TokenExchangeHelper tokenExchangeHelper;
 
     private OffcoreToken offcoreToken = null;
@@ -18,7 +17,7 @@ public class TokenManager {
         tokenExchangeHelper = new TokenExchangeHelper(properties, client);
     }
 
-    public TokenManager(CoreTokenProvider tokenProvider, TokenExchangeHelper tokenExchangeHelper) {
+    public TokenManager(TokenProvider tokenProvider, TokenExchangeHelper tokenExchangeHelper) {
         this.tokenProvider = tokenProvider;
         this.tokenExchangeHelper = tokenExchangeHelper;
     }

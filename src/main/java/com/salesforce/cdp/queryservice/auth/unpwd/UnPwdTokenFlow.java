@@ -8,18 +8,17 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Properties;
 
 import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_FETCH_FAILURE;
 
 @Slf4j
-public class UnPwdTokenProvider implements CoreTokenProvider {
+public class UnPwdTokenFlow implements TokenProvider {
 
     private final Properties properties;
     private final UnPwdAuthClient client;
 
-    public UnPwdTokenProvider(Properties properties, UnPwdAuthClient client) {
+    public UnPwdTokenFlow(Properties properties, UnPwdAuthClient client) {
         this.properties = properties;
         this.client = client;
     }
