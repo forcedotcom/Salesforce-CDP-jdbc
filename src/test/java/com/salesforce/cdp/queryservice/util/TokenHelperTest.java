@@ -200,7 +200,6 @@ public class TokenHelperTest {
         assertThat(ex.getMessage()).contains("Failed to Renew Token. Please retry");
 
         verify(client, times(3)).newCall(eventCaptor.capture());
-
         Request request = eventCaptor.getValue();
         String url = request.url().toString();
         Assert.assertTrue(url.contains(Constants.CORE_TOKEN_URL));
