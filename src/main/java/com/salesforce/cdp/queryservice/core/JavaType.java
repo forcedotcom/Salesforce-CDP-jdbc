@@ -29,7 +29,9 @@ public enum JavaType implements SQLType {
 
     NUMBER(Types.NUMERIC, "NUMBER"),
 
-    BOOLEAN(Types.BOOLEAN, "BOOLEAN");
+    BOOLEAN(Types.BOOLEAN, "BOOLEAN"),
+
+    ARRAY(Types.ARRAY, "ARRAY");
 
     private Integer type;
 

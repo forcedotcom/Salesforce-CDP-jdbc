@@ -113,6 +113,26 @@ public class QueryServiceStatementTest {
     }
 
     @Test
+    public void testExecuteQueryListOfFloatsWithSuccessfulResponse() throws IOException, SQLException {
+        String jsonString = ResponseEnum.QUERY_RESPONSE_WITH_LIST_OF_FLOATS.getResponse();
+        Response response = new Response.Builder().code(HttpStatus.SC_OK).
+                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+                message("Successful").
+                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
+        doReturn(response).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
+        ResultSet resultSet = queryServiceStatement.executeQuery("select TelephoneNumber__c, VectorEmbedding__c from ContactPointPhone__dlm GROUP BY 1");
+        int count = 0;
+        while (resultSet.next()) {
+            Assert.assertNotNull(resultSet.getString(1));
+            count++;
+        }
+        Assert.assertEquals(2, resultSet.getMetaData().getColumnCount());
+        Assert.assertEquals("VectorEmbedding__c", resultSet.getMetaData().getColumnName(2));
+        Assert.assertEquals(2003, resultSet.getMetaData().getColumnType(2));
+        Assert.assertEquals(count, 2);
+    }
+
+    @Test
     public void testExceuteQueryWithIOException() throws IOException, SQLException {
         doThrow(new IOException("IO Exception")).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
         Throwable ex = catchThrowableOfType(() -> {
