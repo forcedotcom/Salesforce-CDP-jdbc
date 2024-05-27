@@ -124,12 +124,12 @@ public class QueryServiceResultSetMetaData implements ResultSetMetaData {
     @Override
     public int getPrecision(int column) throws SQLException {
         //TODO: Check if this is needed.
-        return 9;
+        return 18;
     }
 
     @Override
     public int getScale(int column) throws SQLException {
-        return 9;
+        return 38;
     }
 
     @Override
