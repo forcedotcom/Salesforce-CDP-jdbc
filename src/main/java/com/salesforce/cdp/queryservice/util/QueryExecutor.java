@@ -52,15 +52,17 @@ public class QueryExecutor extends QueryTokenExecutor {
     }
 
     public QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client) {
-        super(connection, tokenClient);
-        client = client == null ? DEFAULT_QUERY_CLIENT : client;
-        this.queryClient = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
+        this(connection, tokenClient, client, null);
     }
 
     QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client, TokenManager tokenManager) {
         super(connection, tokenClient, tokenManager);
+        queryClient = getQueryClient(connection, client);
+    }
+
+    private OkHttpClient getQueryClient(QueryServiceConnection connection, OkHttpClient client) {
         client = client == null ? DEFAULT_QUERY_CLIENT : client;
-        this.queryClient = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
+        return updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
     }
 
     public Response executeQuery(String sql, boolean isV2Query, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
