@@ -13,9 +13,12 @@ import java.util.*;
 @Slf4j
 public class TokenUtils {
 
-    public static boolean isValid(OffcoreToken coreToken) {
-        Calendar now = Calendar.getInstance();
-        return now.compareTo(coreToken.getExpireTime()) < 1;
+    public static boolean isValid(OffcoreToken offcoreToken) {
+        if (offcoreToken != null) {
+            Calendar now = Calendar.getInstance();
+            return now.compareTo(offcoreToken.getExpireTime()) < 1;
+        }
+        return false;
     }
 
     public static void invalidateCoreToken(String url, String coreToken, OkHttpClient client) {
