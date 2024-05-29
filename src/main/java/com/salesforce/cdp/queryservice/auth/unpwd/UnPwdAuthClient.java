@@ -1,7 +1,7 @@
 package com.salesforce.cdp.queryservice.auth.unpwd;
 
 import com.google.common.primitives.Bytes;
-import com.salesforce.cdp.queryservice.auth.CoreToken;
+import com.salesforce.cdp.queryservice.auth.token.CoreToken;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
 import com.salesforce.cdp.queryservice.util.TokenException;
@@ -11,7 +11,6 @@ import okhttp3.*;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 

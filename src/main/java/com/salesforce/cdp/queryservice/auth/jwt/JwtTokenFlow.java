@@ -1,13 +1,13 @@
 package com.salesforce.cdp.queryservice.auth.jwt;
 
 import com.salesforce.cdp.queryservice.auth.*;
-import com.salesforce.cdp.queryservice.model.CoreTokenRenewResponse;
+import com.salesforce.cdp.queryservice.auth.token.CoreToken;
+import com.salesforce.cdp.queryservice.auth.token.OffcoreToken;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.TokenException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.SQLException;
-import java.util.Optional;
 import java.util.Properties;
 
 import static com.salesforce.cdp.queryservice.util.Messages.TOKEN_FETCH_FAILURE;

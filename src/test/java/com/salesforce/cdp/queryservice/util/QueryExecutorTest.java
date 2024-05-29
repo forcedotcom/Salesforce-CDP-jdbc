@@ -17,6 +17,7 @@
 package com.salesforce.cdp.queryservice.util;
 
 import com.salesforce.cdp.queryservice.auth.*;
+import com.salesforce.cdp.queryservice.auth.token.OffcoreToken;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import okhttp3.*;
 import org.apache.http.HttpStatus;

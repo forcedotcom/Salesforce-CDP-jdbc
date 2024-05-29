@@ -1,6 +1,6 @@
 package com.salesforce.cdp.queryservice.auth.unpwd;
 
-import com.salesforce.cdp.queryservice.auth.CoreToken;
+import com.salesforce.cdp.queryservice.auth.token.CoreToken;
 import com.salesforce.cdp.queryservice.auth.TokenExchangeHelper;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.TokenException;

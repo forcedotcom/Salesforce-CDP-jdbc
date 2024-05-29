@@ -3,6 +3,8 @@ package com.salesforce.cdp.queryservice.auth.refresh;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.salesforce.cdp.queryservice.auth.*;
+import com.salesforce.cdp.queryservice.auth.token.CoreToken;
+import com.salesforce.cdp.queryservice.auth.token.OffcoreToken;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.TokenException;
 import lombok.extern.slf4j.Slf4j;

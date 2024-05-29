@@ -1,13 +1,14 @@
 package com.salesforce.cdp.queryservice.auth.unpwd;
 
 import com.salesforce.cdp.queryservice.auth.*;
+import com.salesforce.cdp.queryservice.auth.token.CoreToken;
+import com.salesforce.cdp.queryservice.auth.token.OffcoreToken;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.TokenException;
 import com.salesforce.cdp.queryservice.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Properties;
 
 import static com.salesforce.cdp.queryservice.auth.TokenUtils.fillArray;

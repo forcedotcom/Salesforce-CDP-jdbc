@@ -1,6 +1,6 @@
 package com.salesforce.cdp.queryservice.auth.jwt;
 
-import com.salesforce.cdp.queryservice.auth.CoreToken;
+import com.salesforce.cdp.queryservice.auth.token.CoreToken;
 import com.salesforce.cdp.queryservice.auth.TokenExchangeHelper;
 import com.salesforce.cdp.queryservice.util.TokenException;
 import org.assertj.core.api.Assertions;

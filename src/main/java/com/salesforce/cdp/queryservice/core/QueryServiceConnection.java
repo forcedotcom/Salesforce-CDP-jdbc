@@ -17,7 +17,7 @@
 package com.salesforce.cdp.queryservice.core;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.salesforce.cdp.queryservice.auth.OffcoreToken;
+import com.salesforce.cdp.queryservice.auth.token.OffcoreToken;
 import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
 import com.salesforce.cdp.queryservice.model.QueryConfigResponse;
 import com.salesforce.cdp.queryservice.util.Constants;

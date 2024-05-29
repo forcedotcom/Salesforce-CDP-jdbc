@@ -17,7 +17,7 @@
 package com.salesforce.cdp.queryservice.util;
 
 import com.google.gson.Gson;
-import com.salesforce.cdp.queryservice.auth.CoreToken;
+import com.salesforce.cdp.queryservice.auth.token.CoreToken;
 import com.salesforce.cdp.queryservice.auth.TokenManager;
 import com.salesforce.cdp.queryservice.auth.TokenUtils;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
