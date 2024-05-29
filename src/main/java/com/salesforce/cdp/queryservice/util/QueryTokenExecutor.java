@@ -16,17 +16,20 @@
 
 package com.salesforce.cdp.queryservice.util;
 
+import com.salesforce.cdp.queryservice.auth.token.CoreToken;
+import com.salesforce.cdp.queryservice.auth.token.OffcoreToken;
+import com.salesforce.cdp.queryservice.auth.TokenManager;
+import com.salesforce.cdp.queryservice.auth.TokenUtils;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
 import com.salesforce.cdp.queryservice.interceptors.MetadataCacheInterceptor;
-import com.salesforce.cdp.queryservice.model.Token;
 import com.salesforce.cdp.queryservice.util.internal.SFDefaultSocketFactoryWrapper;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.FailsafeException;
 import net.jodah.failsafe.RetryPolicy;
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.StringUtils;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -53,17 +56,34 @@ public class QueryTokenExecutor {
 
     protected final QueryServiceConnection connection;
     private final OkHttpClient client;
+    private final TokenManager tokenManager;
 
     public QueryTokenExecutor(QueryServiceConnection connection) {
         this(connection, DEFAULT_CLIENT);
     }
 
+    @SneakyThrows
     public QueryTokenExecutor(QueryServiceConnection connection, OkHttpClient client) {
+        this(connection, client, null);
+    }
+
+    @SneakyThrows
+    QueryTokenExecutor(QueryServiceConnection connection, OkHttpClient client, TokenManager tokenManager) {
         // fixme: even though constructor is public currently, it is not possible
         //  for users to specify custom Client as part of connection creation
         this.connection = connection;
 
         client = client == null ? DEFAULT_CLIENT : client;
+
+        try {
+            this.tokenManager = tokenManager == null ? new TokenManager(connection.getClientInfo(), client) : tokenManager;
+        } catch (TokenException e) {
+            log.error("Caught Exception while initialising the token executor", e);
+            throw e;
+        } catch (SQLException e) {
+            log.error("Caught Exception while initialising the client properties", e);
+            throw e;
+        }
 
         // this makes query executor not reuse across requests
         this.client = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
@@ -87,8 +107,8 @@ public class QueryTokenExecutor {
     }
 
     protected Map<String, String> getTokenWithTenantUrl() throws SQLException {
-        if (connection.getToken() != null && TokenHelper.isAlive(connection.getToken())) {
-            return TokenHelper.getTokenWithUrl(connection.getToken());
+        if (connection.getToken() != null && TokenUtils.isValid(connection.getToken())) {
+            return TokenUtils.getTokenWithUrl(connection.getToken());
         }
         // todo: add a wrapper for retry mechanism
         //  check if delay or backoff need to introduced b/w each retry
@@ -103,9 +123,9 @@ public class QueryTokenExecutor {
             // Here, only one policy is used i.e, retry policy
             return Failsafe.with(retryPolicy)
                     .get(() -> {
-                        Token token = TokenHelper.getToken(connection.getClientInfo(), client);
+                        OffcoreToken token = tokenManager.getOffcoreToken();
                         connection.setToken(token);
-                        return TokenHelper.getTokenWithUrl(token);
+                        return TokenUtils.getTokenWithUrl(token);
                     });
         } catch (FailsafeException e) {
             if (e.getCause() != null) {
@@ -131,8 +151,8 @@ public class QueryTokenExecutor {
         }
         return client;
     }
-    protected String getCoreToken() throws SQLException, TokenException {
-        return Constants.BEARER + StringUtils.SPACE + TokenHelper.getCoreToken(connection.getClientInfo(),client);
+    protected CoreToken getCoreToken() throws SQLException, TokenException {
+        return tokenManager.getCoreToken();
     }
 
 }
