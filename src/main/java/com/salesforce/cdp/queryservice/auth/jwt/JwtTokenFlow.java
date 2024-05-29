@@ -31,7 +31,6 @@ public class JwtTokenFlow implements TokenProvider {
     public CoreToken getCoreToken() throws TokenException {
         validateProperties(properties);
         String token_url = properties.getProperty(Constants.LOGIN_URL) + Constants.CORE_TOKEN_URL;
-        CoreTokenRenewResponse coreTokenRenewResponse = null;
         try {
             String audience = getAudienceForJWTAssertion(properties.getProperty(Constants.LOGIN_URL));
 
