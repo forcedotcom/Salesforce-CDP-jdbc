@@ -2,6 +2,7 @@ package com.salesforce.cdp.queryservice.auth;
 
 import com.salesforce.cdp.queryservice.auth.token.CoreToken;
 import com.salesforce.cdp.queryservice.auth.token.OffcoreToken;
+import com.salesforce.cdp.queryservice.auth.token.Token;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -40,14 +41,7 @@ public class TokenUtils {
         }
     }
 
-    public static Map<String, String> getTokenWithUrl(OffcoreToken token) {
-        Map<String, String> tokenWithUrlMap = new HashMap<>();
-        tokenWithUrlMap.put(Constants.ACCESS_TOKEN, token.getTokenType() + StringUtils.SPACE + token.getAccessToken());
-        tokenWithUrlMap.put(Constants.TENANT_URL, token.getInstanceUrl());
-        return tokenWithUrlMap;
-    }
-
-    public static Map<String, String> getTokenWithUrl(CoreToken token) {
+    public static Map<String, String> getTokenWithUrl(Token token) {
         Map<String, String> tokenWithUrlMap = new HashMap<>();
         tokenWithUrlMap.put(Constants.ACCESS_TOKEN, token.getTokenType() + StringUtils.SPACE + token.getAccessToken());
         tokenWithUrlMap.put(Constants.TENANT_URL, token.getInstanceUrl());
