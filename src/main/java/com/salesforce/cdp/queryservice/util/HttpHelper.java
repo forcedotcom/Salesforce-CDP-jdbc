@@ -58,7 +58,7 @@ public class HttpHelper {
         return new ObjectMapper().readValue(responseString, type);
     }
 
-    protected static Request buildRequest(String method, String url, RequestBody body, Map<String, String> headers) {
+    public static Request buildRequest(String method, String url, RequestBody body, Map<String, String> headers) {
         Request.Builder builder = new Request.Builder()
                 .url(url)
                 .method(method, body);

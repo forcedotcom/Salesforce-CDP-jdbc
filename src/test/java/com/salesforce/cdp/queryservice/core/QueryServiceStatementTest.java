@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.Properties;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -54,8 +55,11 @@ public class QueryServiceStatementTest {
     private QueryServiceStatement queryServiceStatement;
 
     @Before
-    public void init() {
+    public void init() throws SQLException {
         queryExecutor = mock(QueryExecutor.class);
+        Properties properties = new Properties();
+        properties.setProperty("refreshToken", "refreshToken");
+        Mockito.when(queryServiceConnection.getClientInfo()).thenReturn(properties);
         queryServiceStatement = new QueryServiceStatement(queryServiceConnection, ResultSet.TYPE_FORWARD_ONLY,
                 ResultSet.CONCUR_READ_ONLY) {
             @Override
@@ -110,6 +114,26 @@ public class QueryServiceStatementTest {
         doReturn(response).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
         ResultSet resultSet = queryServiceStatement.executeQuery("select TelephoneNumber__c from ContactPointPhone__dlm GROUP BY 1");
         Assert.assertFalse(resultSet.next());
+    }
+
+    @Test
+    public void testExecuteQueryListOfFloatsWithSuccessfulResponse() throws IOException, SQLException {
+        String jsonString = ResponseEnum.QUERY_RESPONSE_WITH_LIST_OF_FLOATS.getResponse();
+        Response response = new Response.Builder().code(HttpStatus.SC_OK).
+                request(buildRequest()).protocol(Protocol.HTTP_1_1).
+                message("Successful").
+                body(ResponseBody.create(jsonString, MediaType.parse("application/json"))).build();
+        doReturn(response).when(queryExecutor).executeQuery(anyString(), anyBoolean(), any(Optional.class), any(Optional.class), any(Optional.class));
+        ResultSet resultSet = queryServiceStatement.executeQuery("select TelephoneNumber__c, VectorEmbedding__c from ContactPointPhone__dlm GROUP BY 1");
+        int count = 0;
+        while (resultSet.next()) {
+            Assert.assertNotNull(resultSet.getString(1));
+            count++;
+        }
+        Assert.assertEquals(2, resultSet.getMetaData().getColumnCount());
+        Assert.assertEquals("VectorEmbedding__c", resultSet.getMetaData().getColumnName(2));
+        Assert.assertEquals(2003, resultSet.getMetaData().getColumnType(2));
+        Assert.assertEquals(count, 2);
     }
 
     @Test

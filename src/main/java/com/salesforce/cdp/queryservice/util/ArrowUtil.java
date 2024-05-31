@@ -22,6 +22,7 @@ import org.apache.arrow.vector.TimeStampNanoVector;
 import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.complex.ListVector;
 import org.apache.arrow.vector.ipc.ArrowStreamReader;
 import org.apache.arrow.vector.types.Types;
 import org.apache.arrow.vector.util.Text;
@@ -154,6 +155,8 @@ public class ArrowUtil {
 			return epochMillis;
 		} else if (type == Types.MinorType.TIMESTAMPMILLI) {
 			return ((TimeStampMilliVector) fieldVector).getObject(index);
+		} else if (type == Types.MinorType.LIST) {
+			return ((ListVector) fieldVector).getObject(index);
 		}
 		throw new SQLException(MessageFormat.format("Unknown arrow type {0}", type.name()));
 	}

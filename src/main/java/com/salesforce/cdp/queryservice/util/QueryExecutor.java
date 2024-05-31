@@ -17,6 +17,9 @@
 package com.salesforce.cdp.queryservice.util;
 
 import com.google.gson.Gson;
+import com.salesforce.cdp.queryservice.auth.token.CoreToken;
+import com.salesforce.cdp.queryservice.auth.TokenManager;
+import com.salesforce.cdp.queryservice.auth.TokenUtils;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.interceptors.RetryInterceptor;
 import com.salesforce.cdp.queryservice.model.AnsiQueryRequest;
@@ -49,9 +52,17 @@ public class QueryExecutor extends QueryTokenExecutor {
     }
 
     public QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client) {
-        super(connection, tokenClient);
+        this(connection, tokenClient, client, null);
+    }
+
+    QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client, TokenManager tokenManager) {
+        super(connection, tokenClient, tokenManager);
+        queryClient = getQueryClient(connection, client);
+    }
+
+    private OkHttpClient getQueryClient(QueryServiceConnection connection, OkHttpClient client) {
         client = client == null ? DEFAULT_QUERY_CLIENT : client;
-        this.queryClient = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
+        return updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
     }
 
     public Response executeQuery(String sql, boolean isV2Query, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {
@@ -135,14 +146,16 @@ public class QueryExecutor extends QueryTokenExecutor {
     public Response getDataspaces()  {
         try{
 
-        Properties connectionProperties = connection.getClientInfo();
-        String url = connectionProperties.getProperty(Constants.LOGIN_URL)+Constants.DATASPACE_URL;
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.AUTHORIZATION,getCoreToken());
-        headers.put(Constants.CONTENT_TYPE, Constants.JSON_CONTENT);
+            Properties connectionProperties = connection.getClientInfo();
+            String url = connectionProperties.getProperty(Constants.LOGIN_URL)+Constants.DATASPACE_URL;
+            CoreToken coreToken = getCoreToken();
+            Map<String, String> tokenWithUrl = TokenUtils.getTokenWithUrl(coreToken);
+            Map<String, String> headers = new HashMap<>();
+            headers.put(Constants.AUTHORIZATION, tokenWithUrl.get(Constants.ACCESS_TOKEN));
+            headers.put(Constants.CONTENT_TYPE, Constants.JSON_CONTENT);
 
-        Request request = HttpHelper.buildRequest(Constants.GET, url, null,headers );
-        return getResponse(request);
+            Request request = HttpHelper.buildRequest(Constants.GET, url, null,headers );
+            return getResponse(request);
         }
         catch(Exception e){
             log.error("Error while fetching dataspace",e);
