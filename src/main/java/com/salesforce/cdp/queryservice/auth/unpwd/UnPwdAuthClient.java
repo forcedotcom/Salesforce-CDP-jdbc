@@ -47,10 +47,14 @@ public class UnPwdAuthClient {
                 separator, userNameSegment, separator, passwordSegment, passwordBytes
         );
         try {
+            log.info("Fetching the core token using UN Password Flow");
             RequestBody requestBody = RequestBody.create(body, MediaType.parse(Constants.URL_ENCODED_CONTENT));
             Map<String, String> headers = Collections.singletonMap(Constants.CONTENT_TYPE, Constants.URL_ENCODED_CONTENT);
             Request request = HttpHelper.buildRequest(Constants.POST, tokenUrl, requestBody, headers);
+            long l = System.currentTimeMillis();
+            log.info("Starting request to get core token using username password flow");
             Response response = client.newCall(request).execute();
+            log.info("Finished request to get core token using username password flow in {}ms", System.currentTimeMillis() - l);
             if (!response.isSuccessful()) {
                 log.error("login with user credentials failed with status code {}", response.code());
                 HttpHelper.handleErrorResponse(response, Constants.ERROR_DESCRIPTION);
