@@ -29,6 +29,7 @@ public class RefreshTokenClient {
 
     public CoreToken getCoreToken(String url, String refreshToken, String clientId, String secret) throws TokenException {
         String token_url = url + Constants.CORE_TOKEN_URL;
+        log.info("Fetching Refresh token using URL : {}", token_url);
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(Constants.GRANT_TYPE_NAME, Constants.REFRESH_TOKEN_GRANT_TYPE);
         requestBody.put(Constants.CLIENT_ID_NAME, clientId);

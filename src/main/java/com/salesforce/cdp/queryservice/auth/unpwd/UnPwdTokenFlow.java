@@ -33,6 +33,7 @@ public class UnPwdTokenFlow implements TokenProvider {
         log.info("Getting core token using username password flow");
         validateProperties();
         String token_url = properties.getProperty(Constants.LOGIN_URL) + Constants.CORE_TOKEN_URL;
+        log.info("Fetching core token from url: {}", token_url);
         byte[] passwordBytes = null;
         byte[] clientSecret = null;
         // Convert the password and client secret to byte arrays so, we can empty them at will.
