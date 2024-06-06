@@ -19,7 +19,14 @@ public class TokenUtils {
     public static boolean isValid(OffcoreToken offcoreToken) {
         if (offcoreToken != null) {
             Calendar now = Calendar.getInstance();
-            return now.compareTo(offcoreToken.getExpireTime()) < 1;
+            if (now.compareTo(offcoreToken.getExpireTime()) < 1) {
+                log.info("Offcore token is still valid");
+                return true;
+            } else {
+                log.info("Current token is expired");
+            }
+        } else {
+            log.info("No existing tokens available");
         }
         return false;
     }
@@ -36,6 +43,7 @@ public class TokenUtils {
             Request request = HttpHelper.buildRequest(Constants.POST, tokenRevokeUrl, formBody, headers);
             // Response is not needed for this call.
             client.newCall(request).execute();
+            log.info("Successfully invalidated the core token");
         } catch (Exception e) {
             log.error("Revoking the core token failed", e);
         }

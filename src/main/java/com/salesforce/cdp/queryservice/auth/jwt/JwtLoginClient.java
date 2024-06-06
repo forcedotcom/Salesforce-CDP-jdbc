@@ -39,6 +39,7 @@ public class JwtLoginClient {
             String grantType, String clientId,
             String userName, String privateKey, String audience, String tokenUrl
     ) throws TokenException {
+        log.info("Fetching core token using pvt key from url : {}", tokenUrl);
         byte[] grantTypeSegment = (Constants.GRANT_TYPE_NAME + Constants.TOKEN_ASSIGNMENT + grantType)
                 .getBytes(StandardCharsets.UTF_8);
         byte[] jwsSegment = (Constants.ASSERTION + Constants.TOKEN_ASSIGNMENT +

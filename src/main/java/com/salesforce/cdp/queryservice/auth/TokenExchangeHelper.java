@@ -30,17 +30,24 @@ public class TokenExchangeHelper {
     }
 
     public OffcoreToken exchangeToken(CoreToken coreToken) throws TokenException {
-        return exchangeToken(properties.getProperty(Constants.LOGIN_URL),
+        log.info("Exchanging core token for cdp token");
+        OffcoreToken offcoreToken = exchangeToken(coreToken.getInstanceUrl(),
                 coreToken.getAccessToken(), properties.getProperty(Constants.DATASPACE));
+        log.info("Finished exchanging core token for CDP token");
+        return offcoreToken;
     }
 
     private OffcoreToken exchangeToken(String url, String coreToken, String dataspace) throws TokenException {
+        log.info("Token exchange url : {}", url);
         String token_url = url + Constants.TOKEN_EXCHANGE_URL;
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put(Constants.GRANT_TYPE_NAME, Constants.GRANT_TYPE);
         requestBody.put(Constants.SUBJECT_TOKEN_TYPE_NAME, Constants.SUBJECT_TOKEN_TYPE);
         requestBody.put(Constants.SUBJECT_TOKEN, coreToken);
-        if(StringUtils.isNotBlank(dataspace)) {requestBody.put(Constants.DATASPACE,dataspace);}
+        if(StringUtils.isNotBlank(dataspace)) {
+            log.info("Token exchange dataspace : {}", dataspace);
+            requestBody.put(Constants.DATASPACE,dataspace);
+        }
         Calendar expireTime = Calendar.getInstance();
         Response response = null;
         try {
@@ -52,6 +59,7 @@ public class TokenExchangeHelper {
                 String message = token.getErrorDescription();
                 throw new TokenException(message);
             }
+            log.info("Setting token expiry time");
             expireTime.add(Calendar.SECOND, token.getExpiresIn());
             token.setExpireTime(expireTime);
             return token;
@@ -69,7 +77,10 @@ public class TokenExchangeHelper {
         log.info(requestBody.toString());
         try {
             Request request = HttpHelper.buildRequest(Constants.POST, url, formBody.build(), headers);
+            long startTime = System.currentTimeMillis();
+            log.info("Sending call for token exchange");
             Response response = client.newCall(request).execute();
+            log.info("Time taken for token exchange : {}", System.currentTimeMillis() - startTime);
             if (!response.isSuccessful()) {
                 log.error("login failed with status code {}", response.code());
                 HttpHelper.handleErrorResponse(response, Constants.ERROR_DESCRIPTION);

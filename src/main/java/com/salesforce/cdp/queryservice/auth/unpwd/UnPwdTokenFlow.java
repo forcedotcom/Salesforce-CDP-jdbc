@@ -30,8 +30,10 @@ public class UnPwdTokenFlow implements TokenProvider {
 
     @Override
     public CoreToken getCoreToken() throws TokenException {
+        log.info("Getting core token using username password flow");
         validateProperties();
         String token_url = properties.getProperty(Constants.LOGIN_URL) + Constants.CORE_TOKEN_URL;
+        log.info("Fetching core token from url: {}", token_url);
         byte[] passwordBytes = null;
         byte[] clientSecret = null;
         // Convert the password and client secret to byte arrays so, we can empty them at will.
@@ -60,7 +62,8 @@ public class UnPwdTokenFlow implements TokenProvider {
 
     @Override
     public OffcoreToken getOffcoreToken() throws TokenException {
-        if (TokenUtils.isValid(offcoreToken)) return offcoreToken;
+        if (TokenUtils.isValid(offcoreToken))
+            return offcoreToken;
         CoreToken coreToken = getCoreToken();
         offcoreToken = tokenExchangeHelper.exchangeToken(coreToken);
         return offcoreToken;
