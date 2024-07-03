@@ -729,7 +729,12 @@ public class QueryServiceMetadata implements DatabaseMetaData {
                         response.code(), response.headers().get(Constants.TRACE_ID));
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
             }
-            return HttpHelper.handleSuccessResponse(response, MetadataResponse.class, true);
+            StringBuilder cacheKey = new StringBuilder(response.request().url().toString());
+            if(StringUtils.isNotBlank(queryServiceConnection.getDataspace())) {
+                cacheKey.append(":").append(queryServiceConnection.getDataspace());
+            }
+
+            return HttpHelper.handleSuccessResponseWithCache(response, MetadataResponse.class, cacheKey.toString());
         } catch (IOException e) {
             log.error("Exception while getting metadata from query service", e);
             throw new SQLException(METADATA_EXCEPTION, e);

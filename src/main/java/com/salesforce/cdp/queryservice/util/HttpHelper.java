@@ -45,11 +45,16 @@ public class HttpHelper {
         throw new IOException(message);
     }
 
-    public static <T> T handleSuccessResponse(Response response, Class<T> type, boolean cacheResponse) throws IOException {
+    public static <T> T handleSuccessResponse(Response response, Class<T> type) throws IOException {
         String responseString = response.body().string();
-        if (response.headers().get("from-local-cache") == null && cacheResponse) {
+        return handleSuccessResponse(responseString, type);
+    }
+
+    public static <T> T handleSuccessResponseWithCache(Response response, Class<T> type, String cacheKey) throws IOException {
+        String responseString = response.body().string();
+        if (response.headers().get("from-local-cache") == null) {
             log.info("Caching the response");
-            MetadataCacheUtil.cacheMetadata(response.request().url().toString(), responseString);
+            MetadataCacheUtil.cacheMetadata(cacheKey, responseString);
         }
         return handleSuccessResponse(responseString, type);
     }

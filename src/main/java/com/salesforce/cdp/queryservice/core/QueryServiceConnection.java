@@ -460,7 +460,7 @@ public class QueryServiceConnection implements Connection {
             QueryExecutor executor = createQueryExecutor();
             Response response = executor.getQueryConfig();
 
-            return HttpHelper.handleSuccessResponse(response, QueryConfigResponse.class, false);
+            return HttpHelper.handleSuccessResponse(response, QueryConfigResponse.class);
         } catch (IOException e) {
             log.error("Exception while getting config from query service", e);
             throw new SQLException(QUERY_CONFIG_ERROR, e);

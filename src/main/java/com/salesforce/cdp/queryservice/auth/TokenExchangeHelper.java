@@ -52,7 +52,7 @@ public class TokenExchangeHelper {
         Response response = null;
         try {
             response = login(requestBody, token_url);
-            OffcoreToken token = HttpHelper.handleSuccessResponse(response, OffcoreToken.class, false);
+            OffcoreToken token = HttpHelper.handleSuccessResponse(response, OffcoreToken.class);
             if (token.getErrorDescription() != null) {
                 log.error("Token exchange failed with error {}", token.getErrorDescription());
                 TokenUtils.invalidateCoreToken(url, coreToken, client);
