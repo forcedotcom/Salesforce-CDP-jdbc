@@ -23,12 +23,18 @@ import com.salesforce.cdp.queryservice.model.TableMetadata;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
 import static com.salesforce.cdp.queryservice.util.Messages.METADATA_EXCEPTION;
+
+import com.salesforce.cdp.queryservice.util.MetadataCacheUtil;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
 import com.salesforce.cdp.queryservice.util.Utils;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.MediaType;
+import okhttp3.Protocol;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 
 import java.io.IOException;
 import java.sql.*;
@@ -729,12 +735,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
                         response.code(), response.headers().get(Constants.TRACE_ID));
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
             }
-            StringBuilder cacheKey = new StringBuilder(response.request().url().toString());
-            if(StringUtils.isNotBlank(queryServiceConnection.getDataspace())) {
-                cacheKey.append(":").append(queryServiceConnection.getDataspace());
-            }
-
-            return HttpHelper.handleSuccessResponseWithCache(response, MetadataResponse.class, cacheKey.toString());
+            return HttpHelper.handleSuccessResponseWithCache(response, MetadataResponse.class, queryServiceConnection);
         } catch (IOException e) {
             log.error("Exception while getting metadata from query service", e);
             throw new SQLException(METADATA_EXCEPTION, e);
@@ -1106,6 +1107,7 @@ public class QueryServiceMetadata implements DatabaseMetaData {
     }
 
     protected QueryExecutor createQueryExecutor() {
+        queryServiceConnection.addMetaDataInterceptor(true);
         return new QueryExecutor(queryServiceConnection);
     }
 }

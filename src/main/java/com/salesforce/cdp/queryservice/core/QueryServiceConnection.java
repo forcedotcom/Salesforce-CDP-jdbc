@@ -17,8 +17,11 @@
 package com.salesforce.cdp.queryservice.core;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.salesforce.cdp.queryservice.auth.token.OffcoreToken;
 import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
+import com.salesforce.cdp.queryservice.model.MetadataCacheKey;
 import com.salesforce.cdp.queryservice.model.QueryConfigResponse;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
@@ -32,6 +35,7 @@ import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.salesforce.cdp.queryservice.util.Messages.QUERY_CONFIG_ERROR;
@@ -49,6 +53,8 @@ public class QueryServiceConnection implements Connection {
     private boolean enableStreamFlow = false;
     private String tenantUrl;
     private QueryEngineEnum queryEngineEnum;
+    private Cache<MetadataCacheKey, String> metaDataCache;
+    private boolean addMetaDataInterceptor;
 
     private boolean isValid = false;
 
@@ -75,6 +81,10 @@ public class QueryServiceConnection implements Connection {
 
         // use isValid to test connection
         this.isValid(20);
+
+        metaDataCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(600000, TimeUnit.MILLISECONDS)
+                .maximumSize(10).build();
     }
 
     /**
@@ -133,6 +143,16 @@ public class QueryServiceConnection implements Connection {
 
     public QueryEngineEnum getQueryEngineEnum() {
         return queryEngineEnum;
+    }
+
+    public String getMetadataFromCacheIfPresent() {
+        MetadataCacheKey cacheKey = new MetadataCacheKey(token.getInstanceUrl(), (String) getDataspace());
+        return metaDataCache.getIfPresent(cacheKey);
+    }
+
+    public void cacheMetadata(String response) {
+        MetadataCacheKey cacheKey = new MetadataCacheKey(token.getInstanceUrl(), (String) getDataspace());
+        metaDataCache.put(cacheKey, response);
     }
 
     @Override
@@ -473,5 +493,13 @@ public class QueryServiceConnection implements Connection {
 
     public void setDataspace(String dataspace) {
         properties.put(Constants.DATASPACE,dataspace);
+    }
+
+    public boolean addMetaDataInterceptor() {
+        return addMetaDataInterceptor;
+    }
+
+    public void addMetaDataInterceptor(boolean addMetaDataInterceptor) {
+        this.addMetaDataInterceptor = addMetaDataInterceptor;
     }
 }

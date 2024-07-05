@@ -23,6 +23,7 @@ import com.salesforce.cdp.queryservice.auth.TokenUtils;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
 import com.salesforce.cdp.queryservice.interceptors.MetadataCacheInterceptor;
+import com.salesforce.cdp.queryservice.model.MetadataCacheKey;
 import com.salesforce.cdp.queryservice.util.internal.SFDefaultSocketFactoryWrapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +51,6 @@ public class QueryTokenExecutor {
                 .callTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
                 .retryOnConnectionFailure(true)
                 .socketFactory(new SFDefaultSocketFactoryWrapper(false))
-                .addInterceptor(new MetadataCacheInterceptor())
                 .build();
     }
 
@@ -143,13 +143,15 @@ public class QueryTokenExecutor {
         }
     }
 
-    protected static OkHttpClient updateClientWithSocketFactory(OkHttpClient client, boolean isSocksProxyDisabled) {
+    protected OkHttpClient updateClientWithSocketFactory(OkHttpClient client, boolean isSocksProxyDisabled) {
+        OkHttpClient.Builder builder = client.newBuilder();
         if (isSocksProxyDisabled) {
-            return client.newBuilder()
-                    .socketFactory(new SFDefaultSocketFactoryWrapper(true))
-                    .build();
+            builder.socketFactory(new SFDefaultSocketFactoryWrapper(true));
         }
-        return client;
+        if(connection.addMetaDataInterceptor()) {
+            builder.addInterceptor(new MetadataCacheInterceptor(connection));
+        }
+        return builder.build();
     }
     protected CoreToken getCoreToken() throws SQLException, TokenException {
         return tokenManager.getCoreToken();
