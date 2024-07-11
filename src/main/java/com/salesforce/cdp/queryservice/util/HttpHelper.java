@@ -19,7 +19,6 @@ package com.salesforce.cdp.queryservice.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -48,15 +47,6 @@ public class HttpHelper {
 
     public static <T> T handleSuccessResponse(Response response, Class<T> type) throws IOException {
         String responseString = response.body().string();
-        return handleSuccessResponse(responseString, type);
-    }
-
-    public static <T> T handleSuccessResponseWithCache(Response response, Class<T> type, QueryServiceConnection connection) throws IOException {
-        String responseString = response.body().string();
-        if (response.headers().get("from-local-cache") == null) {
-            log.info("Caching the response");
-            connection.cacheMetadata(responseString);
-        }
         return handleSuccessResponse(responseString, type);
     }
 

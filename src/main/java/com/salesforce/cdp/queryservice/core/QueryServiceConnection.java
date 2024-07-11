@@ -26,9 +26,11 @@ import com.salesforce.cdp.queryservice.model.QueryConfigResponse;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.sql.*;
@@ -55,6 +57,8 @@ public class QueryServiceConnection implements Connection {
     private QueryEngineEnum queryEngineEnum;
     private Cache<MetadataCacheKey, String> metaDataCache;
     private boolean addMetaDataInterceptor;
+    @Getter
+    private final int metaDataCacheDurationInMs;
 
     private boolean isValid = false;
 
@@ -82,9 +86,7 @@ public class QueryServiceConnection implements Connection {
         // use isValid to test connection
         this.isValid(20);
 
-        metaDataCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(600000, TimeUnit.MILLISECONDS)
-                .maximumSize(10).build();
+        metaDataCacheDurationInMs = Integer.parseInt(this.properties.getProperty(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS, String.valueOf(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS_VALUE)));
     }
 
     /**
@@ -145,14 +147,8 @@ public class QueryServiceConnection implements Connection {
         return queryEngineEnum;
     }
 
-    public String getMetadataFromCacheIfPresent() {
-        MetadataCacheKey cacheKey = new MetadataCacheKey(token.getInstanceUrl(), (String) getDataspace());
-        return metaDataCache.getIfPresent(cacheKey);
-    }
-
-    public void cacheMetadata(String response) {
-        MetadataCacheKey cacheKey = new MetadataCacheKey(token.getInstanceUrl(), (String) getDataspace());
-        metaDataCache.put(cacheKey, response);
+    public @NotNull MetadataCacheKey getMetadataCacheKey() {
+        return new MetadataCacheKey(token.getInstanceUrl(), (String) getDataspace());
     }
 
     @Override
@@ -502,4 +498,5 @@ public class QueryServiceConnection implements Connection {
     public void addMetaDataInterceptor(boolean addMetaDataInterceptor) {
         this.addMetaDataInterceptor = addMetaDataInterceptor;
     }
+
 }
