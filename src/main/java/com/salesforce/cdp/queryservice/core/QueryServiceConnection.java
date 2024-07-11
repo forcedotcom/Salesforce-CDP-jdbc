@@ -17,21 +17,27 @@
 package com.salesforce.cdp.queryservice.core;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.salesforce.cdp.queryservice.auth.token.OffcoreToken;
 import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
+import com.salesforce.cdp.queryservice.model.MetadataCacheKey;
 import com.salesforce.cdp.queryservice.model.QueryConfigResponse;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
 import com.salesforce.cdp.queryservice.util.QueryExecutor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.salesforce.cdp.queryservice.util.Messages.QUERY_CONFIG_ERROR;
@@ -49,6 +55,10 @@ public class QueryServiceConnection implements Connection {
     private boolean enableStreamFlow = false;
     private String tenantUrl;
     private QueryEngineEnum queryEngineEnum;
+    private Cache<MetadataCacheKey, String> metaDataCache;
+    private boolean addMetaDataInterceptor;
+    @Getter
+    private final int metaDataCacheDurationInMs;
 
     private boolean isValid = false;
 
@@ -75,6 +85,8 @@ public class QueryServiceConnection implements Connection {
 
         // use isValid to test connection
         this.isValid(20);
+
+        metaDataCacheDurationInMs = Integer.parseInt(this.properties.getProperty(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS, String.valueOf(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS_VALUE)));
     }
 
     /**
@@ -133,6 +145,10 @@ public class QueryServiceConnection implements Connection {
 
     public QueryEngineEnum getQueryEngineEnum() {
         return queryEngineEnum;
+    }
+
+    public @NotNull MetadataCacheKey getMetadataCacheKey() {
+        return new MetadataCacheKey(token.getInstanceUrl(), (String) getDataspace());
     }
 
     @Override
@@ -460,7 +476,7 @@ public class QueryServiceConnection implements Connection {
             QueryExecutor executor = createQueryExecutor();
             Response response = executor.getQueryConfig();
 
-            return HttpHelper.handleSuccessResponse(response, QueryConfigResponse.class, false);
+            return HttpHelper.handleSuccessResponse(response, QueryConfigResponse.class);
         } catch (IOException e) {
             log.error("Exception while getting config from query service", e);
             throw new SQLException(QUERY_CONFIG_ERROR, e);
@@ -474,4 +490,13 @@ public class QueryServiceConnection implements Connection {
     public void setDataspace(String dataspace) {
         properties.put(Constants.DATASPACE,dataspace);
     }
+
+    public boolean addMetaDataInterceptor() {
+        return addMetaDataInterceptor;
+    }
+
+    public void addMetaDataInterceptor(boolean addMetaDataInterceptor) {
+        this.addMetaDataInterceptor = addMetaDataInterceptor;
+    }
+
 }

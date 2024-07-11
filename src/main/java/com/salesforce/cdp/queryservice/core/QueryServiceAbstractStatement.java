@@ -99,7 +99,7 @@ public abstract class QueryServiceAbstractStatement {
                     log.error("Request query {} failed with response code {} and trace-Id {}", sql, response.code(), response.headers().get(Constants.TRACE_ID));
                     HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
                 }
-                QueryServiceResponse queryServiceResponse = HttpHelper.handleSuccessResponse(response, QueryServiceResponse.class, false);
+                QueryServiceResponse queryServiceResponse = HttpHelper.handleSuccessResponse(response, QueryServiceResponse.class);
                 return createResultSetFromResponse(queryServiceResponse, isCursorBasedPaginationReq);
             }
         } catch (IOException e) {
@@ -115,7 +115,7 @@ public abstract class QueryServiceAbstractStatement {
                 log.error("Request query {} failed with response code {} and trace-Id {}", sql, response.code(), response.headers().get(Constants.TRACE_ID));
                 HttpHelper.handleErrorResponse(response, Constants.MESSAGE);
             }
-            QueryServiceResponse queryServiceResponse = HttpHelper.handleSuccessResponse(response, QueryServiceResponse.class, false);
+            QueryServiceResponse queryServiceResponse = HttpHelper.handleSuccessResponse(response, QueryServiceResponse.class);
             return createResultSetFromResponse(queryServiceResponse, true);
         } catch (IOException e) {
             log.error("Exception while running the query", e);
