@@ -1119,7 +1119,6 @@ public class QueryServiceMetadata implements DatabaseMetaData {
     }
 
     protected QueryExecutor createQueryExecutor() {
-        queryServiceConnection.addMetaDataInterceptor(true);
-        return new QueryExecutor(queryServiceConnection);
+        return new QueryExecutor(queryServiceConnection, true);
     }
 }

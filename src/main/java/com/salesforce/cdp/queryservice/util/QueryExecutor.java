@@ -46,23 +46,26 @@ public class QueryExecutor extends QueryTokenExecutor {
     }
 
     private final OkHttpClient queryClient;
-
     public QueryExecutor(QueryServiceConnection connection) {
-        this(connection, null, null);
+        this(connection, null, null, false);
     }
 
-    public QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client) {
-        this(connection, tokenClient, client, null);
+    public QueryExecutor(QueryServiceConnection connection, boolean cached) {
+        this(connection, null, null, cached);
     }
 
-    QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client, TokenManager tokenManager) {
+    public QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client, boolean cached) {
+        this(connection, tokenClient, client, null, cached);
+    }
+
+    QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client, TokenManager tokenManager, boolean cached) {
         super(connection, tokenClient, tokenManager);
-        queryClient = getQueryClient(connection, client);
+        queryClient = getQueryClient(connection, client, cached);
     }
 
-    private OkHttpClient getQueryClient(QueryServiceConnection connection, OkHttpClient client) {
+    private OkHttpClient getQueryClient(QueryServiceConnection connection, OkHttpClient client, boolean cached) {
         client = client == null ? DEFAULT_QUERY_CLIENT : client;
-        return updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
+        return updateClientWithSocketFactory(client, connection.isSocksProxyDisabled(), cached);
     }
 
     public Response executeQuery(String sql, boolean isV2Query, Optional<Integer> limit, Optional<Integer> offset, Optional<String> orderby) throws IOException, SQLException {

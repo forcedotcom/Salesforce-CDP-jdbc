@@ -85,7 +85,7 @@ public class QueryTokenExecutor {
         }
 
         // this makes query executor not reuse across requests
-        this.client = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
+        this.client = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled(), false);
 
         // set TenantUrl in connection. This is mandatory in gRPC flow.
         if(QueryEngineEnum.HYPER == connection.getQueryEngineEnum()) {
@@ -142,13 +142,13 @@ public class QueryTokenExecutor {
         }
     }
 
-    protected OkHttpClient updateClientWithSocketFactory(OkHttpClient client, boolean isSocksProxyDisabled) {
+    protected OkHttpClient updateClientWithSocketFactory(OkHttpClient client, boolean isSocksProxyDisabled, boolean cached) {
         OkHttpClient.Builder builder = client.newBuilder();
         if (isSocksProxyDisabled) {
             builder.socketFactory(new SFDefaultSocketFactoryWrapper(true));
         }
-        if(connection.isMetadataInterceptorAdded()) {
-            builder.addInterceptor(new MetadataCacheInterceptor(connection));
+        if(cached) {
+            builder.addInterceptor(new MetadataCacheInterceptor(connection.getMetaDataCacheDurationInMs()));
         }
         return builder.build();
     }

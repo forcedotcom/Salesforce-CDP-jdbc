@@ -19,7 +19,6 @@ package com.salesforce.cdp.queryservice.interceptors;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
-import com.salesforce.cdp.queryservice.model.MetadataCacheKey;
 import com.salesforce.cdp.queryservice.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Interceptor;
@@ -36,13 +35,11 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class MetadataCacheInterceptor implements Interceptor {
-    private final QueryServiceConnection connection;
-    private Cache<MetadataCacheKey, String> metaDataCache;
+    private Cache<String, String> metaDataCache;
 
-    public MetadataCacheInterceptor(QueryServiceConnection connection) {
-        this.connection = connection;
+    public MetadataCacheInterceptor(int metaDataCacheDurationInMs) {
         this.metaDataCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(connection.getMetaDataCacheDurationInMs(), TimeUnit.MILLISECONDS)
+                .expireAfterWrite(metaDataCacheDurationInMs, TimeUnit.MILLISECONDS)
                 .maximumSize(10).build();
     }
 
@@ -50,8 +47,9 @@ public class MetadataCacheInterceptor implements Interceptor {
     @Override
     public Response intercept(@NotNull Chain chain) throws IOException {
         Request request = chain.request();
+        String cacheKey = request.url().toString();
         Response response;
-        String responseString = getMetadataFromCacheIfPresent();
+        String responseString = getMetadataFromCacheIfPresent(cacheKey);
 
         Response.Builder responseBuilder = new Response.Builder().code(HttpStatus.SC_OK).
                 request(request).protocol(Protocol.HTTP_1_1).
@@ -68,7 +66,7 @@ public class MetadataCacheInterceptor implements Interceptor {
             } else {
                 log.info("Caching the response");
                 responseString = response.body().string();
-                cacheMetadata(responseString);
+                cacheMetadata(cacheKey, responseString);
             }
         }
 
@@ -76,13 +74,11 @@ public class MetadataCacheInterceptor implements Interceptor {
         return responseBuilder.build();
     }
 
-    private void cacheMetadata(String response) {
-        MetadataCacheKey cacheKey = connection.getMetadataCacheKey();
+    private void cacheMetadata(String cacheKey, String response) {
         metaDataCache.put(cacheKey, response);
     }
 
-    public String getMetadataFromCacheIfPresent() {
-        MetadataCacheKey cacheKey = connection.getMetadataCacheKey();
+    public String getMetadataFromCacheIfPresent(String cacheKey) {
         return metaDataCache.getIfPresent(cacheKey);
     }
 }

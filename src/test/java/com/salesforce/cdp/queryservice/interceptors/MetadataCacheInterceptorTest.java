@@ -18,9 +18,7 @@ package com.salesforce.cdp.queryservice.interceptors;
 
 import com.salesforce.cdp.queryservice.ResponseEnum;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
-import com.salesforce.cdp.queryservice.model.MetadataCacheKey;
 import com.salesforce.cdp.queryservice.util.Constants;
-import com.salesforce.cdp.queryservice.util.MetadataCacheUtil;
 import okhttp3.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,13 +43,12 @@ public class MetadataCacheInterceptorTest {
     public void init() {
         chain = mock(Interceptor.Chain.class);
         connection = mock(QueryServiceConnection.class);
-        metadataCacheInterceptor = new MetadataCacheInterceptor(connection);
+        metadataCacheInterceptor = new MetadataCacheInterceptor(600000);
         doReturn(buildRequest()).when(chain).request();
     }
 
     @Test
     public void testMetadataRequestWithNoCachePresent() throws IOException {
-        when(connection.getMetadataCacheKey()).thenReturn(new MetadataCacheKey("mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com", "default"));
         doReturn(buildResponse(200, EMPTY_RESPONSE)).doReturn(buildResponse(200, QUERY_RESPONSE)).when(chain).proceed(any(Request.class));
         metadataCacheInterceptor.intercept(chain);
         verify(chain, times(1)).proceed(any(Request.class));

@@ -19,7 +19,6 @@ package com.salesforce.cdp.queryservice.core;
 import com.google.common.annotations.VisibleForTesting;
 import com.salesforce.cdp.queryservice.auth.token.OffcoreToken;
 import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
-import com.salesforce.cdp.queryservice.model.MetadataCacheKey;
 import com.salesforce.cdp.queryservice.model.QueryConfigResponse;
 import com.salesforce.cdp.queryservice.util.Constants;
 import com.salesforce.cdp.queryservice.util.HttpHelper;
@@ -52,7 +51,6 @@ public class QueryServiceConnection implements Connection {
     private boolean enableStreamFlow = false;
     private String tenantUrl;
     private QueryEngineEnum queryEngineEnum;
-    private boolean addMetaDataInterceptor;
     @Getter
     private final int metaDataCacheDurationInMs;
 
@@ -143,10 +141,6 @@ public class QueryServiceConnection implements Connection {
         return queryEngineEnum;
     }
 
-    public @NotNull MetadataCacheKey getMetadataCacheKey() {
-        return new MetadataCacheKey(token.getInstanceUrl(), (String) getDataspace());
-    }
-
     @Override
     public Statement createStatement() throws SQLException {
         return createStatement(ResultSet.TYPE_FORWARD_ONLY,
@@ -200,7 +194,7 @@ public class QueryServiceConnection implements Connection {
     }
 
     @Override
-    public DatabaseMetaData getMetaData() throws SQLException {
+    public DatabaseMetaData getMetaData() {
         return new QueryServiceMetadata(this, serviceRootUrl, properties);
     }
 
@@ -486,13 +480,4 @@ public class QueryServiceConnection implements Connection {
     public void setDataspace(String dataspace) {
         properties.put(Constants.DATASPACE,dataspace);
     }
-
-    public boolean isMetadataInterceptorAdded() {
-        return addMetaDataInterceptor;
-    }
-
-    public void addMetaDataInterceptor(boolean addMetaDataInterceptor) {
-        this.addMetaDataInterceptor = addMetaDataInterceptor;
-    }
-
 }
