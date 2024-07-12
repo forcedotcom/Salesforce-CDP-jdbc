@@ -23,7 +23,6 @@ import com.salesforce.cdp.queryservice.auth.TokenUtils;
 import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
 import com.salesforce.cdp.queryservice.interceptors.MetadataCacheInterceptor;
-import com.salesforce.cdp.queryservice.model.MetadataCacheKey;
 import com.salesforce.cdp.queryservice.util.internal.SFDefaultSocketFactoryWrapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -148,7 +147,7 @@ public class QueryTokenExecutor {
         if (isSocksProxyDisabled) {
             builder.socketFactory(new SFDefaultSocketFactoryWrapper(true));
         }
-        if(connection.addMetaDataInterceptor()) {
+        if(connection.isMetadataInterceptorAdded()) {
             builder.addInterceptor(new MetadataCacheInterceptor(connection));
         }
         return builder.build();

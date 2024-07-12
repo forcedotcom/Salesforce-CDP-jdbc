@@ -59,7 +59,6 @@ public class MetadataCacheInterceptor implements Interceptor {
 
         if (responseString != null) {
             log.trace("Getting the metadata response from local cache");
-            responseBuilder.addHeader("from-local-cache", Constants.TRUE_STR);
         } else {
             log.trace("Cache miss for metadata response. Getting from server");
             response = chain.proceed(request);

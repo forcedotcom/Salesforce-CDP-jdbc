@@ -17,8 +17,6 @@
 package com.salesforce.cdp.queryservice.core;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.salesforce.cdp.queryservice.auth.token.OffcoreToken;
 import com.salesforce.cdp.queryservice.enums.QueryEngineEnum;
 import com.salesforce.cdp.queryservice.model.MetadataCacheKey;
@@ -37,7 +35,6 @@ import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.salesforce.cdp.queryservice.util.Messages.QUERY_CONFIG_ERROR;
@@ -55,7 +52,6 @@ public class QueryServiceConnection implements Connection {
     private boolean enableStreamFlow = false;
     private String tenantUrl;
     private QueryEngineEnum queryEngineEnum;
-    private Cache<MetadataCacheKey, String> metaDataCache;
     private boolean addMetaDataInterceptor;
     @Getter
     private final int metaDataCacheDurationInMs;
@@ -491,7 +487,7 @@ public class QueryServiceConnection implements Connection {
         properties.put(Constants.DATASPACE,dataspace);
     }
 
-    public boolean addMetaDataInterceptor() {
+    public boolean isMetadataInterceptorAdded() {
         return addMetaDataInterceptor;
     }
 
