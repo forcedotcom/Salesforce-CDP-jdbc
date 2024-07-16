@@ -18,7 +18,6 @@ package com.salesforce.cdp.queryservice.interceptors;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Interceptor;
@@ -35,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class MetadataCacheInterceptor implements Interceptor {
-    private Cache<String, String> metaDataCache;
+    private final Cache<String, String> metaDataCache;
 
     public MetadataCacheInterceptor(int metaDataCacheDurationInMs) {
         this.metaDataCache = CacheBuilder.newBuilder()
@@ -49,7 +48,7 @@ public class MetadataCacheInterceptor implements Interceptor {
         Request request = chain.request();
         String cacheKey = request.url().toString();
         Response response;
-        String responseString = getMetadataFromCacheIfPresent(cacheKey);
+        String responseString = metaDataCache.getIfPresent(cacheKey);
 
         Response.Builder responseBuilder = new Response.Builder().code(HttpStatus.SC_OK).
                 request(request).protocol(Protocol.HTTP_1_1).
@@ -66,19 +65,11 @@ public class MetadataCacheInterceptor implements Interceptor {
             } else {
                 log.info("Caching the response");
                 responseString = response.body().string();
-                cacheMetadata(cacheKey, responseString);
+                metaDataCache.put(cacheKey, responseString);
             }
         }
 
         responseBuilder.body(ResponseBody.create(responseString, MediaType.parse(Constants.JSON_CONTENT)));
         return responseBuilder.build();
-    }
-
-    private void cacheMetadata(String cacheKey, String response) {
-        metaDataCache.put(cacheKey, response);
-    }
-
-    public String getMetadataFromCacheIfPresent(String cacheKey) {
-        return metaDataCache.getIfPresent(cacheKey);
     }
 }

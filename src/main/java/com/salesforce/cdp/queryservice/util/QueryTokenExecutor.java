@@ -147,8 +147,15 @@ public class QueryTokenExecutor {
         if (isSocksProxyDisabled) {
             builder.socketFactory(new SFDefaultSocketFactoryWrapper(true));
         }
+        int metaDataCacheDurationInMs;
+
         if(cached) {
-            builder.addInterceptor(new MetadataCacheInterceptor(connection.getMetaDataCacheDurationInMs()));
+            try {
+                metaDataCacheDurationInMs = Integer.parseInt(this.connection.getClientInfo().getProperty(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS, String.valueOf(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS_VALUE)));
+            } catch (SQLException e) {
+                metaDataCacheDurationInMs = Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS_VALUE;
+            }
+            builder.addInterceptor(new MetadataCacheInterceptor(metaDataCacheDurationInMs));
         }
         return builder.build();
     }

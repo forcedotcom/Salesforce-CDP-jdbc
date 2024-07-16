@@ -47,15 +47,11 @@ public class QueryExecutor extends QueryTokenExecutor {
 
     private final OkHttpClient queryClient;
     public QueryExecutor(QueryServiceConnection connection) {
-        this(connection, null, null, false);
+        this(connection, null, null, null, false);
     }
 
     public QueryExecutor(QueryServiceConnection connection, boolean cached) {
-        this(connection, null, null, cached);
-    }
-
-    public QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client, boolean cached) {
-        this(connection, tokenClient, client, null, cached);
+        this(connection, null, null, null, cached);
     }
 
     QueryExecutor(QueryServiceConnection connection, OkHttpClient tokenClient, OkHttpClient client, TokenManager tokenManager, boolean cached) {

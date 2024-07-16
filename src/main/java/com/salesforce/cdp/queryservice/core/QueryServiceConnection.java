@@ -51,8 +51,6 @@ public class QueryServiceConnection implements Connection {
     private boolean enableStreamFlow = false;
     private String tenantUrl;
     private QueryEngineEnum queryEngineEnum;
-    @Getter
-    private final int metaDataCacheDurationInMs;
 
     private boolean isValid = false;
 
@@ -79,8 +77,6 @@ public class QueryServiceConnection implements Connection {
 
         // use isValid to test connection
         this.isValid(20);
-
-        metaDataCacheDurationInMs = Integer.parseInt(this.properties.getProperty(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS, String.valueOf(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS_VALUE)));
     }
 
     /**
