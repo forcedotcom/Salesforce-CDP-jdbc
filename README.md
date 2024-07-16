@@ -142,17 +142,16 @@ Class.forName("com.salesforce.cdp.queryservice.QueryServiceDriver");
    Connection connection =  DriverManager.getConnection("jdbc:queryService-jdbc:https://login.salesforce.com", properties);
 ```
 
-Create Statements/ Prepared Statements to execute Query and get ResultSet
+Create Statements to execute Query and get ResultSet
 ```
-PreparedStatement preparedStatement = connection.prepareStatement("select FirstName__c, BirthDate__c, YearlyIncome__c from Individual__dlm where FirstName__c = ? and YearlyIncome__c > ?");
-   preparedStatement.setString(0, "Angella");
-   preparedStatement.setInt(1, 1000);
-
-ResultSet  resultSet = preparedStatement.executeQuery();
+Statement statement = connection.createStatement();
+ResultSet  resultSet = statement.executeQuery("select FirstName__c, BirthDate__c, YearlyIncome__c from Individual__dlm where FirstName__c = 'Angella' and YearlyIncome__c > 1000");
 
 while (resultSet.next()) {
-       log.info("FirstName : {}, BirthDate__c : {}, YearlyIncome__c : {}", resultSet.getString("FirstName__c"), resultSet.getTimestamp("BirthDate__c"), resultSet.getInt("YearlyIncome__c"));
+   log.info("FirstName : {}, BirthDate__c : {}, YearlyIncome__c : {}", resultSet.getString("FirstName__c"), resultSet.getTimestamp("BirthDate__c"), resultSet.getInt("YearlyIncome__c"));
+}
 ```
+_Note: We are not supporting PreparedStatement in the driver due to lack of parameters support in the query APIs._
 
 
 # Python Code

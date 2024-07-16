@@ -50,7 +50,6 @@ public class QueryTokenExecutor {
                 .callTimeout(Constants.REST_TIME_OUT, TimeUnit.SECONDS)
                 .retryOnConnectionFailure(true)
                 .socketFactory(new SFDefaultSocketFactoryWrapper(false))
-                .addInterceptor(new MetadataCacheInterceptor())
                 .build();
     }
 
@@ -86,7 +85,7 @@ public class QueryTokenExecutor {
         }
 
         // this makes query executor not reuse across requests
-        this.client = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled());
+        this.client = updateClientWithSocketFactory(client, connection.isSocksProxyDisabled(), false);
 
         // set TenantUrl in connection. This is mandatory in gRPC flow.
         if(QueryEngineEnum.HYPER == connection.getQueryEngineEnum()) {
@@ -143,13 +142,25 @@ public class QueryTokenExecutor {
         }
     }
 
-    protected static OkHttpClient updateClientWithSocketFactory(OkHttpClient client, boolean isSocksProxyDisabled) {
+    protected OkHttpClient updateClientWithSocketFactory(OkHttpClient client, boolean isSocksProxyDisabled, boolean cached) {
+        OkHttpClient.Builder builder = client.newBuilder();
         if (isSocksProxyDisabled) {
-            return client.newBuilder()
-                    .socketFactory(new SFDefaultSocketFactoryWrapper(true))
-                    .build();
+            builder.socketFactory(new SFDefaultSocketFactoryWrapper(true));
         }
-        return client;
+        int metaDataCacheDurationInMs;
+
+        if(cached) {
+            try {
+                String defaultValue = String.valueOf(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS_VALUE);
+                Properties clientInfo = this.connection.getClientInfo();
+                String metadataProperty = clientInfo.getProperty(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS, defaultValue);
+                metaDataCacheDurationInMs = Integer.parseInt(metadataProperty);
+            } catch (SQLException e) {
+                metaDataCacheDurationInMs = Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS_VALUE;
+            }
+            builder.addInterceptor(new MetadataCacheInterceptor(metaDataCacheDurationInMs));
+        }
+        return builder.build();
     }
     protected CoreToken getCoreToken() throws SQLException, TokenException {
         return tokenManager.getCoreToken();

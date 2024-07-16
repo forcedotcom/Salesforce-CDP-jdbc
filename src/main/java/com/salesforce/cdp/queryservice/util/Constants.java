@@ -77,6 +77,7 @@ public class Constants {
     public static final String PD = "password";
     public static final String PRIVATE_KEY = "privateKey";
     public static final String MAX_RETRIES = "maxRetries";
+    public static final String RESULT_SET_METADATA_CACHE_DURATION_IN_MS = "metaDataCacheDurationInMs";
 
     // Response Constants
     public static final String MESSAGE = "message";
@@ -89,6 +90,7 @@ public class Constants {
     // Integer Constants
     public static final int REST_TIME_OUT = 600;
     public static final Integer MAX_LIMIT = 49999;
+    public static final int RESULT_SET_METADATA_CACHE_DURATION_IN_MS_VALUE = 600000;
 
     // Token Constants
     public static final String GRANT_TYPE_NAME = "grant_type";

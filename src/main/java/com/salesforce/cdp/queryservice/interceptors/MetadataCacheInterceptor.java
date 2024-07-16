@@ -16,35 +16,60 @@
 
 package com.salesforce.cdp.queryservice.interceptors;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.salesforce.cdp.queryservice.util.Constants;
-import com.salesforce.cdp.queryservice.util.MetadataCacheUtil;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.http.HttpStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class MetadataCacheInterceptor implements Interceptor {
+    private final Cache<String, String> metaDataCache;
+
+    public MetadataCacheInterceptor(int metaDataCacheDurationInMs) {
+        this.metaDataCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(metaDataCacheDurationInMs, TimeUnit.MILLISECONDS)
+                .maximumSize(10).build();
+    }
 
     @NotNull
     @Override
     public Response intercept(@NotNull Chain chain) throws IOException {
         Request request = chain.request();
+        String cacheKey = request.url().toString();
         Response response;
-        String responseString = MetadataCacheUtil.getMetadata(request.url().toString());
+        String responseString = metaDataCache.getIfPresent(cacheKey);
+
+        Response.Builder responseBuilder = new Response.Builder().code(HttpStatus.SC_OK).
+                request(request).protocol(Protocol.HTTP_1_1).
+                message("OK");
+
         if (responseString != null) {
             log.trace("Getting the metadata response from local cache");
-            response = new Response.Builder().code(HttpStatus.SC_OK).
-                    request(request).protocol(Protocol.HTTP_1_1).
-                    message("OK").
-                    addHeader("from-local-cache", Constants.TRUE_STR).
-                    body(ResponseBody.create(responseString, MediaType.parse(Constants.JSON_CONTENT))).build();
         } else {
             log.trace("Cache miss for metadata response. Getting from server");
             response = chain.proceed(request);
+
+            if(!response.isSuccessful()) {
+                return response;
+            } else {
+                log.info("Caching the response");
+                responseString = response.body().string();
+                metaDataCache.put(cacheKey, responseString);
+            }
         }
-        return response;
+
+        responseBuilder.body(ResponseBody.create(responseString, MediaType.parse(Constants.JSON_CONTENT)));
+        return responseBuilder.build();
     }
 }

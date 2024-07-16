@@ -37,7 +37,7 @@ public class RefreshTokenClient {
         requestBody.put(Constants.REFRESH_TOKEN_GRANT_TYPE, refreshToken);
         try {
             Response response = login(requestBody, token_url);
-            return HttpHelper.handleSuccessResponse(response, CoreToken.class, false);
+            return HttpHelper.handleSuccessResponse(response, CoreToken.class);
         }
         catch (IOException e) {
             log.error("Caught exception while renewing the core token", e);
