@@ -151,7 +151,10 @@ public class QueryTokenExecutor {
 
         if(cached) {
             try {
-                metaDataCacheDurationInMs = Integer.parseInt(this.connection.getClientInfo().getProperty(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS, String.valueOf(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS_VALUE)));
+                String defaultValue = String.valueOf(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS_VALUE);
+                Properties clientInfo = this.connection.getClientInfo();
+                String metadataProperty = clientInfo.getProperty(Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS, defaultValue);
+                metaDataCacheDurationInMs = Integer.parseInt(metadataProperty);
             } catch (SQLException e) {
                 metaDataCacheDurationInMs = Constants.RESULT_SET_METADATA_CACHE_DURATION_IN_MS_VALUE;
             }
