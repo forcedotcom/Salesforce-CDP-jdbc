@@ -58,7 +58,7 @@ public class JwtLoginClient {
                 log.error("login with user credentials failed with status code {}", response.code());
                 HttpHelper.handleErrorResponse(response, Constants.ERROR_DESCRIPTION);
             }
-            return HttpHelper.handleSuccessResponse(response, CoreToken.class, false);
+            return HttpHelper.handleSuccessResponse(response, CoreToken.class);
         } catch (IOException e) {
             log.error("login with user credentials failed", e);
             throw new TokenException(FAILED_LOGIN, e);

@@ -58,7 +58,7 @@ public class QueryExecutorTest {
         doNothing().when(connection).setToken(any());
         TokenManager mockTokenManager = mock(TokenManager.class);
         when(mockTokenManager.getOffcoreToken()).thenReturn(getToken());
-        queryExecutor = new QueryExecutor(connection, null, null, mockTokenManager) {
+        queryExecutor = new QueryExecutor(connection, null, null, mockTokenManager, false) {
             @Override
             protected OkHttpClient createClient() {
                 return mock(OkHttpClient.class);

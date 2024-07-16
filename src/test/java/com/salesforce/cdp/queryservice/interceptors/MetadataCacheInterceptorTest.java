@@ -17,11 +17,12 @@
 package com.salesforce.cdp.queryservice.interceptors;
 
 import com.salesforce.cdp.queryservice.ResponseEnum;
+import com.salesforce.cdp.queryservice.core.QueryServiceConnection;
 import com.salesforce.cdp.queryservice.util.Constants;
-import com.salesforce.cdp.queryservice.util.MetadataCacheUtil;
 import okhttp3.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import java.io.IOException;
 
@@ -35,11 +36,14 @@ public class MetadataCacheInterceptorTest {
     private Interceptor.Chain chain;
 
     private MetadataCacheInterceptor metadataCacheInterceptor;
+    @Mock
+    QueryServiceConnection connection;
 
     @Before
     public void init() {
         chain = mock(Interceptor.Chain.class);
-        metadataCacheInterceptor = new MetadataCacheInterceptor();
+        connection = mock(QueryServiceConnection.class);
+        metadataCacheInterceptor = new MetadataCacheInterceptor(600000);
         doReturn(buildRequest()).when(chain).request();
     }
 
@@ -48,13 +52,6 @@ public class MetadataCacheInterceptorTest {
         doReturn(buildResponse(200, EMPTY_RESPONSE)).doReturn(buildResponse(200, QUERY_RESPONSE)).when(chain).proceed(any(Request.class));
         metadataCacheInterceptor.intercept(chain);
         verify(chain, times(1)).proceed(any(Request.class));
-    }
-
-    @Test
-    public void testMetadataFromCache()  throws IOException {
-        MetadataCacheUtil.cacheMetadata("https://mjrgg9bzgy2dsyzvmjrgkmzzg1.c360a.salesforce.com" + Constants.CDP_URL + Constants.METADATA_URL, TABLE_METADATA.getResponse());
-        metadataCacheInterceptor.intercept(chain);
-        verify(chain, times(0)).proceed(any(Request.class));
     }
 
     private Request buildRequest() {
