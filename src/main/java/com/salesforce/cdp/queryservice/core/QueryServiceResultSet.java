@@ -219,7 +219,7 @@ public class QueryServiceResultSet implements ResultSet {
     public String getString(String columnLabel) throws SQLException {
         errorOutIfClosed();
         Object value = getObject(columnLabel);
-        wasNull.set(value == null || value.toString().equals("null") || value.toString().isEmpty());
+        wasNull.set(value == null);
         if (wasNull()) {
             return null;
         }
