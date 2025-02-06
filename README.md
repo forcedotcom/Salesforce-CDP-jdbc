@@ -161,50 +161,6 @@ while (resultSet.next()) {
 ```
 _Note: We are not supporting PreparedStatement in the driver due to lack of parameters support in the query APIs._
 
-
-# Python Code
-The JDBC driver can also be used with python. We need JaydebeAPI wrapper on top of the JDBC driver to call JDBC methods.
-
-Install JaydebeAPI using PIP
-```
-pip install JayDeBeApi
-```
-Sample Python Code
-
-```
-import jaydebeapi
-
-// Sample properties with username and password flow.
-properties = {
-    'user': "<UserName>",
-    'password': "<Password>",
-    'clientId': "<Client Id of the connected App>",
-    'clientSecret': "<Client Secret of the connected App>"
-}
-
-// Sample properties with key-pair authentication flow.
-properties = {
-    'user': "<UserName>",
-    'clientId", "<Client Id of the connected App>",
-    'privateKey': "<Private Key string corresponding to the digital x509 certificate configured in the connected App>"
-}
-
-// Sample properties with oAuth (User agent) flow.
-properties = {
-    'coreToken': "<CoreToken>",
-    'refreshToken': "<Refresh Token>",
-    'clientId", "<Client Id of the connected App>",
-    'clientSecret", "<Client Secret of the connected App>"
-}
-
-
-conn = jaydebeapi.connect("com.salesforce.cdp.queryservice.QueryServiceDriver", "jdbc:queryService-jdbc:https://login.salesforce.com", properties, "<Complete Path to JDBC driver>")
-
-curs = conn.cursor()
-curs.execute('SELECT * FROM ssot__Individual__dlm')
-data = curs.fetchall()
-```
-
 # Notes:
     
     Add order by clause in the query to fetch the paginated results for V1 API.
